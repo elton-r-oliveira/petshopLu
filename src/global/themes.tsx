@@ -1,0 +1,38 @@
+export const themes = {
+    colors: {
+        corTexto: '#c0a8a3',
+        secundary: '#7A5947',
+        lightGray: '#FFFDF2',
+        quaseMarrom: '#a8685c',
+        bgScreen: '#901812',
+        inputText: '#575757ff',
+        iconeQuickAcess1: '#583C2D',
+        iconeQuickAcess2: '#F6C2B8',
+        iconeQuickAcess3: '#FFF7EB',
+        iconeQuickAcess4: '',
+    },
+    login_cadastro: {
+        fundo: '#FFF5E5',
+        fundoBox: '#FFFDF2',
+        campo_input: '#FFFDF2',
+        texto_input: '#C0A8A3',
+        icone_input: '#C0A8A3',
+        titulo: '#7A5947',
+    },
+    BottomBar: {
+        cor_fundo: '#FFFDF2',
+        cor_icones: '#030303ff',
+        cor_borda: '#901812'
+    },
+    TopBar: {
+        cor_fundo: '#FFF7EB',
+        cor_icones: '#7A5947',
+        cor_borda: '#901812'
+    },
+    telaHome: {
+        fundo: '#FFF5E5',
+        texto1: '#583C2D',
+        fundo2: '#A8685C',
+        texto2: '#7A5947',
+    }
+}
