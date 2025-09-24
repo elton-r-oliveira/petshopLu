@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  Text,
-  View,
-  Image,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { Text, View, Image, TouchableOpacity, Alert, ActivityIndicator, } from "react-native";
 
 import { style } from "./styles";
 import Logo from "../../assets/logo.png";
@@ -16,9 +9,9 @@ import { Input } from "../../components/input";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../routes/types";
 
-// 🔹 Import Firebase
+// Firebase
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../firebaseConfig" // ajuste o caminho se precisar
+import { auth } from "../../firebaseConfig"
 
 type CadastroScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -50,14 +43,14 @@ export default function Cadastro({ navigation }: Props) {
         return Alert.alert("Atenção", "As senhas não coincidem!");
       }
 
-      // 🔹 Cria usuário no Firebase
+      // Cria usuário no Firebase
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      // 🔹 Atualiza o nome do usuário (opcional)
+      // Atualiza o nome do usuário (opcional)
       await updateProfile(userCredential.user, {
         displayName: nome,
       });
