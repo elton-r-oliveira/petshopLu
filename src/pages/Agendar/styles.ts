@@ -31,7 +31,7 @@ export const style = StyleSheet.create({
         flex: 1,
         // alignItems: "center",
         marginLeft: 10,
-        alignItems: 'flex-start' 
+        alignItems: 'flex-start'
     },
     hello: {
         fontSize: 14,
@@ -155,5 +155,27 @@ export const style = StyleSheet.create({
         color: "#333",
         marginTop: 2,
     },
-
+    input: {
+        height: 50,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        marginBottom: 15,
+        fontSize: 16,
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    button: {
+        backgroundColor: themes.colors.bgScreen,
+        height: 50,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
 });

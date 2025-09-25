@@ -1,6 +1,7 @@
 // firebaseConfig.ts
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAcUjOjLbyzfn14lddbcpqQOVhY_pGWE0s",
@@ -16,3 +17,4 @@ const app = initializeApp(firebaseConfig);
 
 // Exporta a autenticação
 export const auth = getAuth(app);
+export const db = getFirestore(app); // banco de dados
