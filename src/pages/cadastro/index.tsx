@@ -50,11 +50,6 @@ export default function Cadastro({ navigation }: Props) {
         password
       );
 
-      // Atualiza o nome do usuário (opcional)
-      await updateProfile(userCredential.user, {
-        displayName: nome,
-      });
-
       Alert.alert("Conta criada com sucesso!");
       navigation.navigate("Login");
     } catch (error: any) {
