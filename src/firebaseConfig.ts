@@ -1,20 +1,17 @@
-// firebaseConfig.ts
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAcUjOjLbyzfn14lddbcpqQOVhY_pGWE0s",
-  authDomain: "petshoplu-bd78f.firebaseapp.com",
-  projectId: "petshoplu-bd78f",
-  storageBucket: "petshoplu-bd78f.firebasestorage.app",
-  messagingSenderId: "388078662924",
-  appId: "1:388078662924:android:5d1e15086c242910288529"
+  apiKey: "AIzaSyAcUjOjLbyzfn14lddbcpqQOVhY_pGWE0s",      // Encontrado no arquivo google-services.json
+  authDomain: "petshoplu-bd78f.firebaseapp.com",          // Gerado pelo Firebase é o Project ID + o dominio do Firebase
+  projectId: "petshoplu-bd78f",                           // ID do projeto encontrado no Firebase ou no google-services.json
+  storageBucket: "petshoplu-bd78f.firebasestorage.app",   // Encontrado no arquivo google-services.json
+  messagingSenderId: "388078662924",                      // Número do projeto encontrado no Firebase ou no google-services.json
+  appId: "1:388078662924:android:5d1e15086c242910288529"  // ID do aplicativo encontrado no Firebase
 };
 
-// Inicializa o Firebase
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);                // Inicializa o Firebase
 
-// Exporta a autenticação
-export const auth = getAuth(app);
-export const db = getFirestore(app); // banco de dados
+export const auth = getAuth(app);                         // Exporta a autenticação
+export const db = getFirestore(app);                      // banco de dados

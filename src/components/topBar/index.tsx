@@ -14,14 +14,14 @@ import { style } from "./styles";
 import { themes } from "../../global/themes";
 
 interface TopBarProps {
-    userName?: string;
+    userName: string;
     petName?: string;
     location?: string;
     onLogoPress?: () => void;
 }
 
 export default function TopBar({
-    userName = "Elton R. Oliveira",
+    userName,
     petName = "Alfred",
     location = "São Bernardo do Campo, SP",
     onLogoPress,
@@ -64,7 +64,8 @@ export default function TopBar({
             {/* TEXTOS */}
             <View style={style.headerText}>
                 <Text style={style.hello}>Olá!</Text>
-                <Text style={style.userName}>{userName}</Text>
+                <Text style={style.userName}>{userName || "Visitante"}</Text>
+                {/* Usar o nome recebido ou "Visitante" */}
                 <Text style={style.petnName}>Pet: {petName}</Text>
                 <Text style={style.location}>{location}</Text>
             </View>

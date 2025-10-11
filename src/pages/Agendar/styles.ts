@@ -68,6 +68,20 @@ export const style = StyleSheet.create({
         fontWeight: "bold",
     },
 
+    actions: {
+        flexDirection: "row",
+        gap: 10,
+        marginLeft: 20,
+    },
+
+    iconButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
     sectionTitle: {
         fontSize: 22,
         fontWeight: "bold",
@@ -75,6 +89,12 @@ export const style = StyleSheet.create({
         marginBottom: 20,
         color: themes.colors.secundary,
         marginLeft: 15
+    },
+    petImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginRight: 12,
     },
     petCard: {
         backgroundColor: themes.colors.lightGray,
@@ -93,6 +113,8 @@ export const style = StyleSheet.create({
         shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.3,
         shadowRadius: 10,
+        flexDirection: "row",
+        alignItems: "center",
     },
     petInfo: {
         marginBottom: 10,

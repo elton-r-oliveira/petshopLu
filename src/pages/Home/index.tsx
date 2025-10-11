@@ -1,5 +1,5 @@
 // Home.tsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { style } from "./styles";
 import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
@@ -8,13 +8,47 @@ import TopBar from "../../components/topBar";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { BottomTabParamList } from '../../routes/types'; // caminho do seu types.ts
 
+import { auth } from "../../firebaseConfig";
+import { onAuthStateChanged, User } from "firebase/auth"; // ✅ Adicionado onAuthStateChanged
+
+
 export default function Home() {
   const navigation = useNavigation<NavigationProp<BottomTabParamList>>();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoadingAuth(false);
+      // Se o usuário sair, você pode redirecionar para a tela de Login aqui
+      // if (!user) {
+      //     navigation.replace('Login'); 
+      // }
+    });
+
+    // Limpa o observador ao desmontar o componente
+    return () => unsubscribe();
+  }, []);
+
+  // Pega o nome, ou usa um texto de fallback se não estiver logado
+  const userName = currentUser?.displayName || "Usuário";
+
+  // Opcional: mostrar tela de loading enquanto checa a autenticação
+  if (loadingAuth) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Carregando...</Text>
+      </View>
+    );
+  }
   return (
     <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
       {/* TopBar */}
-      <TopBar onLogoPress={() => console.log("Logo clicada")} />
+      <TopBar
+        userName={userName}
+        onLogoPress={() => console.log("Logo clicada")}
+      />
 
       {/* Seção de ações rápidas */}
       <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>

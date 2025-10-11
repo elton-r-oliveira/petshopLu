@@ -50,6 +50,11 @@ export default function Cadastro({ navigation }: Props) {
         password
       );
 
+      // ✅ NOVO PASSO: Salvar o Nome do usuário no perfil do Firebase
+      await updateProfile(userCredential.user, {
+        displayName: nome // Salva a variável de estado 'nome' como displayName
+      });
+
       Alert.alert("Conta criada com sucesso!");
       navigation.navigate("Login");
     } catch (error: any) {
