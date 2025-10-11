@@ -45,7 +45,7 @@ export const style = StyleSheet.create({
     fontSize: 12,
     color: themes.colors.bgScreen,
   },
-    overlay: {
+  overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
   },
@@ -83,4 +83,47 @@ export const style = StyleSheet.create({
     fontSize: 12,
   },
 
+  // ESTILOS DO MODAL DA LOGO
+  userModalContent: {
+    width: "90%",
+    backgroundColor: themes.colors.corTexto,
+    padding: 20,
+    borderRadius: 10,
+    alignSelf: "center",
+    marginTop: 50,
+    position: 'absolute',
+  },
+  titleModal: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: themes.colors.bgScreen,
+    borderBottomWidth: 1,
+    borderBottomColor: themes.colors.corTexto,
+    paddingBottom: 10,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: themes.colors.corTexto,
+  },
+  optionText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: themes.colors.bgScreen,
+  },
+  logoutItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginTop: 10,
+  },
+  logoutText: {
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'red',
+  },
 });
