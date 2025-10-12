@@ -7,7 +7,7 @@ import { MaterialIcons, Octicons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { Input } from "../../components/input";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../routes/types";
+import { RootStackParamList } from "../../types";
 
 // Firebase
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";

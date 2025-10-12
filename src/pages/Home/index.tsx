@@ -6,7 +6,7 @@ import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { BottomTabParamList } from '../../routes/types';
+import { BottomTabParamList } from '../../types';
 
 import { auth } from "../../firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
