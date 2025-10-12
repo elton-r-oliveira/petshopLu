@@ -1,60 +1,38 @@
-import React, { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-    ScrollView,
-} from "react-native";
+// pages/Agendar/index.tsx
+import React from "react";
+import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import { style } from "./styles";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
-import TopBar from "../../components/topBar";
 
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { BottomTabParamList } from '../../types';
-
-import { auth } from "../../firebaseConfig";
-import { onAuthStateChanged, User } from "firebase/auth";
-
-export default function Pets() {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setCurrentUser(user);
-            // Se o usuário sair, você pode redirecionar para a tela de Login aqui
-            // if (!user) {
-            //     navigation.replace('Login'); 
-            // }
-        });
-
-        // Limpa o observador ao desmontar o componente
-        return () => unsubscribe();
-    }, []);
-
-    // Pega o nome, ou usa um texto de fallback se não estiver logado
-    const userName = currentUser?.displayName || "Usuário";
-
+export default function Agendar() {
     return (
         <View style={{ flex: 1 }}>
-
-            {/* Conteúdo com Scroll */}
             <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
+                <Text style={style.sectionTitle}>Agendar Serviço</Text>
 
-                {/* TopBar */}
-                <TopBar
-                    userName={userName}
-                    onLogoPress={() => console.log("Logo clicada")}
-                />
+                <View style={style.petCard}>
+                    <View style={style.petLeft}>
+                        <Image
+                            source={require("../../assets/alfred.png")}
+                            style={style.petImage}
+                        />
+                        <View style={style.petInfo}>
+                            <Text style={style.petName}>Alfred</Text>
+                            <Text style={style.petRace}>Beagle - 4 anos</Text>
+                        </View>
+                    </View>
 
-                <Text style={style.sectionTitle}>Tela de Pets</Text>
+                    <View style={style.actions}>
+                        <TouchableOpacity style={[style.iconButton, { backgroundColor: themes.colors.bgScreen }]}>
+                            <MaterialIcons name="edit" size={20} color="#fff" />
+                        </TouchableOpacity>
 
-                {/* Ações rápidas */}
-                <View style={style.quickActions}>
-
+                        <TouchableOpacity style={[style.iconButton, { backgroundColor: "red" }]}>
+                            <MaterialIcons name="delete" size={20} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-
             </ScrollView>
         </View>
     );

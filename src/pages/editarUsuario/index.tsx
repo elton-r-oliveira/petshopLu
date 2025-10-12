@@ -12,7 +12,7 @@ import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
 
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { BottomTabParamList } from '../../types';
+import { BottomTabParamList } from '../../@types/types';
 
 import { auth } from "../../firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";

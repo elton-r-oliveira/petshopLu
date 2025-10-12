@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./pages/login";
 import Cadastro from "./pages/cadastro";
 import editarUsuario from "./pages/editarUsuario";
-import { RootStackParamList } from "./types";
+import { RootStackParamList } from "./@types/types";
 import BottomBar from "./components/bottomBar";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

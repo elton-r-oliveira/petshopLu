@@ -77,10 +77,9 @@ export default function TopBar({
         }).start(() => setNotificationModalVisible(false));
     };
 
-    // ✅ Nova função para ir para a tela de edição
     const handleEditInfo = () => {
         closeUserModal();
-        navigation.navigate("editarUsuario"); // nome da tela de edição
+        navigation.navigate("editarUsuario"); 
     };
 
     return (
@@ -135,7 +134,6 @@ export default function TopBar({
                     >
                         <Text style={style.titleModal}>Opções de Conta</Text>
 
-                        {/* ✅ Única opção de edição */}
                         <TouchableOpacity style={style.optionItem} onPress={handleEditInfo}>
                             <MaterialIcons name="edit" size={24} color={themes.colors.bgScreen} />
                             <Text style={style.optionText}>Editar informações</Text>
