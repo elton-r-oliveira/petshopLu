@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
     View,
     Text,
@@ -6,11 +6,12 @@ import {
     Image,
     Modal,
     Animated,
-    Easing
+    Easing,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { style } from "./styles";
 import { themes } from "../../global/themes";
+import { useNavigation } from "@react-navigation/native"; // ✅ Import necessário
 
 interface TopBarProps {
     userName: string;
@@ -25,21 +26,19 @@ export default function TopBar({
     location = "São Bernardo do Campo, SP",
     onLogoPress,
 }: TopBarProps) {
+    const navigation = useNavigation<any>(); // ✅ Tipagem genérica
     const [notificationModalVisible, setNotificationModalVisible] = useState(false);
     const [userModalVisible, setUserModalVisible] = useState(false);
     const [hasNotification] = useState(true);
 
-    // animações separadas para cada modal
     const slideAnimUser = useRef(new Animated.Value(-300)).current;
     const slideAnimNotif = useRef(new Animated.Value(-300)).current;
 
-    // Função de logout (ainda simulada)
     const handleLogout = () => {
         console.log("Usuário deslogado (Layout)");
         closeUserModal();
     };
 
-    // === Animações de entrada e saída ===
     const openUserModal = () => {
         setUserModalVisible(true);
         Animated.timing(slideAnimUser, {
@@ -76,6 +75,12 @@ export default function TopBar({
             easing: Easing.in(Easing.ease),
             useNativeDriver: true,
         }).start(() => setNotificationModalVisible(false));
+    };
+
+    // ✅ Nova função para ir para a tela de edição
+    const handleEditInfo = () => {
+        closeUserModal();
+        navigation.navigate("editarUsuario"); // nome da tela de edição
     };
 
     return (
@@ -130,19 +135,10 @@ export default function TopBar({
                     >
                         <Text style={style.titleModal}>Opções de Conta</Text>
 
-                        <TouchableOpacity style={style.optionItem} onPress={() => { console.log("Editar Usuário"); closeUserModal(); }}>
-                            <MaterialIcons name="person-outline" size={24} color={themes.colors.bgScreen} />
-                            <Text style={style.optionText}>Editar nome de usuário</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={style.optionItem} onPress={() => { console.log("Editar Pet"); closeUserModal(); }}>
-                            <MaterialIcons name="pets" size={24} color={themes.colors.bgScreen} />
-                            <Text style={style.optionText}>Editar nome do pet</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={style.optionItem} onPress={() => { console.log("Editar Endereço"); closeUserModal(); }}>
-                            <MaterialIcons name="location-on" size={24} color={themes.colors.bgScreen} />
-                            <Text style={style.optionText}>Editar endereço</Text>
+                        {/* ✅ Única opção de edição */}
+                        <TouchableOpacity style={style.optionItem} onPress={handleEditInfo}>
+                            <MaterialIcons name="edit" size={24} color={themes.colors.bgScreen} />
+                            <Text style={style.optionText}>Editar informações</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={style.logoutItem} onPress={handleLogout}>

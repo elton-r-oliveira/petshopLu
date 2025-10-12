@@ -3,8 +3,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "../pages/login";
 import Cadastro from "../pages/cadastro";
+import editarUsuario from "../pages/editarUsuario";
 import { RootStackParamList } from "../routes/types";
-import BottomBar from "../components/bottomBar"
+import BottomBar from "../components/bottomBar";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,24 +20,27 @@ export default function Routes() {
         <Stack.Screen
           name="Login"
           component={Login}
-          options={{
-            animation: "slide_from_left",
-          }}
+          options={{ animation: "slide_from_left" }}
         />
 
         <Stack.Screen
           name="Cadastro"
           component={Cadastro}
-          options={{
-            animation: "slide_from_right",
-          }}
+          options={{ animation: "slide_from_right" }}
         />
 
         <Stack.Screen
           name="Home"
           component={BottomBar}
+          options={{ animation: "fade" }}
+        />
+
+        {/* ✅ Tela de edição do usuário */}
+        <Stack.Screen
+          name="editarUsuario"
+          component={editarUsuario}
           options={{
-            animation: "fade",
+            animation: "slide_from_bottom",
           }}
         />
       </Stack.Navigator>

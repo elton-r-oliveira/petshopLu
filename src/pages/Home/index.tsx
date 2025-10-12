@@ -6,21 +6,19 @@ import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { BottomTabParamList } from '../../routes/types'; // caminho do seu types.ts
+import { BottomTabParamList } from '../../routes/types';
 
 import { auth } from "../../firebaseConfig";
-import { onAuthStateChanged, User } from "firebase/auth"; // ✅ Adicionado onAuthStateChanged
-
+import { onAuthStateChanged, User } from "firebase/auth";
 
 export default function Home() {
   const navigation = useNavigation<NavigationProp<BottomTabParamList>>();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      setLoadingAuth(false);
+      
       // Se o usuário sair, você pode redirecionar para a tela de Login aqui
       // if (!user) {
       //     navigation.replace('Login'); 
@@ -34,14 +32,6 @@ export default function Home() {
   // Pega o nome, ou usa um texto de fallback se não estiver logado
   const userName = currentUser?.displayName || "Usuário";
 
-  // Opcional: mostrar tela de loading enquanto checa a autenticação
-  if (loadingAuth) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Carregando...</Text>
-      </View>
-    );
-  }
   return (
     <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
       {/* TopBar */}

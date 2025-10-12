@@ -12,18 +12,18 @@ import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
 
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { BottomTabParamList } from '../../routes/types'; 
+import { BottomTabParamList } from '../../routes/types';
 
 import { auth } from "../../firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
 
-export default function Pets() {
+export default function EditarUsuario() {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
-            
+
             // Se o usuário sair, você pode redirecionar para a tela de Login aqui
             // if (!user) {
             //     navigation.replace('Login'); 
@@ -48,8 +48,8 @@ export default function Pets() {
                     userName={userName}
                     onLogoPress={() => console.log("Logo clicada")}
                 />
-
-                <Text style={style.sectionTitle}>Tela de Histórico</Text>
+                
+                <Text style={style.sectionTitle}>Tela de Edição de Usuário</Text>
 
                 {/* Ações rápidas */}
                 <View style={style.quickActions}>
