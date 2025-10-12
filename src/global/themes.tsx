@@ -21,7 +21,7 @@ export const themes = {
     },
     BottomBar: {
         cor_fundo: '#FFFDF2',
-        cor_icones: '#030303ff',
+        cor_icones: '#7A5947',
         cor_borda: '#901812'
     },
     TopBar: {

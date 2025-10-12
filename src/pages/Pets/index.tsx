@@ -9,7 +9,7 @@ export default function Agendar() {
     return (
         <View style={{ flex: 1 }}>
             <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
-                <Text style={style.sectionTitle}>Agendar Serviço</Text>
+                <Text style={style.sectionTitle}>Meus Pets</Text>
 
                 <View style={style.petCard}>
                     <View style={style.petLeft}>
@@ -19,7 +19,8 @@ export default function Agendar() {
                         />
                         <View style={style.petInfo}>
                             <Text style={style.petName}>Alfred</Text>
-                            <Text style={style.petRace}>Beagle - 4 anos</Text>
+                            <Text style={style.petRace}>Beagle</Text>
+                            <Text style={style.petRace}>4 anos • 20Kg</Text>
                         </View>
                     </View>
 

@@ -4,7 +4,7 @@ import { themes } from "../../global/themes";
 export const style = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: themes.colors.lightGray,
+        backgroundColor: themes.telaHome.fundo,
     },
     header: {
         flexDirection: "row",

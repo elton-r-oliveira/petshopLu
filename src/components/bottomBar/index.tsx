@@ -13,7 +13,7 @@ import Perfil from "../../pages/Perfil";
 const Tab = createBottomTabNavigator();
 
 // cor do icones
-const corIcones = themes.BottomBar.cor_icones;
+const corIcones = themes.BottomBar.cor_icones; 
 
 export default function BottomBar() {
     return (
