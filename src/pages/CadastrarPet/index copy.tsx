@@ -77,6 +77,7 @@ export default function CadastrarPet({ route, navigation }: any) {
             age: parseInt(age),
             weight: parseFloat(weight.replace(',', '.')),
             animalType,
+            unidade: unidadeSelecionada?.nome || null,
             createdAt: serverTimestamp(),
         };
 
@@ -247,22 +248,6 @@ export default function CadastrarPet({ route, navigation }: any) {
                         </View>
                     </View>
 
-                    {/* Botão */}
-                    <TouchableOpacity
-                        style={style.button}
-                        onPress={isEditing ? handleUpdatePet : handleRegisterPet}
-                    >
-                        <Text style={style.buttonText}>
-                            {isEditing ? "Salvar Alterações" : "Cadastrar Pet"}
-                        </Text>
-                        <MaterialIcons
-                            name={isEditing ? "save" : "pets"}
-                            size={24}
-                            color="#fff"
-                            style={{ marginLeft: 10 }}
-                        />
-                    </TouchableOpacity>
-
                     {/* 🔹 Seleção de Unidade */}
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Selecione a Unidade</Text>
@@ -347,6 +332,23 @@ export default function CadastrarPet({ route, navigation }: any) {
                                     </View>
                                 </TouchableOpacity>
                             ))}
+
+                            {/* Botão */}
+                            <TouchableOpacity
+                                style={style.button}
+                                onPress={isEditing ? handleUpdatePet : handleRegisterPet}
+                            >
+                                <Text style={style.buttonText}>
+                                    {isEditing ? "Salvar Alterações" : "Cadastrar Pet"}
+                                </Text>
+                                <MaterialIcons
+                                    name={isEditing ? "save" : "pets"}
+                                    size={24}
+                                    color="#fff"
+                                    style={{ marginLeft: 10 }}
+                                />
+                            </TouchableOpacity>
+                            
                         </ScrollView>
                     </View>
 

@@ -1,5 +1,3 @@
-// pages/Pets/index.tsx
-
 import React, { useState, useEffect } from "react";
 import {
     View,
@@ -9,13 +7,14 @@ import {
     Image,
     ActivityIndicator,
     Alert,
+    FlatList,
 } from "react-native";
 import { style } from "./styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
-// 🔹 Firebase
-import { db, auth, } from "../../firebaseConfig";
+
+import { db, auth } from "../../firebaseConfig";
 import {
     collection,
     query,
@@ -25,7 +24,6 @@ import {
     DocumentData,
     doc,
     deleteDoc,
-    updateDoc,
 } from "firebase/firestore";
 
 // 🔹 Interface do Pet
@@ -35,24 +33,23 @@ interface Pet {
     breed: string;
     age: number;
     weight: number;
-    animalType: string; // tipo do animal (ex: "dog", "cat", "hamster", "turtle")
+    animalType: string;
 }
 
-// 🔹 Componente principal
 export default function Pets({ navigation }: any) {
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isGrid, setIsGrid] = useState(false);
 
-    // Função de navegação
+    // Navegar para o cadastro
     const navigateToRegisterPet = () => {
         navigation.navigate("CadastrarPet");
     };
 
-    // Função que busca os pets cadastrados do usuário logado
+    // Buscar pets do usuário logado
     const fetchPets = async () => {
         setLoading(true);
         const userId = auth.currentUser?.uid;
-
         if (!userId) {
             setLoading(false);
             return;
@@ -71,7 +68,7 @@ export default function Pets({ navigation }: any) {
                     breed: data.breed || "",
                     age: data.age || 0,
                     weight: data.weight || 0,
-                    animalType: data.animalType || "dog", // padrão caso não tenha o campo
+                    animalType: data.animalType || "dog",
                 });
             });
 
@@ -82,7 +79,8 @@ export default function Pets({ navigation }: any) {
             setLoading(false);
         }
     };
-    // 🔹 Excluir Pet
+
+    // Excluir pet
     const handleDeletePet = async (petId: string, petName: string) => {
         Alert.alert(
             "Excluir Pet",
@@ -96,7 +94,7 @@ export default function Pets({ navigation }: any) {
                         try {
                             await deleteDoc(doc(db, "cadastrarPet", petId));
                             Alert.alert("Sucesso", `${petName} foi removido.`);
-                            fetchPets(); // atualiza a lista
+                            fetchPets();
                         } catch (error) {
                             console.error("Erro ao excluir pet:", error);
                             Alert.alert("Erro", "Não foi possível excluir o pet.");
@@ -107,11 +105,12 @@ export default function Pets({ navigation }: any) {
         );
     };
 
+    // Editar pet
     const handleEditPet = (pet: Pet) => {
-        navigation.navigate("CadastrarPet", { pet }); // envia o pet como parâmetro
+        navigation.navigate("CadastrarPet", { pet });
     };
 
-    // Atualiza a lista sempre que a tela for focada
+    // Atualiza ao focar
     useEffect(() => {
         const unsubscribe = navigation.addListener("focus", () => {
             fetchPets();
@@ -119,7 +118,7 @@ export default function Pets({ navigation }: any) {
         return unsubscribe;
     }, [navigation]);
 
-    // 🔹 Função auxiliar: retorna a imagem correta com base no tipo de animal
+    // Retorna imagem conforme o tipo
     const getPetImage = (type: string) => {
         switch (type.toLowerCase()) {
             case "dog":
@@ -140,65 +139,189 @@ export default function Pets({ navigation }: any) {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: themes.colors.lightGray }}>
-            <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
-                {/* Cabeçalho com botão de adicionar */}
-                <View style={style.headerWithButton}>
-                    <Text style={style.sectionTitle}>Meus Pets</Text>
+        <View style={style.container}>
+            <View style={style.headerWithButton}>
+                <Text style={style.sectionTitle}>Meus Pets</Text>
+
+                {/* Alternância entre lista e grade */}
+                <View
+                    style={{
+                        flexDirection: "row",
+                        backgroundColor: "#e0e0e0",
+                        borderRadius: 45,
+                        overflow: "hidden",
+                        alignSelf: "flex-start",
+                        marginTop: 45,
+                        marginLeft: 80
+                    }}
+                >
+                    {/* Ícone de lista */}
+                    <TouchableOpacity
+                        style={{
+                            paddingHorizontal: 14,
+                            paddingVertical: 8,
+                            backgroundColor: !isGrid ? themes.colors.secundary : "transparent",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderTopLeftRadius: 12,
+                            borderBottomLeftRadius: 12,
+                        }}
+                        onPress={() => setIsGrid(false)}
+                    >
+                        <MaterialIcons
+                            name="view-list"
+                            size={22}
+                            color={!isGrid ? "#fff" : "#555"}
+                        />
+                    </TouchableOpacity>
+
+                    {/* Ícone de grade */}
+                    <TouchableOpacity
+                        style={{
+                            paddingHorizontal: 14,
+                            paddingVertical: 8,
+                            backgroundColor: isGrid ? themes.colors.secundary : "transparent",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderTopRightRadius: 12,
+                            borderBottomRightRadius: 12,
+                        }}
+                        onPress={() => setIsGrid(true)}
+                    >
+                        <MaterialIcons
+                            name="grid-view"
+                            size={22}
+                            color={isGrid ? "#fff" : "#555"}
+                        />
+                    </TouchableOpacity>
+                </View>
+                <View>
+                    {/* Botão adicionar */}
                     <TouchableOpacity style={style.addButton} onPress={navigateToRegisterPet}>
                         <MaterialIcons name="add" size={24} color="#fff" />
                     </TouchableOpacity>
                 </View>
+            </View>
 
-                {/* Estado de carregamento */}
-                {loading && (
-                    <ActivityIndicator
-                        size="large"
-                        color={themes.colors.secundary}
-                        style={{ marginTop: 20 }}
-                    />
-                )}
+            {loading ? (
+                <ActivityIndicator
+                    size="large"
+                    color={themes.colors.secundary}
+                    style={{ marginTop: 20 }}
+                />
+            ) : pets.length === 0 ? (
+                <Text style={style.emptyStateText}>
+                    Você não tem pets cadastrados. Clique em "+" para adicionar um!
+                </Text>
+            ) : isGrid ? (
+                // 🔹 Visualização em Grade
+                <FlatList
+                    data={pets}
+                    key={"grid"}
+                    numColumns={2}
+                    keyExtractor={(item) => item.id}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{
+                        padding: 10,
+                    }}
+                    renderItem={({ item }) => (
+                        <View
+                            style={{
+                                flex: 1,
+                                margin: 8,
+                                backgroundColor: "#fff",
+                                borderRadius: 12,
+                                alignItems: "center",
+                                padding: 15,
+                                elevation: 3,
+                            }}
+                        >
+                            <Image
+                                source={getPetImage(item.animalType)}
+                                style={{ width: 80, height: 80, marginBottom: 10 }}
+                            />
+                            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
+                            <Text style={{ color: "#777" }}>{item.breed}</Text>
+                            <Text style={{ color: "#777", fontSize: 12 }}>
+                                {item.age} anos • {item.weight}Kg
+                            </Text>
 
-                {/* Caso não existam pets */}
-                {!loading && pets.length === 0 && (
-                    <Text style={style.emptyStateText}>
-                        Você não tem pets cadastrados. Clique em "+" para adicionar um!
-                    </Text>
-                )}
-
-                {/* Lista de Pets */}
-                {pets.map((pet) => (
-                    <View key={pet.id} style={style.petCard}>
-                        <View style={style.petLeft}>
-                            <Image source={getPetImage(pet.animalType)} style={style.petImage} />
-                            <View style={style.petInfo}>
-                                <Text style={style.petName}>{pet.name}</Text>
-                                <Text style={style.petRace}>{pet.breed}</Text>
-                                <Text style={style.petRace}>
-                                    {pet.age} anos • {pet.weight}Kg
-                                </Text>
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    marginTop: 10,
+                                    gap: 8,
+                                }}
+                            >
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: themes.colors.bgScreen,
+                                        padding: 6,
+                                        borderRadius: 8,
+                                    }}
+                                    onPress={() => handleEditPet(item)}
+                                >
+                                    <MaterialIcons name="edit" size={18} color="#fff" />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: "#c62828",
+                                        padding: 6,
+                                        borderRadius: 8,
+                                    }}
+                                    onPress={() => handleDeletePet(item.id, item.name)}
+                                >
+                                    <MaterialIcons name="delete" size={18} color="#fff" />
+                                </TouchableOpacity>
                             </View>
                         </View>
+                    )}
+                />
+            ) : (
+                // 🔹 Visualização em Lista (já existente)
+                <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
+                    {pets.map((pet) => (
+                        <View key={pet.id} style={style.petCard}>
+                            <View style={style.petLeft}>
+                                <Image
+                                    source={getPetImage(pet.animalType)}
+                                    style={style.petImage}
+                                />
+                                <View style={style.petInfo}>
+                                    <Text style={style.petName}>{pet.name}</Text>
+                                    <Text style={style.petRace}>{pet.breed}</Text>
+                                    <Text style={style.petRace}>
+                                        {pet.age} anos • {pet.weight}Kg
+                                    </Text>
+                                </View>
+                            </View>
 
-                        <View style={style.actions}>
-                            <TouchableOpacity
-                                style={[style.iconButton, { backgroundColor: themes.colors.bgScreen }]}
-                                onPress={() => handleEditPet(pet)}
-                            >
-                                <MaterialIcons name="edit" size={20} color="#fff" />
-                            </TouchableOpacity>
+                            <View style={style.actions}>
+                                <TouchableOpacity
+                                    style={[
+                                        style.iconButton,
+                                        { backgroundColor: themes.colors.bgScreen },
+                                    ]}
+                                    onPress={() => handleEditPet(pet)}
+                                >
+                                    <MaterialIcons name="edit" size={20} color="#fff" />
+                                </TouchableOpacity>
 
-                            <TouchableOpacity
-                                style={[style.iconButton, { backgroundColor: "#c62828" }]}
-                                onPress={() => handleDeletePet(pet.id, pet.name)}
-                            >
-                                <MaterialIcons name="delete" size={20} color="#fff" />
-                            </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[
+                                        style.iconButton,
+                                        { backgroundColor: "#c62828" },
+                                    ]}
+                                    onPress={() => handleDeletePet(pet.id, pet.name)}
+                                >
+                                    <MaterialIcons name="delete" size={20} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
-
-                    </View>
-                ))}
-            </ScrollView>
+                    ))}
+                </ScrollView>
+            )}
         </View>
     );
 }

@@ -73,6 +73,7 @@ export const style = StyleSheet.create({
         borderRadius: 18,
         justifyContent: "center",
         alignItems: "center",
+        
     },
     headerWithButton: { // NOVO ESTILO
         flexDirection: 'row',

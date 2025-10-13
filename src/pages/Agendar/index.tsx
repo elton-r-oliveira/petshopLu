@@ -23,6 +23,7 @@ import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'fire
 
 // 🔹 Componentes de seleção de data/hora (Assumindo que você instalou)
 import DateTimePicker from '@react-native-community/datetimepicker';
+import MapView, { Marker } from "react-native-maps";
 
 // 🔹 Lista de serviços fixos
 const SERVICOS = [
@@ -59,6 +60,29 @@ export default function Agendar() {
     const [petSelecionado, setPetSelecionado] = useState<any>(null);
     const [showPetList, setShowPetList] = useState(false);
     const [showPetModal, setShowPetModal] = useState(false);
+
+    const [unidadeSelecionada, setUnidadeSelecionada] = useState<any>(null);
+
+    const unidades = [
+        {
+            nome: "Petshop Lu - Santo André",
+            endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
+            lat: -23.706217859567335,
+            lng: -46.50084163068886,
+        },
+        {
+            nome: "Petshop Lu - São Bernardo",
+            endereco: "Av. Ibirapuera, 1000 - Moema",
+            lat: -23.601231,
+            lng: -46.661432,
+        },
+        {
+            nome: "Petshop Lu - São Caetano",
+            endereco: "Rua Domingos de Morais, 1500 - Vila Mariana",
+            lat: -23.589432,
+            lng: -46.636232,
+        },
+    ];
 
     const handleSelectService = (selectedService: string) => {
         setServico(selectedService);
@@ -112,12 +136,13 @@ export default function Agendar() {
             await addDoc(collection(db, 'agendamentos'), {
                 userId: userId,
                 service: servico,
-                // 🔹 ALTERAÇÃO CRUCIAL: Armazena o objeto Date. O Firebase/Firestore
-                // irá converter isso automaticamente para o tipo 'timestamp'.
                 dataHoraAgendamento: dataAgendamento,
-
+                unidade: unidadeSelecionada?.nome || null,
+                enderecoUnidade: unidadeSelecionada?.endereco || null,
+                petId: petSelecionado?.id || null,
+                petNome: petSelecionado?.name || null,
                 status: 'Pendente',
-                agendadoEm: serverTimestamp() // Data de criação do registro
+                agendadoEm: serverTimestamp(),
             });
 
             Alert.alert('Sucesso', 'Seu agendamento foi realizado!');
@@ -427,7 +452,93 @@ export default function Agendar() {
                             </View>
                         </View>
                     </Modal>
+                    <View style={style.inputGroup}>
+                        <Text style={style.inputLabel}>Selecione a Unidade</Text>
 
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ flexDirection: "row", gap: 16, paddingVertical: 10 }}
+                        >
+                            {unidades.map((unidade, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    activeOpacity={0.9}
+                                    onPress={() => setUnidadeSelecionada(unidade)}
+                                    style={{
+                                        width: 250,
+                                        backgroundColor:
+                                            unidadeSelecionada?.nome === unidade.nome
+                                                ? themes.colors.secundary
+                                                : "#fff",
+                                        borderRadius: 16,
+                                        overflow: "hidden",
+                                        borderWidth: 2,
+                                        borderColor:
+                                            unidadeSelecionada?.nome === unidade.nome
+                                                ? themes.colors.corTexto
+                                                : "#ddd",
+                                        shadowColor: "#000",
+                                        shadowOpacity: 0.15,
+                                        shadowRadius: 4,
+                                        elevation: 3,
+                                    }}
+                                >
+                                    {/* Nome da Unidade */}
+                                    <View style={{ padding: 10 }}>
+                                        <Text
+                                            style={{
+                                                fontWeight: "700",
+                                                fontSize: 16,
+                                                color:
+                                                    unidadeSelecionada?.nome === unidade.nome
+                                                        ? "#fff"
+                                                        : "#333",
+                                            }}
+                                        >
+                                            {unidade.nome}
+                                        </Text>
+                                        <Text
+                                            style={{
+                                                fontSize: 13,
+                                                color:
+                                                    unidadeSelecionada?.nome === unidade.nome
+                                                        ? "#f1f1f1"
+                                                        : "#777",
+                                            }}
+                                        >
+                                            {unidade.endereco}
+                                        </Text>
+                                    </View>
+
+                                    {/* Mapa Miniatura */}
+                                    <View style={{ height: 140 }}>
+                                        <MapView
+                                            style={{ flex: 1 }}
+                                            initialRegion={{
+                                                latitude: unidade.lat,
+                                                longitude: unidade.lng,
+                                                latitudeDelta: 0.01,
+                                                longitudeDelta: 0.01,
+                                            }}
+                                            scrollEnabled={false}
+                                            zoomEnabled={false}
+                                        >
+                                            <Marker
+                                                coordinate={{
+                                                    latitude: unidade.lat,
+                                                    longitude: unidade.lng,
+                                                }}
+                                                title={unidade.nome}
+                                            />
+                                        </MapView>
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
+
+                    </View>
                     {/* Botão de Agendar */}
                     <TouchableOpacity style={style.button} onPress={handleAgendar}>
                         <Text style={style.buttonText}>Confirmar Agendamento</Text>

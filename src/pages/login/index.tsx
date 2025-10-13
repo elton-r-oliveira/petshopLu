@@ -19,7 +19,7 @@ import { RootStackParamList } from "../../@types/types";
 
 // 🔹 Import Firebase
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebaseConfig"; // Ajuste o caminho se precisar
+import { auth } from "../../firebaseConfig";
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
