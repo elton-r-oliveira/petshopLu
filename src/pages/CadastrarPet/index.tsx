@@ -15,7 +15,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { db, auth } from '../../firebaseConfig';
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
-import MapView, { Marker } from "react-native-maps";
 // 🔹 Lista de tipos de animais com imagens
 const animalTypes = [
     { label: "Cão", value: "dog", image: require("../../assets/pets/dog.png") },
@@ -35,28 +34,6 @@ export default function CadastrarPet({ route, navigation }: any) {
     const [age, setAge] = useState(existingPet?.age?.toString() || '');
     const [weight, setWeight] = useState(existingPet?.weight?.toString() || '');
     const [animalType, setAnimalType] = useState(existingPet?.animalType || 'dog');
-    const [unidadeSelecionada, setUnidadeSelecionada] = useState<any>(null);
-
-    const unidades = [
-        {
-            nome: "Pet Center Central",
-            endereco: "Rua das Flores, 123 - Centro",
-            lat: -23.561684,
-            lng: -46.625378,
-        },
-        {
-            nome: "Pet Club Moema",
-            endereco: "Av. Ibirapuera, 1000 - Moema",
-            lat: -23.601231,
-            lng: -46.661432,
-        },
-        {
-            nome: "PetAmor Vila Mariana",
-            endereco: "Rua Domingos de Morais, 1500 - Vila Mariana",
-            lat: -23.589432,
-            lng: -46.636232,
-        },
-    ];
 
     const handleRegisterPet = async () => {
         if (!name || !breed || !age || !weight) {
@@ -262,93 +239,6 @@ export default function CadastrarPet({ route, navigation }: any) {
                             style={{ marginLeft: 10 }}
                         />
                     </TouchableOpacity>
-
-                    {/* 🔹 Seleção de Unidade */}
-                    <View style={style.inputGroup}>
-                        <Text style={style.inputLabel}>Selecione a Unidade</Text>
-
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ flexDirection: "row", gap: 16, paddingVertical: 10 }}
-                        >
-                            {unidades.map((unidade, index) => (
-                                <TouchableOpacity
-                                    key={index}
-                                    activeOpacity={0.9}
-                                    onPress={() => setUnidadeSelecionada(unidade)}
-                                    style={{
-                                        width: 250,
-                                        backgroundColor:
-                                            unidadeSelecionada?.nome === unidade.nome
-                                                ? themes.colors.secundary
-                                                : "#fff",
-                                        borderRadius: 16,
-                                        overflow: "hidden",
-                                        borderWidth: 2,
-                                        borderColor:
-                                            unidadeSelecionada?.nome === unidade.nome
-                                                ? themes.colors.corTexto
-                                                : "#ddd",
-                                        shadowColor: "#000",
-                                        shadowOpacity: 0.15,
-                                        shadowRadius: 4,
-                                        elevation: 3,
-                                    }}
-                                >
-                                    {/* Nome da Unidade */}
-                                    <View style={{ padding: 10 }}>
-                                        <Text
-                                            style={{
-                                                fontWeight: "700",
-                                                fontSize: 16,
-                                                color:
-                                                    unidadeSelecionada?.nome === unidade.nome
-                                                        ? "#fff"
-                                                        : "#333",
-                                            }}
-                                        >
-                                            {unidade.nome}
-                                        </Text>
-                                        <Text
-                                            style={{
-                                                fontSize: 13,
-                                                color:
-                                                    unidadeSelecionada?.nome === unidade.nome
-                                                        ? "#f1f1f1"
-                                                        : "#777",
-                                            }}
-                                        >
-                                            {unidade.endereco}
-                                        </Text>
-                                    </View>
-
-                                    {/* Mapa Miniatura */}
-                                    <View style={{ height: 140 }}>
-                                        <MapView
-                                            style={{ flex: 1 }}
-                                            initialRegion={{
-                                                latitude: unidade.lat,
-                                                longitude: unidade.lng,
-                                                latitudeDelta: 0.01,
-                                                longitudeDelta: 0.01,
-                                            }}
-                                            scrollEnabled={false}
-                                            zoomEnabled={false}
-                                        >
-                                            <Marker
-                                                coordinate={{
-                                                    latitude: unidade.lat,
-                                                    longitude: unidade.lng,
-                                                }}
-                                                title={unidade.nome}
-                                            />
-                                        </MapView>
-                                    </View>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
 
                 </View>
             </ScrollView>

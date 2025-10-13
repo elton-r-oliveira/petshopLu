@@ -67,8 +67,8 @@ export default function Agendar() {
         {
             nome: "Petshop Lu - Santo André",
             endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
-            lat: -23.706217859567335,
-            lng: -46.50084163068886,
+            lat: -23.706585,
+            lng: -46.500750,
         },
         {
             nome: "Petshop Lu - São Bernardo",
@@ -86,10 +86,10 @@ export default function Agendar() {
 
     const handleSelectService = (selectedService: string) => {
         setServico(selectedService);
-        setShowServiceList(false); // Fecha a lista após a seleção
+        setShowServiceList(false); 
     };
 
-    // 🔹 Função para lidar com a mudança no DatePicker
+    //  Função para lidar com a mudança no DatePicker
     const onChangeDate = (event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || dataAgendamento;
         setShowDatePicker(Platform.OS === 'ios'); // Fecha se for iOS
@@ -101,7 +101,7 @@ export default function Agendar() {
         }
     };
 
-    // 🔹 Função para lidar com a mudança no TimePicker
+    //  Função para lidar com a mudança no TimePicker
     const onChangeTime = (event: any, selectedTime?: Date) => {
         const currentTime = selectedTime || dataAgendamento;
         setShowTimePicker(Platform.OS === 'ios'); // Fecha se for iOS
@@ -117,7 +117,7 @@ export default function Agendar() {
     };
 
 
-    // 🔹 Função para agendar
+    //  Função para agendar
     const handleAgendar = async () => {
         // 🔹 Validação dos campos
         if (!servico) {
@@ -132,7 +132,7 @@ export default function Agendar() {
         }
 
         try {
-            // 🔹 Adiciona o documento na coleção 'agendamentos'
+            // Adiciona o documento na coleção 'agendamentos'
             await addDoc(collection(db, 'agendamentos'), {
                 userId: userId,
                 service: servico,
@@ -156,7 +156,7 @@ export default function Agendar() {
         }
     };
 
-    // 🔹 Busca os pets do usuário logado
+    // Busca os pets do usuário logado
     useEffect(() => {
         const userId = auth.currentUser?.uid;
         if (!userId) return;
@@ -179,7 +179,7 @@ export default function Agendar() {
         carregarPets();
     }, []);
 
-    // 🔹 Função para retornar a imagem do pet
+    //  Função para retornar a imagem do pet
     const getPetImage = (type: string) => {
         switch (type.toLowerCase()) {
             case "dog": return require("../../assets/pets/dog.png");
