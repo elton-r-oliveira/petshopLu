@@ -31,7 +31,7 @@ export const style = StyleSheet.create({
         flex: 1,
         // alignItems: "center",
         marginLeft: 10,
-        alignItems: 'flex-start' 
+        alignItems: 'flex-start'
     },
     hello: {
         fontSize: 14,
@@ -154,6 +154,43 @@ export const style = StyleSheet.create({
         fontSize: 12,
         color: "#333",
         marginTop: 2,
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: themes.colors.corTexto,
+        marginTop: 10,
+    },
+    input: {
+        backgroundColor: themes.colors.lightGray,
+        padding: 10,
+        borderRadius: 8,
+        fontSize: 16,
+    },
+    buttonEdit: {
+        backgroundColor: themes.colors.inputText,
+        padding: 14,
+        borderRadius: 8,
+        alignItems: "center",
+        marginBottom: 10,
+    },
+    buttonSave: {
+        backgroundColor: "#2ecc71",
+        padding: 14,
+        borderRadius: 8,
+        alignItems: "center",
+        marginBottom: 10,
+    },
+    buttonLogout: {
+        backgroundColor: "#e74c3c",
+        padding: 14,
+        borderRadius: 8,
+        alignItems: "center",
+    },
+    textButton: {
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 16,
     },
 
 });

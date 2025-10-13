@@ -5,6 +5,7 @@ export type RootStackParamList = {
   editarUsuario: undefined;
   MeusPets: undefined;
   CadastrarPet: undefined;
+  Perfil: undefined;
 };
 export type BottomTabParamList = {
   Home: undefined;

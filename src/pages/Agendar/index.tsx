@@ -7,25 +7,25 @@ import {
     TouchableOpacity,
     ScrollView,
     Alert,
-    Platform, // Importado para lidar com o DatePicker
+    Platform, 
     Image,
     Modal
 } from "react-native";
+
 // Removendo TextInput não usado para Data/Hora/Serviço
 import { style } from "./styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
-import TopBar from "../../components/topBar";
 
-// 🔹 Importações do Firebase
+//  Importações do Firebase
 import { db, auth } from '../../firebaseConfig';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
-// 🔹 Componentes de seleção de data/hora (Assumindo que você instalou)
+//  Componentes de seleção de data/hora (Assumindo que você instalou)
 import DateTimePicker from '@react-native-community/datetimepicker';
 import MapView, { Marker } from "react-native-maps";
 
-// 🔹 Lista de serviços fixos
+//  Lista de serviços fixos
 const SERVICOS = [
     'Banho e Tosa',
     'Somente Tosa',
@@ -34,7 +34,7 @@ const SERVICOS = [
     'Consulta Veterinária',
 ];
 
-// 🔹 Funções auxiliares para formatação
+//  Funções auxiliares para formatação
 const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR');
 };
@@ -58,7 +58,6 @@ export default function Agendar() {
     // 🔹 Novos estados para pets
     const [pets, setPets] = useState<any[]>([]);
     const [petSelecionado, setPetSelecionado] = useState<any>(null);
-    const [showPetList, setShowPetList] = useState(false);
     const [showPetModal, setShowPetModal] = useState(false);
 
     const [unidadeSelecionada, setUnidadeSelecionada] = useState<any>(null);
@@ -92,7 +91,7 @@ export default function Agendar() {
     //  Função para lidar com a mudança no DatePicker
     const onChangeDate = (event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || dataAgendamento;
-        setShowDatePicker(Platform.OS === 'ios'); // Fecha se for iOS
+        setShowDatePicker(Platform.OS === 'ios'); 
         setDataAgendamento(currentDate);
 
         // Se o usuário selecionou a data, abre o seletor de hora
@@ -104,7 +103,7 @@ export default function Agendar() {
     //  Função para lidar com a mudança no TimePicker
     const onChangeTime = (event: any, selectedTime?: Date) => {
         const currentTime = selectedTime || dataAgendamento;
-        setShowTimePicker(Platform.OS === 'ios'); // Fecha se for iOS
+        setShowTimePicker(Platform.OS === 'ios'); 
 
         // Mantém a data, mas atualiza a hora
         setDataAgendamento(new Date(
@@ -115,7 +114,6 @@ export default function Agendar() {
             currentTime.getMinutes()
         ));
     };
-
 
     //  Função para agendar
     const handleAgendar = async () => {

@@ -15,14 +15,14 @@ import { themes } from "../../global/themes";
 interface TopBarProps {
     userName: string;
     petName?: string;
-    location?: string;
+    location: string;
     onLogoPress?: () => void;
 }
 
 export default function TopBar({
     userName,
     petName = "Alfred",
-    location = "São Bernardo do Campo, SP",
+    location,
 }: TopBarProps) {
     const [notificationModalVisible, setNotificationModalVisible] = useState(false);
     const [hasNotification] = useState(true);

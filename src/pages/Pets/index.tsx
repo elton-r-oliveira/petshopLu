@@ -10,7 +10,7 @@ import {
     FlatList,
 } from "react-native";
 import { style } from "./styles";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Fontisto } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
 
@@ -188,13 +188,14 @@ export default function Pets({ navigation }: any) {
                         }}
                         onPress={() => setIsGrid(true)}
                     >
-                        <MaterialIcons
-                            name="grid-view"
-                            size={22}
+                        <Fontisto
+                            name="nav-icon-grid"
+                            size={15}
                             color={isGrid ? "#fff" : "#555"}
                         />
                     </TouchableOpacity>
                 </View>
+
                 <View>
                     {/* Botão adicionar */}
                     <TouchableOpacity style={style.addButton} onPress={navigateToRegisterPet}>
@@ -214,7 +215,7 @@ export default function Pets({ navigation }: any) {
                     Você não tem pets cadastrados. Clique em "+" para adicionar um!
                 </Text>
             ) : isGrid ? (
-                // 🔹 Visualização em Grade
+                //  Visualização em Grade
                 <FlatList
                     data={pets}
                     key={"grid"}
@@ -229,7 +230,7 @@ export default function Pets({ navigation }: any) {
                             style={{
                                 flex: 1,
                                 margin: 8,
-                                backgroundColor: "#fff",
+                                backgroundColor: themes.colors.lightGray,
                                 borderRadius: 12,
                                 alignItems: "center",
                                 padding: 15,
@@ -279,7 +280,7 @@ export default function Pets({ navigation }: any) {
                     )}
                 />
             ) : (
-                // 🔹 Visualização em Lista (já existente)
+                //  Visualização em Lista
                 <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
                     {pets.map((pet) => (
                         <View key={pet.id} style={style.petCard}>

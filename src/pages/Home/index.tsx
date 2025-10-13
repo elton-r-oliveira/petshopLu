@@ -8,38 +8,52 @@ import TopBar from "../../components/topBar";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { BottomTabParamList } from '../../@types/types';
 
-import { auth } from "../../firebaseConfig";
+import { auth, db } from "../../firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Home() {
   const navigation = useNavigation<NavigationProp<BottomTabParamList>>();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
+  // Estados para TopBar
+  const [topBarNome, setTopBarNome] = useState("");
+  const [topBarEndereco, setTopBarEndereco] = useState("");
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      
-      // Se o usuário sair, você pode redirecionar para a tela de Login aqui
-      // if (!user) {
-      //     navigation.replace('Login'); 
-      // }
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+
+        // Atualiza TopBar apenas quando o usuário estiver definido
+        setTopBarNome(user.displayName || "");
+
+        // Se você também estiver salvando endereço no Firestore, carregue aqui
+        try {
+          const docRef = doc(db, "usuarios", user.uid);
+          const snapshot = await getDoc(docRef);
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            setTopBarEndereco(data.endereco || "");
+          } else {
+            setTopBarEndereco("Endereço não informado");
+          }
+        } catch (error) {
+          console.error("Erro ao carregar endereço:", error);
+          setTopBarEndereco("Endereço não informado");
+        }
+      }
     });
 
-    // Limpa o observador ao desmontar o componente
     return () => unsubscribe();
-  }, []);
-
-  // Pega o nome, ou usa um texto de fallback se não estiver logado
-  const userName = currentUser?.displayName || "Usuário";
-
+  }, []);  
   return (
     <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
       {/* TopBar */}
       <TopBar
-        userName={userName}
-        onLogoPress={() => console.log("Logo clicada")}
+        userName={topBarNome || "Usuário"}
+        location={topBarEndereco || "Endereço não informado"}
       />
-
       {/* Seção de ações rápidas */}
       <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>
 

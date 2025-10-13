@@ -35,7 +35,7 @@ export default function Login({ navigation }: Props) {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
-    async function handleLogin() { // 🔹 Nome da função ajustado para maior clareza
+    async function handleLogin() { 
         try {
             setLoading(true);
 
@@ -44,7 +44,7 @@ export default function Login({ navigation }: Props) {
                 return Alert.alert("Atenção", "Informe o e-mail e a senha!");
             }
 
-            // 🔹 Função do Firebase para login
+            //  Função do Firebase para login
             await signInWithEmailAndPassword(auth, email, password);
 
             // Alert.alert("Sucesso", "Login realizado!");
@@ -53,7 +53,7 @@ export default function Login({ navigation }: Props) {
         } catch (error: any) {
             console.log("Erro no login:", error.message);
             
-            // 🔹 Tratamento de erros específicos do Firebase
+            //  Tratamento de erros específicos do Firebase
             let errorMessage = "Ocorreu um erro ao fazer login.";
             if (error.code === 'auth/invalid-email') {
                 errorMessage = "O e-mail informado é inválido.";
