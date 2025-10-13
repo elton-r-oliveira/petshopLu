@@ -54,30 +54,26 @@ export const style = StyleSheet.create({
         fontSize: 12,
         color: themes.colors.bgScreen,
     },
-    serviceDropdownContainer: { // NOVO
-        // Usamos position: 'relative' para que o dropdown se posicione
-        // em relação a este container
+    serviceDropdownContainer: {
         position: 'relative',
-        zIndex: 10, // Garante que a lista fique acima de outros elementos
+        zIndex: 1000,        // iOS
+        elevation: 10,       // Android
     },
-    dropdownList: { // NOVO
+    dropdownList: {
         position: 'absolute',
-        top: 55 + 8 + 4, // Altura do input (55) + marginBottom do Label (8) + Pequeno offset (4)
+        top: 55 + 8 + 4,
         left: 0,
         right: 0,
         backgroundColor: '#fff',
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#ddd',
-        // Sombra para destacar a lista
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        maxHeight: 200, // Limita a altura para ser scrollável se a lista for longa
+        maxHeight: 200,
         overflow: 'hidden',
+        elevation: 10,
+        zIndex: 1000,
     },
+
     dropdownItem: { // NOVO
         padding: 15,
         borderBottomWidth: 1,
@@ -302,32 +298,32 @@ export const style = StyleSheet.create({
         borderColor: '#ddd',
     },
     // Estilos para o Upload de Foto
-photoPickerButton: { // NOVO
-    height: 150,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    overflow: 'hidden', // Importante para o preview da foto
-},
-petPhotoPreview: { // NOVO
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    borderRadius: 10,
-},
-photoPickerText: { // NOVO
-    marginTop: 8,
-    fontSize: 14,
-    color: '#888',
-    backgroundColor: 'rgba(255,255,255,0.7)', // Fundo para o texto sobre a imagem
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 5,
-    zIndex: 1,
-},
+    photoPickerButton: { // NOVO
+        height: 150,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#ddd',
+        borderStyle: 'dashed',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
+        overflow: 'hidden', // Importante para o preview da foto
+    },
+    petPhotoPreview: { // NOVO
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        borderRadius: 10,
+    },
+    photoPickerText: { // NOVO
+        marginTop: 8,
+        fontSize: 14,
+        color: '#888',
+        backgroundColor: 'rgba(255,255,255,0.7)', // Fundo para o texto sobre a imagem
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 5,
+        // zIndex: 1,
+    },
 });

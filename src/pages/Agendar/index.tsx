@@ -1,6 +1,6 @@
 // pages/Agendar/index.tsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -8,6 +8,8 @@ import {
     ScrollView,
     Alert,
     Platform, // Importado para lidar com o DatePicker
+    Image,
+    Modal
 } from "react-native";
 // Removendo TextInput não usado para Data/Hora/Serviço
 import { style } from "./styles";
@@ -17,7 +19,7 @@ import TopBar from "../../components/topBar";
 
 // 🔹 Importações do Firebase
 import { db, auth } from '../../firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
 // 🔹 Componentes de seleção de data/hora (Assumindo que você instalou)
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -51,6 +53,12 @@ export default function Agendar() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [showServiceList, setShowServiceList] = useState(false);
+
+    // 🔹 Novos estados para pets
+    const [pets, setPets] = useState<any[]>([]);
+    const [petSelecionado, setPetSelecionado] = useState<any>(null);
+    const [showPetList, setShowPetList] = useState(false);
+    const [showPetModal, setShowPetModal] = useState(false);
 
     const handleSelectService = (selectedService: string) => {
         setServico(selectedService);
@@ -123,9 +131,45 @@ export default function Agendar() {
         }
     };
 
+    // 🔹 Busca os pets do usuário logado
+    useEffect(() => {
+        const userId = auth.currentUser?.uid;
+        if (!userId) return;
+
+        const carregarPets = async () => {
+            try {
+                const q = query(collection(db, "cadastrarPet"), where("userId", "==", userId));
+                const querySnapshot = await getDocs(q);
+                const listaPets = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setPets(listaPets);
+            } catch (error) {
+                console.error("Erro ao buscar pets:", error);
+                Alert.alert("Erro", "Não foi possível carregar seus pets.");
+            }
+        };
+
+        carregarPets();
+    }, []);
+
+    // 🔹 Função para retornar a imagem do pet
+    const getPetImage = (type: string) => {
+        switch (type.toLowerCase()) {
+            case "dog": return require("../../assets/pets/dog.png");
+            case "cat": return require("../../assets/pets/cat.png");
+            case "hamster": return require("../../assets/pets/hamster.png");
+            case "turtle": return require("../../assets/pets/turtle.png");
+            case "bird": return require("../../assets/pets/bird.png");
+            case "rabbit": return require("../../assets/pets/rabbit.png");
+            default: return require("../../assets/pets/pet.png");
+        }
+    };
+
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
+            <ScrollView style={style.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
 
                 <Text style={style.sectionTitle}>Agendar Serviço</Text>
                 <Text style={style.sectionSubtitle}>Selecione o tipo de serviço, a data e o horário desejados para o seu pet.</Text>
@@ -156,28 +200,56 @@ export default function Agendar() {
                             ]}>
                                 {servico || "Escolha o Serviço..."}
                             </Text>
-                            <MaterialIcons
-                                // 🔹 ALTERAÇÃO: Altera o ícone de seta para refletir o estado aberto/fechado
-                                name={showServiceList ? "arrow-drop-up" : "arrow-drop-down"}
-                                size={24}
-                                color="#888"
-                            />
                         </TouchableOpacity>
 
-                        {/* 2. LISTA DE SERVIÇOS (Dropdown) */}
-                        {showServiceList && (
-                            <View style={style.dropdownList}>
-                                {SERVICOS.map((s) => (
-                                    <TouchableOpacity
-                                        key={s}
-                                        style={style.dropdownItem}
-                                        onPress={() => handleSelectService(s)} // Seleciona e fecha
-                                    >
-                                        <Text style={style.dropdownItemText}>{s}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        )}
+                        {/* Dropdown de Serviço usando Modal */}
+                        <Modal
+                            visible={showServiceList}
+                            transparent={true}
+                            animationType="fade"
+                            onRequestClose={() => setShowServiceList(false)}
+                        >
+                            <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: 'rgba(0,0,0,0.2)',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    paddingHorizontal: 20,
+                                }}
+                                activeOpacity={1}
+                                onPressOut={() => setShowServiceList(false)} // fecha ao clicar fora
+                            >
+                                <View
+                                    style={{
+                                        width: '100%',
+                                        maxHeight: '50%',
+                                        backgroundColor: '#fff',
+                                        borderRadius: 12,
+                                        paddingVertical: 10,
+                                    }}
+                                >
+                                    <ScrollView showsVerticalScrollIndicator={true}>
+                                        {SERVICOS.map((s) => (
+                                            <TouchableOpacity
+                                                key={s}
+                                                style={{
+                                                    paddingVertical: 15,
+                                                    paddingHorizontal: 20,
+                                                }}
+                                                onPress={() => {
+                                                    handleSelectService(s);
+                                                    setShowServiceList(false);
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 16 }}>{s}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </TouchableOpacity>
+                        </Modal>
+
                     </View>
 
                     {/* 🔹 Data e Horário (Organizados lado a lado) */}
@@ -256,6 +328,105 @@ export default function Agendar() {
                             onChange={onChangeTime}
                         />
                     )}
+
+                    {/* Seletor de Pet */}
+                    <View style={[style.inputGroup, style.serviceDropdownContainer]}>
+                        <Text style={style.inputLabel}>Selecione o Pet</Text>
+
+                        <TouchableOpacity
+                            style={style.selectInput}
+                            onPress={() => setShowPetModal(true)}
+                        >
+                            <Ionicons
+                                name="paw-outline"
+                                size={20}
+                                color={themes.colors.secundary}
+                                style={style.inputIcon}
+                            />
+                            {petSelecionado ? (
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image
+                                        source={getPetImage(petSelecionado?.animalType || "dog")}
+                                        style={{ width: 24, height: 24, marginRight: 8, borderRadius: 12 }}
+                                    />
+                                    <Text style={[style.selectInputText, { color: themes.colors.secundary, fontWeight: '600' }]}>
+                                        {petSelecionado.name}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={[style.selectInputText, { color: '#888', fontWeight: '400' }]}>
+                                    Escolha o Pet...
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    <Modal
+                        visible={showPetModal}
+                        animationType="fade"
+                        transparent={true}
+                        onRequestClose={() => setShowPetModal(false)}
+                    >
+                        <View style={{
+                            flex: 1,
+                            backgroundColor: 'rgba(0,0,0,0.5)',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}>
+                            <View style={{
+                                width: '90%',
+                                maxHeight: '70%',
+                                backgroundColor: '#fff',
+                                borderRadius: 10,
+                                padding: 10
+                            }}>
+                                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 10 }}>Selecione o Pet</Text>
+
+                                {/* Scroll vertical correto */}
+                                <ScrollView
+                                    showsVerticalScrollIndicator={true}
+                                    contentContainerStyle={{
+                                        flexDirection: 'row',
+                                        flexWrap: 'wrap',
+                                        justifyContent: 'space-between',
+                                        paddingBottom: 10
+                                    }}
+                                >
+                                    {pets.map((pet) => (
+                                        <TouchableOpacity
+                                            key={pet.id}
+                                            style={{
+                                                width: '30%', // 3 colunas
+                                                marginBottom: 15,
+                                                alignItems: 'center'
+                                            }}
+                                            onPress={() => {
+                                                setPetSelecionado(pet);
+                                                setShowPetModal(false);
+                                            }}
+                                        >
+                                            <Image
+                                                source={getPetImage(pet.animalType || "dog")}
+                                                style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 5 }}
+                                            />
+                                            <Text style={{ textAlign: 'center' }}>{pet.name}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+
+                                <TouchableOpacity
+                                    style={{
+                                        marginTop: 10,
+                                        alignSelf: 'flex-end',
+                                        padding: 8
+                                    }}
+                                    onPress={() => setShowPetModal(false)}
+                                >
+                                    <Text style={{ color: 'red', fontWeight: '600' }}>Fechar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
 
                     {/* Botão de Agendar */}
                     <TouchableOpacity style={style.button} onPress={handleAgendar}>

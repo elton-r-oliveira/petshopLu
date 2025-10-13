@@ -47,7 +47,7 @@ export default function Login({ navigation }: Props) {
             // 🔹 Função do Firebase para login
             await signInWithEmailAndPassword(auth, email, password);
 
-            Alert.alert("Sucesso", "Login realizado!");
+            // Alert.alert("Sucesso", "Login realizado!");
             navigation.replace("Home");
 
         } catch (error: any) {

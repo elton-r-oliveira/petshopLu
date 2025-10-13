@@ -1,44 +1,54 @@
-// pages/Pets/index.tsx (Substitua o conteúdo do seu arquivo inicial de listagem)
+// pages/Pets/index.tsx
 
 import React, { useState, useEffect } from "react";
-import { 
-    View, 
-    Text, 
-    TouchableOpacity, 
-    ScrollView, 
-    Image, 
-    ActivityIndicator // Para loading
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    ScrollView,
+    Image,
+    ActivityIndicator,
+    Alert,
 } from "react-native";
-import { style } from "./styles"; // Ou o caminho correto para seus estilos
+import { style } from "./styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
-// 🔹 Importações do Firebase para leitura
-import { db, auth } from '../../firebaseConfig';
-import { collection, query, where, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore';
+// 🔹 Firebase
+import { db, auth, } from "../../firebaseConfig";
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    QuerySnapshot,
+    DocumentData,
+    doc,
+    deleteDoc,
+    updateDoc,
+} from "firebase/firestore";
 
-// 🔹 Defina a interface do Pet para tipagem (opcional, mas recomendado)
+// 🔹 Interface do Pet
 interface Pet {
     id: string;
     name: string;
     breed: string;
     age: number;
     weight: number;
-    photoURL: string;
+    animalType: string; // tipo do animal (ex: "dog", "cat", "hamster", "turtle")
 }
 
-// O componente deve receber `navigation` se estiver usando o React Navigation
-export default function Pets({ navigation }: any) { 
+// 🔹 Componente principal
+export default function Pets({ navigation }: any) {
     const [pets, setPets] = useState<Pet[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // 🔹 Função para navegar para a tela de cadastro
+    // Função de navegação
     const navigateToRegisterPet = () => {
-        // Certifique-se que o nome da tela no seu Navigator é 'CadastrarPet'
-        navigation.navigate('CadastrarPet'); 
+        navigation.navigate("CadastrarPet");
     };
-    
-    // 🔹 Função para carregar os pets do Firebase
+
+    // Função que busca os pets cadastrados do usuário logado
     const fetchPets = async () => {
         setLoading(true);
         const userId = auth.currentUser?.uid;
@@ -49,93 +59,145 @@ export default function Pets({ navigation }: any) {
         }
 
         try {
-            // 1. Cria uma consulta (query) na coleção 'pets'
-            // 2. Filtra pelos pets onde o userId é igual ao usuário logado
-            const q = query(collection(db, 'cadastrarPet'), where('userId', '==', userId));
-            
-            // 3. Executa a consulta
+            const q = query(collection(db, "cadastrarPet"), where("userId", "==", userId));
             const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
-            
-            // 4. Mapeia os resultados para o estado 'pets'
+
             const petsList: Pet[] = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 petsList.push({
-                    id: doc.id, // O ID do documento é crucial para ações futuras (editar/deletar)
-                    name: data.name,
-                    breed: data.breed,
-                    age: data.age,
-                    weight: data.weight,
-                    photoURL: data.photoURL,
+                    id: doc.id,
+                    name: data.name || "",
+                    breed: data.breed || "",
+                    age: data.age || 0,
+                    weight: data.weight || 0,
+                    animalType: data.animalType || "dog", // padrão caso não tenha o campo
                 });
             });
 
             setPets(petsList);
         } catch (error) {
             console.error("Erro ao carregar pets: ", error);
-            // Alert.alert('Erro', 'Não foi possível carregar seus pets.');
         } finally {
             setLoading(false);
         }
     };
-    
-    // 🔹 Efeito para carregar os pets quando a tela é montada ou focada
+    // 🔹 Excluir Pet
+    const handleDeletePet = async (petId: string, petName: string) => {
+        Alert.alert(
+            "Excluir Pet",
+            `Tem certeza que deseja excluir ${petName}?`,
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Excluir",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await deleteDoc(doc(db, "cadastrarPet", petId));
+                            Alert.alert("Sucesso", `${petName} foi removido.`);
+                            fetchPets(); // atualiza a lista
+                        } catch (error) {
+                            console.error("Erro ao excluir pet:", error);
+                            Alert.alert("Erro", "Não foi possível excluir o pet.");
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
+    const handleEditPet = (pet: Pet) => {
+        navigation.navigate("CadastrarPet", { pet }); // envia o pet como parâmetro
+    };
+
+    // Atualiza a lista sempre que a tela for focada
     useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            fetchPets(); // Recarrega a lista toda vez que a tela for focada (útil após cadastro)
+        const unsubscribe = navigation.addListener("focus", () => {
+            fetchPets();
         });
+        return unsubscribe;
+    }, [navigation]);
 
-        return unsubscribe; // Limpeza do listener
-    }, [navigation]); // Dependência da navegação
-
+    // 🔹 Função auxiliar: retorna a imagem correta com base no tipo de animal
+    const getPetImage = (type: string) => {
+        switch (type.toLowerCase()) {
+            case "dog":
+                return require("../../assets/pets/dog.png");
+            case "cat":
+                return require("../../assets/pets/cat.png");
+            case "hamster":
+                return require("../../assets/pets/hamster.png");
+            case "turtle":
+                return require("../../assets/pets/turtle.png");
+            case "bird":
+                return require("../../assets/pets/bird.png");
+            case "rabbit":
+                return require("../../assets/pets/rabbit.png");
+            default:
+                return require("../../assets/pets/pet.png");
+        }
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: themes.colors.lightGray }}>
             <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
-                
+                {/* Cabeçalho com botão de adicionar */}
                 <View style={style.headerWithButton}>
                     <Text style={style.sectionTitle}>Meus Pets</Text>
-                    {/* 🔹 Botão de Cadastro */}
                     <TouchableOpacity style={style.addButton} onPress={navigateToRegisterPet}>
                         <MaterialIcons name="add" size={24} color="#fff" />
                     </TouchableOpacity>
                 </View>
-                
-                {/* 🔹 Exibição de Loading */}
-                {loading && <ActivityIndicator size="large" color={themes.colors.secundary} style={{ marginTop: 20 }} />}
-                
-                {/* 🔹 Exibição da Lista de Pets */}
-                {!loading && pets.length === 0 && (
-                    <Text style={style.emptyStateText}>Você não tem pets cadastrados. Clique em "+" para adicionar um!</Text>
+
+                {/* Estado de carregamento */}
+                {loading && (
+                    <ActivityIndicator
+                        size="large"
+                        color={themes.colors.secundary}
+                        style={{ marginTop: 20 }}
+                    />
                 )}
 
+                {/* Caso não existam pets */}
+                {!loading && pets.length === 0 && (
+                    <Text style={style.emptyStateText}>
+                        Você não tem pets cadastrados. Clique em "+" para adicionar um!
+                    </Text>
+                )}
+
+                {/* Lista de Pets */}
                 {pets.map((pet) => (
                     <View key={pet.id} style={style.petCard}>
                         <View style={style.petLeft}>
-                            {/* Ajuste o caminho da imagem se necessário, ou use a URL do Firebase */}
-                            <Image
-                                source={pet.photoURL ? { uri: pet.photoURL } : require("../../assets/alfred.png")}
-                                style={style.petImage}
-                            />
+                            <Image source={getPetImage(pet.animalType)} style={style.petImage} />
                             <View style={style.petInfo}>
                                 <Text style={style.petName}>{pet.name}</Text>
                                 <Text style={style.petRace}>{pet.breed}</Text>
-                                <Text style={style.petRace}>{pet.age} anos • {pet.weight}Kg</Text>
+                                <Text style={style.petRace}>
+                                    {pet.age} anos • {pet.weight}Kg
+                                </Text>
                             </View>
                         </View>
 
                         <View style={style.actions}>
-                            <TouchableOpacity style={[style.iconButton, { backgroundColor: themes.colors.bgScreen }]}>
+                            <TouchableOpacity
+                                style={[style.iconButton, { backgroundColor: themes.colors.bgScreen }]}
+                                onPress={() => handleEditPet(pet)}
+                            >
                                 <MaterialIcons name="edit" size={20} color="#fff" />
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={[style.iconButton, { backgroundColor: themes.colors.bgScreen }]}>
+                            <TouchableOpacity
+                                style={[style.iconButton, { backgroundColor: "#c62828" }]}
+                                onPress={() => handleDeletePet(pet.id, pet.name)}
+                            >
                                 <MaterialIcons name="delete" size={20} color="#fff" />
                             </TouchableOpacity>
                         </View>
+
                     </View>
                 ))}
-                
             </ScrollView>
         </View>
     );

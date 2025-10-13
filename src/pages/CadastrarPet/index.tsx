@@ -8,97 +8,36 @@ import {
     ScrollView,
     Alert,
     TextInput,
-    Image, // Se for usar a lógica de imagem
-    ActivityIndicator
+    Image
 } from "react-native";
-import { style } from "../Agendar/styles"; // Reutilizando os estilos que você já tem
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { style } from "../Agendar/styles";
+import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
-import * as ImagePicker from 'expo-image-picker';
-
-// 🔹 Importações do Firebase
 import { db, auth } from '../../firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-// 🔹 Importação do Firebase Storage
-import { storage } from '../../firebaseConfig'; // Certifique-se que o storage foi exportado em firebaseConfig
-import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
+import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 
-export default function CadastrarPet() {
-    // 🔹 Estados para o formulário do Pet
-    const [name, setName] = useState('');
-    const [breed, setBreed] = useState('');
-    const [age, setAge] = useState('');
-    const [weight, setWeight] = useState('');
-    const [photoUrl, setPhotoUrl] = useState('');
-    const [isUploading, setIsUploading] = useState(false);
+// 🔹 Lista de tipos de animais com imagens
+const animalTypes = [
+    { label: "Cão", value: "dog", image: require("../../assets/pets/dog.png") },
+    { label: "Gato", value: "cat", image: require("../../assets/pets/cat.png") },
+    { label: "Hamster", value: "hamster", image: require("../../assets/pets/hamster.png") },
+    { label: "Tartaruga", value: "turtle", image: require("../../assets/pets/turtle.png") },
+    { label: "Pássaro", value: "bird", image: require("../../assets/pets/bird.png") },
+    { label: "Coelho", value: "rabbit", image: require("../../assets/pets/rabbit.png") },
+];
 
-    // 🔹 1. Função para selecionar a imagem
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 0.7,
-        });
+export default function CadastrarPet({ route, navigation }: any) {
+    const existingPet = route?.params?.pet; // Pet recebido para edição
+    const [isEditing, setIsEditing] = useState(!!existingPet);
 
-        if (!result.canceled) {
-            setPhotoUrl(result.assets[0].uri);
-        }
-    };
-    const testRef = ref(storage, `pets/${auth.currentUser?.uid}/`);
-    listAll(testRef)
-        .then(() => console.log("✅ Conseguiu listar — Storage OK"))
-        .catch((err) => console.error("❌ Sem permissão:", err));
-    // 🔹 2. Função para fazer o upload para o Firebase Storage (CORRIGIDA)
-    const uploadImage = async (uri: string, petName: string): Promise<string> => {
-        setIsUploading(true);
-        const userId = auth.currentUser?.uid;
+    const [name, setName] = useState(existingPet?.name || '');
+    const [breed, setBreed] = useState(existingPet?.breed || '');
+    const [age, setAge] = useState(existingPet?.age?.toString() || '');
+    const [weight, setWeight] = useState(existingPet?.weight?.toString() || '');
+    const [animalType, setAnimalType] = useState(existingPet?.animalType || 'dog');
 
-        // Uso de XMLHttpRequest para criar o Blob de forma compatível
-        const blob = await new Promise<Blob>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                resolve(xhr.response);
-            };
-            xhr.onerror = function (e) {
-                console.error("XHR Network Request Failed:", e);
-                reject(new TypeError("Network request failed"));
-            };
-            xhr.responseType = "blob";
-            xhr.open("GET", uri, true);
-            xhr.send(null);
-        });
 
-        // Cria a referência no Storage: pets/USER_ID/PET_NAME_TIMESTAMP.jpg
-        const storageRef = ref(storage, `cadastrarPet/${userId}/${petName}_${Date.now()}.jpg`);
-
-        try {
-            // Faz o upload do blob
-            const snapshot = await uploadBytes(storageRef, blob);
-
-            // Pega a URL pública
-            const downloadURL = await getDownloadURL(snapshot.ref);
-            setIsUploading(false);
-
-            // 🚀 CORREÇÃO DO ERRO 'close'
-            // Chama 'close' se o método existir no objeto, satisfazendo a segurança do TS.
-            if ((blob as any).close) {
-                (blob as any).close();
-            }
-
-            return downloadURL;
-
-        } catch (error: any) {
-            console.error("Erro no upload da foto (Storage API):", JSON.stringify(error, null, 2));
-            Alert.alert("Erro no upload", error.message || "Erro desconhecido");
-            setIsUploading(false);
-            throw error;
-        }
-    };
-
-    // 🔹 Função para lidar com o cadastro (handleRegisterPet)
     const handleRegisterPet = async () => {
-        // ... (Validação básica - MANTIDA)
         if (!name || !breed || !age || !weight) {
             Alert.alert('Atenção', 'Por favor, preencha todos os campos obrigatórios.');
             return;
@@ -110,82 +49,144 @@ export default function CadastrarPet() {
             return;
         }
 
-        let finalPhotoURL = '';
-
-        // 🔹 NOVO: Se tiver foto selecionada, faz o upload primeiro
-        if (photoUrl) {
-            try {
-                finalPhotoURL = await uploadImage(photoUrl, name);
-            } catch (e) {
-                // O erro já foi reportado no uploadImage
-                return;
-            }
-        }
-
         const petData = {
-            userId: userId,
-            name: name,
-            breed: breed,
+            userId,
+            name,
+            breed,
             age: parseInt(age),
             weight: parseFloat(weight.replace(',', '.')),
-            photoURL: finalPhotoURL, // 🔹 ALTERADO: Usa a URL retornada do Storage
+            animalType,
             createdAt: serverTimestamp(),
         };
 
         try {
-            // 🔹 ALTERADO: Usando a coleção do Firebase que você criou
             await addDoc(collection(db, 'cadastrarPet'), petData);
-
             Alert.alert('Sucesso', `${name} foi cadastrado com sucesso!`);
 
-            // Limpa o formulário e a foto
             setName('');
             setBreed('');
             setAge('');
             setWeight('');
-            setPhotoUrl(''); // Limpa a URI local
+            setAnimalType('dog');
 
         } catch (error) {
-            // ... (log de erro - MANTIDO)
-            Alert.alert('Erro', 'Não foi possível cadastrar o pet. Tente novamente.');
+            console.error("Erro ao cadastrar pet:", error);
+            Alert.alert('Erro', 'Não foi possível cadastrar o pet.');
+        }
+    };
+
+    const handleUpdatePet = async () => {
+        if (!existingPet) return;
+
+        try {
+            const petRef = doc(db, "cadastrarPet", existingPet.id);
+            await updateDoc(petRef, {
+                name,
+                breed,
+                age: parseInt(age),
+                weight: parseFloat(weight.replace(',', '.')),
+                animalType,
+            });
+
+            Alert.alert("Sucesso", `${name} foi atualizado com sucesso!`);
+            navigation.goBack();
+        } catch (error) {
+            console.error("Erro ao atualizar pet:", error);
+            Alert.alert("Erro", "Não foi possível atualizar o pet.");
         }
     };
 
     return (
         <View style={{ flex: 1, backgroundColor: themes.colors.lightGray }}>
             <ScrollView style={style.containerScroll} showsVerticalScrollIndicator={false}>
-
                 <Text style={style.sectionTitle}>Cadastrar Novo Pet</Text>
-                <Text style={style.sectionSubtitle}>Adicione as informações do seu companheiro para agendar serviços.</Text>
+                <Text style={style.sectionSubtitle}>Adicione as informações do seu companheiro.</Text>
 
                 <View style={style.formContainer}>
-                    {/* 🔹 NOVO BLOCO: Seleção de Foto */}
+
+                    {/* Tipo do Animal com carrossel horizontal */}
                     <View style={style.inputGroup}>
-                        <Text style={style.inputLabel}>Foto do Pet (Opcional)</Text>
-                        <TouchableOpacity style={style.photoPickerButton} onPress={pickImage} disabled={isUploading}>
-                            {photoUrl ? (
-                                <Image source={{ uri: photoUrl }} style={style.petPhotoPreview} />
-                            ) : (
-                                <MaterialIcons name="photo-camera" size={30} color="#888" />
-                            )}
-                            <Text style={style.photoPickerText}>
-                                {photoUrl ? 'Trocar Foto' : 'Selecionar Foto'}
-                            </Text>
-                        </TouchableOpacity>
-                        {isUploading && <ActivityIndicator size="small" color={themes.colors.secundary} style={{ marginTop: 10 }} />}
+                        <Text style={style.inputLabel}>Tipo do Animal</Text>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                paddingVertical: 10,
+                                gap: 20,
+                            }}
+                        >
+                            {animalTypes.map((item) => (
+                                <TouchableOpacity
+                                    key={item.value}
+                                    onPress={() => setAnimalType(item.value)}
+                                    activeOpacity={0.8}
+                                    style={{
+                                        alignItems: "center",
+                                        opacity: animalType === item.value ? 1 : 0.6,
+                                    }}
+                                >
+                                    <View
+                                        style={{
+                                            width: 90,
+                                            height: 90,
+                                            borderRadius: 45,
+                                            backgroundColor:
+                                                animalType === item.value
+                                                    ? themes.colors.secundary
+                                                    : "#ddd",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            marginBottom: 8,
+                                            borderWidth: 2,
+                                            borderColor:
+                                                animalType === item.value
+                                                    ? themes.colors.corTexto
+                                                    : "transparent",
+                                            shadowColor: "#000",
+                                            shadowOpacity: 0.15,
+                                            shadowRadius: 4,
+                                            elevation: 3,
+                                        }}
+                                    >
+                                        <Image
+                                            source={item.image}
+                                            style={{
+                                                width: 100,
+                                                height: 100,
+                                                resizeMode: "contain",
+                                            }}
+                                        />
+                                    </View>
+                                    <Text
+                                        style={{
+                                            color:
+                                                animalType === item.value
+                                                    ? themes.colors.bgScreen
+                                                    : "#555",
+                                            fontWeight: "600",
+                                        }}
+                                    >
+                                        {item.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
                     </View>
-                    {/* Campo Nome */}
+
+                    {/* Nome */}
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Nome do Pet</Text>
                         <TextInput
-                            style={style.selectInput} // Reutilizando o estilo visual de input
+                            style={style.selectInput}
                             placeholder="Ex: Rex"
                             value={name}
                             onChangeText={setName}
                         />
                     </View>
 
-                    {/* Campo Raça */}
+                    {/* Raça */}
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Raça</Text>
                         <TextInput
@@ -196,9 +197,8 @@ export default function CadastrarPet() {
                         />
                     </View>
 
-                    {/* Idade e Peso (Lado a Lado) */}
+                    {/* Idade e Peso */}
                     <View style={style.dateTimeContainer}>
-                        {/* Idade */}
                         <View style={[style.inputGroup, style.halfInput]}>
                             <Text style={style.inputLabel}>Idade (anos)</Text>
                             <TextInput
@@ -206,11 +206,10 @@ export default function CadastrarPet() {
                                 placeholder="Ex: 5"
                                 value={age}
                                 onChangeText={setAge}
-                                keyboardType="numeric" // Apenas números
+                                keyboardType="numeric"
                             />
                         </View>
 
-                        {/* Peso */}
                         <View style={[style.inputGroup, style.halfInput]}>
                             <Text style={style.inputLabel}>Peso (Kg)</Text>
                             <TextInput
@@ -218,26 +217,25 @@ export default function CadastrarPet() {
                                 placeholder="Ex: 15.5"
                                 value={weight}
                                 onChangeText={setWeight}
-                                keyboardType="numeric" // Apenas números
+                                keyboardType="numeric"
                             />
                         </View>
                     </View>
 
-                    {/* Campo Foto (Opcional, se você implementar o upload) */}
-                    <View style={style.inputGroup}>
-                        <Text style={style.inputLabel}>URL da Foto (Opcional)</Text>
-                        <TextInput
-                            style={style.selectInput}
-                            placeholder="https://exemplo.com/foto.jpg"
-                            value={photoUrl}
-                            onChangeText={setPhotoUrl}
+                    {/* Botão */}
+                    <TouchableOpacity
+                        style={style.button}
+                        onPress={isEditing ? handleUpdatePet : handleRegisterPet}
+                    >
+                        <Text style={style.buttonText}>
+                            {isEditing ? "Salvar Alterações" : "Cadastrar Pet"}
+                        </Text>
+                        <MaterialIcons
+                            name={isEditing ? "save" : "pets"}
+                            size={24}
+                            color="#fff"
+                            style={{ marginLeft: 10 }}
                         />
-                    </View>
-
-                    {/* Botão de Cadastro */}
-                    <TouchableOpacity style={style.button} onPress={handleRegisterPet}>
-                        <Text style={style.buttonText}>Cadastrar Pet</Text>
-                        <MaterialIcons name="pets" size={24} color="#fff" style={{ marginLeft: 10 }} />
                     </TouchableOpacity>
 
                 </View>
