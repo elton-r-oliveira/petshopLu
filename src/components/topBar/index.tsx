@@ -11,7 +11,6 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { style } from "./styles";
 import { themes } from "../../global/themes";
-import { useNavigation } from "@react-navigation/native"; // ✅ Import necessário
 
 interface TopBarProps {
     userName: string;
@@ -24,39 +23,12 @@ export default function TopBar({
     userName,
     petName = "Alfred",
     location = "São Bernardo do Campo, SP",
-    onLogoPress,
 }: TopBarProps) {
-    const navigation = useNavigation<any>(); // ✅ Tipagem genérica
     const [notificationModalVisible, setNotificationModalVisible] = useState(false);
-    const [userModalVisible, setUserModalVisible] = useState(false);
     const [hasNotification] = useState(true);
 
-    const slideAnimUser = useRef(new Animated.Value(-300)).current;
     const slideAnimNotif = useRef(new Animated.Value(-300)).current;
 
-    const handleLogout = () => {
-        console.log("Usuário deslogado (Layout)");
-        closeUserModal();
-    };
-
-    const openUserModal = () => {
-        setUserModalVisible(true);
-        Animated.timing(slideAnimUser, {
-            toValue: 0,
-            duration: 250,
-            easing: Easing.out(Easing.ease),
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const closeUserModal = () => {
-        Animated.timing(slideAnimUser, {
-            toValue: -300,
-            duration: 200,
-            easing: Easing.in(Easing.ease),
-            useNativeDriver: true,
-        }).start(() => setUserModalVisible(false));
-    };
 
     const openNotifModal = () => {
         setNotificationModalVisible(true);
@@ -77,20 +49,10 @@ export default function TopBar({
         }).start(() => setNotificationModalVisible(false));
     };
 
-    const handleEditInfo = () => {
-        closeUserModal();
-        navigation.navigate("editarUsuario"); 
-    };
-
     return (
         <View style={style.header}>
             {/* LOGO */}
-            <TouchableOpacity
-                onPress={() => {
-                    openUserModal();
-                    if (onLogoPress) onLogoPress();
-                }}
-            >
+            <TouchableOpacity>
                 <Image
                     source={require("../../assets/logo.png")}
                     style={{ width: 80, height: 80, resizeMode: "contain" }}
@@ -118,34 +80,6 @@ export default function TopBar({
                     </View>
                 )}
             </TouchableOpacity>
-
-            {/* MODAL USUÁRIO */}
-            <Modal transparent visible={userModalVisible} animationType="none" onRequestClose={closeUserModal}>
-                <TouchableOpacity
-                    style={style.overlay}
-                    activeOpacity={1}
-                    onPressOut={closeUserModal}
-                >
-                    <Animated.View
-                        style={[
-                            style.userModalContent,
-                            { transform: [{ translateY: slideAnimUser }] },
-                        ]}
-                    >
-                        <Text style={style.titleModal}>Opções de Conta</Text>
-
-                        <TouchableOpacity style={style.optionItem} onPress={handleEditInfo}>
-                            <MaterialIcons name="edit" size={24} color={themes.colors.bgScreen} />
-                            <Text style={style.optionText}>Editar informações</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={style.logoutItem} onPress={handleLogout}>
-                            <MaterialIcons name="logout" size={24} color="red" />
-                            <Text style={style.logoutText}>Deslogar</Text>
-                        </TouchableOpacity>
-                    </Animated.View>
-                </TouchableOpacity>
-            </Modal>
 
             {/* MODAL NOTIFICAÇÕES */}
             <Modal transparent visible={notificationModalVisible} animationType="none" onRequestClose={closeNotifModal}>

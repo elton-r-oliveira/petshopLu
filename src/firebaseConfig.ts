@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAcUjOjLbyzfn14lddbcpqQOVhY_pGWE0s",      // Encontrado no arquivo google-services.json
@@ -15,3 +16,4 @@ const app = initializeApp(firebaseConfig);                // Inicializa o Fireba
 
 export const auth = getAuth(app);                         // Exporta a autenticação
 export const db = getFirestore(app);                      // banco de dados
+export const storage = getStorage(app); 

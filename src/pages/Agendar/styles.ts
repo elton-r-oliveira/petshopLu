@@ -301,4 +301,33 @@ export const style = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ddd',
     },
+    // Estilos para o Upload de Foto
+photoPickerButton: { // NOVO
+    height: 150,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    overflow: 'hidden', // Importante para o preview da foto
+},
+petPhotoPreview: { // NOVO
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    borderRadius: 10,
+},
+photoPickerText: { // NOVO
+    marginTop: 8,
+    fontSize: 14,
+    color: '#888',
+    backgroundColor: 'rgba(255,255,255,0.7)', // Fundo para o texto sobre a imagem
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 5,
+    zIndex: 1,
+},
 });

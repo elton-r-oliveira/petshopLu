@@ -74,27 +74,4 @@ export const style = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    headerWithButton: { // NOVO ESTILO
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginRight: 15,
-        marginBottom: 20, // Ajuste para o espaçamento
-    },
-    addButton: { // NOVO ESTILO para o botão "+"
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: themes.colors.secundary, // Cor de destaque
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 30, // Alinhado com o Título
-    },
-    emptyStateText: { // NOVO ESTILO
-        textAlign: 'center',
-        marginHorizontal: 40,
-        marginTop: 50,
-        fontSize: 16,
-        color: '#666',
-    },
 });

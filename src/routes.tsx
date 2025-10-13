@@ -3,9 +3,10 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./pages/login";
 import Cadastro from "./pages/cadastro";
-import editarUsuario from "./pages/editarUsuario";
 import { RootStackParamList } from "./@types/types";
 import BottomBar from "./components/bottomBar";
+import Pets from "./pages/Pets";
+import CadastrarPet from "./pages/CadastrarPet";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -35,12 +36,21 @@ export default function Routes() {
           options={{ animation: "fade" }}
         />
 
-        {/* ✅ Tela de edição do usuário */}
+        {/* 🚀 NOVA TELA: Listagem de Pets */}
         <Stack.Screen
-          name="editarUsuario"
-          component={editarUsuario}
+          name="MeusPets" // Nome que será usado para navegação
+          component={Pets}
           options={{
-            animation: "slide_from_bottom",
+            animation: "slide_from_bottom", // Pode escolher a animação que preferir
+          }}
+        />
+
+        {/* 🚀 NOVA TELA: Cadastro de Pet */}
+        <Stack.Screen
+          name="CadastrarPet" // Nome que será usado para navegação
+          component={CadastrarPet}
+          options={{
+            animation: "slide_from_right", 
           }}
         />
       </Stack.Navigator>

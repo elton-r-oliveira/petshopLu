@@ -3,6 +3,8 @@ export type RootStackParamList = {
   Cadastro: undefined;
   Home: undefined;
   editarUsuario: undefined;
+  MeusPets: undefined;
+  CadastrarPet: undefined;
 };
 export type BottomTabParamList = {
   Home: undefined;
