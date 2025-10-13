@@ -15,7 +15,7 @@ import TopBar from "../../components/topBar";
 import { signOut, onAuthStateChanged, updateProfile, User } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { useNavigation, CommonActions } from "@react-navigation/native";
+import { useNavigation, CommonActions, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../@types/types";
 
@@ -46,6 +46,7 @@ export default function Perfil() {
     const editingRef = useRef(editing);
     const logoutInProgressRef = useRef(logoutInProgress);
     const isDirtyRef = useRef(false);
+    const alertShownRef = useRef(false);
 
     // Atualizar refs quando estados mudam
     useEffect(() => {
@@ -61,7 +62,7 @@ export default function Perfil() {
         const dirty = nome !== originalData.nome ||
             telefone !== originalData.telefone ||
             endereco !== originalData.endereco;
-        
+
         isDirtyRef.current = dirty;
         return dirty;
     };
@@ -86,62 +87,93 @@ export default function Perfil() {
         return unsubscribeAuth;
     }, []);
 
-    // SOLUÇÃO ALTERNATIVA: Interceptar TODAS as navegações
+    // Função para descartar alterações e sair do modo edição
+    const descartarAlteracoes = () => {
+        // Apenas sai do modo edição, NÃO reseta os campos
+        // Os campos já contêm os dados atuais (incluindo o nome salvo anteriormente)
+        setEditing(false);
+    };
+
+    // Função para resetar campos para os valores originais (usada apenas no cancelar)
+    const resetarCamposParaOriginais = () => {
+        setNome(originalData.nome);
+        setTelefone(originalData.telefone);
+        setEndereco(originalData.endereco);
+        setEditing(false);
+    };
+
+    // ÚNICO listener para BottomBar - useFocusEffect
+    // Quando a tela perde o foco (mudança de aba, navegação, etc.)
+    useFocusEffect(
+        React.useCallback(() => {
+            alertShownRef.current = false;
+
+            return () => {
+                if (editingRef.current && isDirtyRef.current && !logoutInProgressRef.current && !alertShownRef.current) {
+                    alertShownRef.current = true;
+
+                    Alert.alert(
+                        "Alterações não salvas",
+                        "Suas alterações não foram salvas e serão descartadas.",
+                        [
+                            {
+                                text: "Continuar editando",
+                                style: "cancel",
+                                onPress: () => {
+                                    navigation.navigate("Perfil");
+                                    alertShownRef.current = false;
+                                },
+                            },
+                            {
+                                text: "Descartar e sair",
+                                style: "destructive",
+                                onPress: () => {
+                                    resetarCamposParaOriginais(); // ✅ restaura valores antigos
+                                    alertShownRef.current = false;
+                                },
+                            },
+                        ]
+                    );
+                }
+            };
+        }, [navigation])
+    );
+
+    // Listener do botão físico ou gesto de voltar
     useEffect(() => {
-        const originalNavigate = navigation.navigate;
-        
-        // Sobrescrever a função navigate
-        navigation.navigate = (...args: any) => {
-            if (editingRef.current && isDirtyRef.current && !logoutInProgressRef.current) {
+        const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+            if (editingRef.current && isDirtyRef.current && !logoutInProgressRef.current && !alertShownRef.current) {
+                e.preventDefault();
+                alertShownRef.current = true;
+
                 Alert.alert(
                     "Alterações não salvas",
-                    "Você tem alterações não salvas. Tem certeza que deseja sair?",
+                    "Suas alterações não foram salvas e serão descartadas.",
                     [
-                        { text: "Cancelar", style: "cancel" },
-                        { 
-                            text: "Sair mesmo assim", 
-                            style: "destructive", 
+                        {
+                            text: "Continuar editando",
+                            style: "cancel",
                             onPress: () => {
-                                originalNavigate.apply(navigation, args);
-                            }
+                                alertShownRef.current = false;
+                            },
+                        },
+                        {
+                            text: "Descartar e sair",
+                            style: "destructive",
+                            onPress: () => {
+                                resetarCamposParaOriginais(); // ✅ restaura valores originais
+                                navigation.dispatch(e.data.action);
+                                alertShownRef.current = false;
+                            },
                         },
                     ]
                 );
-                return;
             }
-            originalNavigate.apply(navigation, args);
-        };
-
-        return () => {
-            navigation.navigate = originalNavigate;
-        };
-    }, []);
-
-    // Interceptar botão de voltar
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (editingRef.current && isDirtyRef.current && !logoutInProgressRef.current) {
-                Alert.alert(
-                    "Alterações não salvas",
-                    "Você tem alterações não salvas. Tem certeza que deseja sair?",
-                    [
-                        { text: "Permanecer", style: "cancel" },
-                        { 
-                            text: "Sair mesmo assim", 
-                            style: "destructive", 
-                            onPress: () => {
-                                navigation.goBack();
-                            }
-                        },
-                    ]
-                );
-                return true;
-            }
-            return false;
         });
 
-        return () => backHandler.remove();
-    }, []);
+        return unsubscribe;
+    }, [navigation]);
+
 
     async function carregarDadosExtras(uid: string, displayName: string) {
         try {
@@ -198,7 +230,12 @@ export default function Perfil() {
             setTopBarNome(nome);
             setTopBarEndereco(endereco);
 
-            setOriginalData({ nome, telefone, endereco });
+            // ATUALIZA os dados originais com os novos valores salvos
+            setOriginalData({
+                nome: nome,
+                telefone: telefone,
+                endereco: endereco
+            });
 
             Alert.alert("Sucesso", "Informações atualizadas com sucesso!");
             setEditing(false);
@@ -212,10 +249,8 @@ export default function Perfil() {
 
     function cancelarEdicao() {
         console.log('Cancelando edição...');
-        setNome(originalData.nome);
-        setTelefone(originalData.telefone);
-        setEndereco(originalData.endereco);
-        setEditing(false);
+        // Usa a função que RESETA os campos para os valores originais
+        resetarCamposParaOriginais();
     }
 
     async function handleLogout() {
@@ -226,9 +261,13 @@ export default function Perfil() {
                 [
                     { text: "Cancelar", style: "cancel" },
                     {
-                        text: "Sair sem salvar",
+                        text: "Sair mesmo assim",
                         style: "destructive",
-                        onPress: () => executarLogout()
+                        onPress: () => {
+                            // 🔧 Restaura campos e sai do modo edição
+                            resetarCamposParaOriginais();
+                            alertShownRef.current = false;
+                        }
                     },
                     {
                         text: "Salvar e sair",
@@ -313,8 +352,8 @@ export default function Perfil() {
                 <View style={{ marginTop: 30, gap: 10 }}>
                     {editing ? (
                         <>
-                            <TouchableOpacity 
-                                style={style.buttonSave} 
+                            <TouchableOpacity
+                                style={style.buttonSave}
                                 onPress={salvarAlteracoes}
                                 disabled={loading}
                             >
@@ -324,8 +363,8 @@ export default function Perfil() {
                                     <Text style={style.textButton}>Salvar Alterações</Text>
                                 )}
                             </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[style.buttonEdit, { backgroundColor: themes.colors.bgScreen }]} 
+                            <TouchableOpacity
+                                style={[style.buttonEdit, { backgroundColor: themes.colors.bgScreen }]}
                                 onPress={cancelarEdicao}
                             >
                                 <Text style={style.textButton}>Cancelar</Text>
@@ -337,8 +376,8 @@ export default function Perfil() {
                         </TouchableOpacity>
                     )}
 
-                    <TouchableOpacity 
-                        style={style.buttonLogout} 
+                    <TouchableOpacity
+                        style={style.buttonLogout}
                         onPress={handleLogout}
                         disabled={logoutInProgress}
                     >
