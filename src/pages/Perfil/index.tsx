@@ -38,6 +38,11 @@ export default function Perfil() {
         telefone: "",
         endereco: "",
     });
+    const originalDataRef = useRef(originalData);
+
+    useEffect(() => {
+        originalDataRef.current = originalData;
+    }, [originalData]);
 
     const [topBarNome, setTopBarNome] = useState("");
     const [topBarEndereco, setTopBarEndereco] = useState("");
@@ -96,9 +101,10 @@ export default function Perfil() {
 
     // Função para resetar campos para os valores originais (usada apenas no cancelar)
     const resetarCamposParaOriginais = () => {
-        setNome(originalData.nome);
-        setTelefone(originalData.telefone);
-        setEndereco(originalData.endereco);
+        const orig = originalDataRef.current;
+        setNome(orig.nome ?? "");
+        setTelefone(orig.telefone ?? "");
+        setEndereco(orig.endereco ?? "");
         setEditing(false);
     };
 
@@ -108,7 +114,17 @@ export default function Perfil() {
         React.useCallback(() => {
             alertShownRef.current = false;
 
+            // Ao entrar em foco: se não estiver editando e tivermos currentUser, recarrega dados
+            let active = true;
+            (async () => {
+                if (!editingRef.current && currentUser && active) {
+                    await carregarDadosExtras(currentUser.uid, currentUser.displayName || "");
+                }
+            })();
+
             return () => {
+                active = false;
+                // Quando perde o foco: se estava editando e há mudanças, pergunta (mantém seu comportamento)
                 if (editingRef.current && isDirtyRef.current && !logoutInProgressRef.current && !alertShownRef.current) {
                     alertShownRef.current = true;
 
@@ -122,21 +138,21 @@ export default function Perfil() {
                                 onPress: () => {
                                     navigation.navigate("Perfil");
                                     alertShownRef.current = false;
-                                },
+                                }
                             },
                             {
                                 text: "Descartar e sair",
                                 style: "destructive",
                                 onPress: () => {
-                                    resetarCamposParaOriginais(); // ✅ restaura valores antigos
+                                    resetarCamposParaOriginais();
                                     alertShownRef.current = false;
-                                },
-                            },
+                                }
+                            }
                         ]
                     );
                 }
             };
-        }, [navigation])
+        }, [navigation, currentUser])
     );
 
     // Listener do botão físico ou gesto de voltar
@@ -177,27 +193,37 @@ export default function Perfil() {
 
     async function carregarDadosExtras(uid: string, displayName: string) {
         try {
-            const docRef = doc(db, "users", uid);
+            const docRef = doc(db, "usuarios", uid);
             const snapshot = await getDoc(docRef);
 
             if (snapshot.exists()) {
                 const data = snapshot.data();
-                setTelefone(data.telefone || "");
-                setEndereco(data.endereco || "");
+                const nomeFirestore = data.nome || "";
+                const telefoneFirestore = data.telefone || "";
+                const enderecoFirestore = data.endereco || "";
 
-                setTopBarNome(displayName);
-                setTopBarEndereco(data.endereco || "");
+                // preencha o estado com os valores corretos (Firestore tem prioridade)
+                setNome(nomeFirestore || displayName || "");
+                setTelefone(telefoneFirestore);
+                setEndereco(enderecoFirestore);
+
+                setTopBarNome(nomeFirestore || displayName || "");
+                setTopBarEndereco(enderecoFirestore);
 
                 setOriginalData({
-                    nome: displayName,
-                    telefone: data.telefone || "",
-                    endereco: data.endereco || "",
+                    nome: nomeFirestore || displayName || "",
+                    telefone: telefoneFirestore,
+                    endereco: enderecoFirestore,
                 });
             } else {
-                setTopBarNome(displayName);
+                // documento não existe — usa displayName do auth
+                setNome(displayName || "");
+                setTelefone("");
+                setEndereco("");
+                setTopBarNome(displayName || "");
                 setTopBarEndereco("");
                 setOriginalData({
-                    nome: displayName,
+                    nome: displayName || "",
                     telefone: "",
                     endereco: "",
                 });
@@ -220,7 +246,7 @@ export default function Perfil() {
 
             await updateProfile(currentUser, { displayName: nome });
 
-            const docRef = doc(db, "users", currentUser.uid);
+            const docRef = doc(db, "usuarios", currentUser.uid);
             await setDoc(
                 docRef,
                 { nome, email, telefone, endereco },
