@@ -89,22 +89,45 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
 }) => {
     if (!agendamentoSelecionado) return null;
 
+    // DEBUG: Verifique o que está chegando
+    console.log('Agendamento selecionado:', agendamentoSelecionado);
+    console.log('DataHoraAgendamento:', agendamentoSelecionado.dataHoraAgendamento);
+    console.log('Tipo:', typeof agendamentoSelecionado.dataHoraAgendamento);
+
     const unidade = unidades.find(u => u.nome === agendamentoSelecionado.unidade);
     const statusColor = getStatusColor(agendamentoSelecionado.status);
     const serviceIconName = getServiceIcon(agendamentoSelecionado.service);
 
-    const date = agendamentoSelecionado.dataHoraAgendamento instanceof Date
-        ? agendamentoSelecionado.dataHoraAgendamento
-        : null;
+    // CORREÇÃO: Garantir que é um objeto Date válido
+    let date: Date | null = null;
+    
+    if (agendamentoSelecionado.dataHoraAgendamento instanceof Date) {
+        date = agendamentoSelecionado.dataHoraAgendamento;
+    } else if (agendamentoSelecionado.dataHoraAgendamento && 
+               agendamentoSelecionado.dataHoraAgendamento.toDate) {
+        // Se for um Timestamp do Firestore
+        date = agendamentoSelecionado.dataHoraAgendamento.toDate();
+    } else if (agendamentoSelecionado.dataHoraAgendamento) {
+        // Se for string ou outro formato
+        date = new Date(agendamentoSelecionado.dataHoraAgendamento);
+    }
+
+    console.log('Date após conversão:', date);
+    console.log('Horas:', date?.getHours(), 'Minutos:', date?.getMinutes());
 
     const formattedDate = date
-        ? date.toLocaleDateString('pt-BR')
+        ? date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
         : 'Data Indisponível';
 
     const formattedTime = date
-        ? date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        ? date.toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'America/Sao_Paulo'
+          })
         : '';
 
+    console.log('Horário formatado:', formattedTime);
     // Use os telefones salvos diretamente do agendamento
     const telefoneUnidade = agendamentoSelecionado.unidadeTelefone;
     const whatsappUnidade = agendamentoSelecionado.unidadeWhatsapp;
