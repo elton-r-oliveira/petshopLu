@@ -18,6 +18,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigation, CommonActions, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../@types/types";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 type PerfilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Perfil">;
 
@@ -341,7 +342,7 @@ export default function Perfil() {
 
                 <Text style={style.sectionTitle}>Informações do Perfil</Text>
 
-                <View style={{ gap: 10 }}>
+                <View style={{ gap: 10, margin: 20 }}>
                     <Text style={style.label}>Nome:</Text>
                     <TextInput
                         style={style.input}
@@ -375,45 +376,86 @@ export default function Perfil() {
                     />
                 </View>
 
-                <View style={{ marginTop: 30, gap: 10 }}>
+                <View style={{ marginTop: 30, gap: 10, margin: 20 }}>
                     {editing ? (
                         <>
+                            {/* Linha com Salvar e Cancelar */}
+                            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
+                                {/* SALVAR */}
+                                <TouchableOpacity
+                                    style={[style.buttonSave, { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
+                                    onPress={salvarAlteracoes}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator size="small" color="#FFF" />
+                                    ) : (
+                                        <>
+                                            <MaterialIcons name="save" size={20} color="#FFF" />
+                                            <Text style={style.textButton}>Salvar</Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+
+                                {/* CANCELAR */}
+                                <TouchableOpacity
+                                    style={[
+                                        style.buttonEdit,
+                                        { flex: 1, backgroundColor: themes.colors.bgScreen, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+                                    ]}
+                                    onPress={cancelarEdicao}
+                                >
+                                    <MaterialIcons name="cancel" size={20} color="#FFF" />
+                                    <Text style={style.textButton}>Cancelar</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* SAIR */}
                             <TouchableOpacity
-                                style={style.buttonSave}
-                                onPress={salvarAlteracoes}
-                                disabled={loading}
+                                style={[style.buttonLogout, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
+                                onPress={handleLogout}
+                                disabled={logoutInProgress}
                             >
-                                {loading ? (
+                                {logoutInProgress ? (
                                     <ActivityIndicator size="small" color="#FFF" />
                                 ) : (
-                                    <Text style={style.textButton}>Salvar Alterações</Text>
+                                    <>
+                                        <MaterialIcons name="logout" size={20} color="#FFF" />
+                                        <Text style={style.textButton}>Logout</Text>
+                                    </>
                                 )}
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[style.buttonEdit, { backgroundColor: themes.colors.bgScreen }]}
-                                onPress={cancelarEdicao}
-                            >
-                                <Text style={style.textButton}>Cancelar</Text>
                             </TouchableOpacity>
                         </>
                     ) : (
-                        <TouchableOpacity style={style.buttonEdit} onPress={handleEditPress}>
-                            <Text style={style.textButton}>Editar Perfil</Text>
-                        </TouchableOpacity>
-                    )}
+                        <>
+                            {/* EDITAR PERFIL */}
+                            <TouchableOpacity
+                                style={[style.buttonEdit, { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
+                                onPress={handleEditPress}
+                            >
+                                <MaterialIcons name="edit" size={20} color="#FFF" />
+                                <Text style={style.textButton}>Editar Perfil</Text>
+                            </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={style.buttonLogout}
-                        onPress={handleLogout}
-                        disabled={logoutInProgress}
-                    >
-                        {logoutInProgress ? (
-                            <ActivityIndicator size="small" color="#FFF" />
-                        ) : (
-                            <Text style={style.textButton}>Sair</Text>
-                        )}
-                    </TouchableOpacity>
+                            {/* SAIR */}
+                            <TouchableOpacity
+                                style={[style.buttonLogout, { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
+                                onPress={handleLogout}
+                                disabled={logoutInProgress}
+                            >
+                                {logoutInProgress ? (
+                                    <ActivityIndicator size="small" color="#FFF" />
+                                ) : (
+                                    <>
+                                        <MaterialIcons name="logout" size={20} color="#FFF" />
+                                        <Text style={style.textButton}>Logout</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                        </>
+                    )}
                 </View>
+
             </ScrollView>
         </View>
     );
