@@ -192,5 +192,36 @@ export const style = StyleSheet.create({
         fontWeight: "600",
         fontSize: 16,
     },
+    inputGroup: {
+        marginBottom: 10,
+    },
+
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: themes.colors.secundary,
+        // marginBottom: 6,
+    },
+
+    selectInput: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1.5,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        backgroundColor: "#fff",
+    },
+
+    inputIcon: {
+        marginRight: 10,
+    },
+
+    selectInputText: {
+        flex: 1,
+        fontSize: 15,
+        color: themes.colors.secundary,
+    },
 
 });

@@ -281,6 +281,7 @@ export default function Perfil() {
     }
 
     async function handleLogout() {
+        // Se está editando e há alterações, mantém alerta atual
         if (editing && checkIsDirty()) {
             Alert.alert(
                 "Alterações não salvas",
@@ -294,20 +295,37 @@ export default function Perfil() {
                             // 🔧 Restaura campos e sai do modo edição
                             resetarCamposParaOriginais();
                             alertShownRef.current = false;
+                            confirmarLogout(); // chama o alerta de confirmação de logout
                         }
                     },
                     {
                         text: "Salvar e sair",
                         onPress: async () => {
                             await salvarAlteracoes();
-                            executarLogout();
+                            confirmarLogout();
                         }
                     }
                 ]
             );
         } else {
-            executarLogout();
+            // 🔔 Novo alerta simples de confirmação de logout
+            confirmarLogout();
         }
+    }
+
+    function confirmarLogout() {
+        Alert.alert(
+            "Confirmar Logout",
+            "Tem certeza que deseja sair da conta?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Sair",
+                    style: "destructive",
+                    onPress: executarLogout,
+                },
+            ]
+        );
     }
 
     async function executarLogout() {
@@ -342,41 +360,91 @@ export default function Perfil() {
 
                 <Text style={style.sectionTitle}>Informações do Perfil</Text>
 
-                <View style={{ gap: 10, margin: 20 }}>
-                    <Text style={style.label}>Nome:</Text>
-                    <TextInput
-                        style={style.input}
-                        value={nome}
-                        onChangeText={setNome}
-                        editable={editing}
-                    />
+                <View style={{ margin: 20 }}>
+                    {/* 🧾 NOME */}
+                    <View style={style.inputGroup}>
+                        <Text style={style.inputLabel}>Nome</Text>
+                        <View style={style.selectInput}>
+                            <Ionicons
+                                name="person-outline"
+                                size={20}
+                                color={themes.colors.secundary}
+                                style={style.inputIcon}
+                            />
+                            <TextInput
+                                style={style.selectInputText}
+                                value={nome}
+                                onChangeText={setNome}
+                                placeholder="Seu nome completo"
+                                placeholderTextColor="#888"
+                                editable={editing}
+                            />
+                        </View>
+                    </View>
 
-                    <Text style={style.label}>E-mail:</Text>
-                    <TextInput
-                        style={[style.input, { backgroundColor: "#ddd" }]}
-                        value={email}
-                        editable={false}
-                    />
+                    {/* 📧 EMAIL */}
+                    <View style={style.inputGroup}>
+                        <Text style={style.inputLabel}>E-mail</Text>
+                        <View style={style.selectInput}>
+                            <MaterialIcons
+                                name="email"
+                                size={20}
+                                color={themes.colors.secundary}
+                                style={style.inputIcon}
+                            />
+                            <TextInput
+                                style={[style.selectInputText, { color: "#888" }]}
+                                value={email}
+                                editable={false}
+                            />
+                        </View>
+                    </View>
 
-                    <Text style={style.label}>Telefone:</Text>
-                    <TextInput
-                        style={style.input}
-                        value={telefone}
-                        onChangeText={setTelefone}
-                        editable={editing}
-                        keyboardType="phone-pad"
-                    />
+                    {/* 📞 TELEFONE */}
+                    <View style={style.inputGroup}>
+                        <Text style={style.inputLabel}>Telefone</Text>
+                        <View style={style.selectInput}>
+                            <Ionicons
+                                name="call-outline"
+                                size={20}
+                                color={themes.colors.secundary}
+                                style={style.inputIcon}
+                            />
+                            <TextInput
+                                style={style.selectInputText}
+                                value={telefone}
+                                onChangeText={setTelefone}
+                                placeholder="(11) 99999-9999"
+                                placeholderTextColor="#888"
+                                keyboardType="phone-pad"
+                                editable={editing}
+                            />
+                        </View>
+                    </View>
 
-                    <Text style={style.label}>Endereço:</Text>
-                    <TextInput
-                        style={style.input}
-                        value={endereco}
-                        onChangeText={setEndereco}
-                        editable={editing}
-                    />
+                    {/* 📍 ENDEREÇO */}
+                    <View style={style.inputGroup}>
+                        <Text style={style.inputLabel}>Endereço</Text>
+                        <View style={style.selectInput}>
+                            <Ionicons
+                                name="location-outline"
+                                size={20}
+                                color={themes.colors.secundary}
+                                style={style.inputIcon}
+                            />
+                            <TextInput
+                                style={style.selectInputText}
+                                value={endereco}
+                                onChangeText={setEndereco}
+                                placeholder="Rua, número, bairro..."
+                                placeholderTextColor="#888"
+                                editable={editing}
+                            />
+                        </View>
+                    </View>
                 </View>
 
-                <View style={{ marginTop: 30, gap: 10, margin: 20 }}>
+                <View style={{ marginTop: 5, gap: 10, margin: 20 }}>
                     {editing ? (
                         <>
                             {/* Linha com Salvar e Cancelar */}
