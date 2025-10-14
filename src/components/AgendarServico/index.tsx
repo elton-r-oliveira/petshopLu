@@ -1,4 +1,3 @@
-// components/AgendarServico.tsx
 import React from 'react';
 import {
     View,
@@ -49,6 +48,35 @@ const SERVICOS = [
     'Consulta Veterinária',
 ];
 
+const isHorarioPassado = (dataAgendamento: Date, horario: string): boolean => {
+    const hoje = new Date();
+    const dataSelecionada = new Date(dataAgendamento);
+
+    // Verifica se é o mesmo dia (comparando ano, mês e dia)
+    const mesmoDia =
+        dataSelecionada.getDate() === hoje.getDate() &&
+        dataSelecionada.getMonth() === hoje.getMonth() &&
+        dataSelecionada.getFullYear() === hoje.getFullYear();
+
+    if (!mesmoDia) {
+        return false; // Só bloqueia horários passados se for HOJE
+    }
+
+    const [horaStr, minutoStr] = horario.split(':');
+    const hora = parseInt(horaStr, 10);
+    const minuto = parseInt(minutoStr, 10);
+
+    const horarioCompleto = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        hoje.getDate(),
+        hora,
+        minuto
+    );
+
+    return horarioCompleto < hoje;
+};
+
 export const AgendarServico: React.FC<AgendarServicoProps> = ({
     servico,
     setServico,
@@ -72,7 +100,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     getPetImage,
     formatDate,
     formatTime,
-    horariosFixos,   
+    horariosFixos,
     horariosOcupados
 }) => {
     return (
@@ -233,18 +261,22 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                     >
                         {horariosFixos.map((hora) => {
                             const isOcupado = horariosOcupados.includes(hora);
+                            const isPassado = isHorarioPassado(dataAgendamento, hora);
+                            const isDesabilitado = isOcupado || isPassado;
                             const isSelecionado = formatTime(dataAgendamento) === hora;
 
                             return (
                                 <TouchableOpacity
                                     key={hora}
-                                    disabled={isOcupado}
+                                    disabled={isDesabilitado}
                                     onPress={() => {
-                                        const [h, m] = hora.split(':');
-                                        const novaData = new Date(dataAgendamento);
-                                        novaData.setHours(Number(h));
-                                        novaData.setMinutes(Number(m));
-                                        setDataAgendamento(novaData);
+                                        if (!isDesabilitado) {
+                                            const [h, m] = hora.split(':');
+                                            const novaData = new Date(dataAgendamento);
+                                            novaData.setHours(Number(h));
+                                            novaData.setMinutes(Number(m));
+                                            setDataAgendamento(novaData);
+                                        }
                                     }}
                                     style={{
                                         paddingVertical: 10,
@@ -252,18 +284,23 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                         borderRadius: 8,
                                         backgroundColor: isSelecionado
                                             ? themes.colors.secundary
-                                            : isOcupado
+                                            : isDesabilitado
                                                 ? '#ccc'
                                                 : '#fff',
                                         borderWidth: 1,
                                         borderColor: isSelecionado
                                             ? themes.colors.secundary
                                             : '#ddd',
+                                        opacity: isDesabilitado ? 0.6 : 1,
                                     }}
                                 >
                                     <Text
                                         style={{
-                                            color: isOcupado ? '#999' : isSelecionado ? '#fff' : themes.colors.corTexto,
+                                            color: isDesabilitado
+                                                ? '#999'
+                                                : isSelecionado
+                                                    ? '#fff'
+                                                    : themes.colors.corTexto,
                                             fontWeight: isSelecionado ? '700' : '500',
                                         }}
                                     >

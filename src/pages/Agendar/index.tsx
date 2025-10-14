@@ -19,34 +19,34 @@ const formatTime = (date: Date) => date.toLocaleTimeString('pt-BR', { hour: '2-d
 
 // Função para converter Date local para Timestamp do Firestore
 const localDateToFirestoreTimestamp = (localDate: Date) => {
-  // Cria uma nova data mantendo os componentes locais mas marcando como UTC
-  return new Date(
-    Date.UTC(
-      localDate.getFullYear(),
-      localDate.getMonth(),
-      localDate.getDate(),
-      localDate.getHours(),
-      localDate.getMinutes(),
-      0, // segundos
-      0  // milissegundos
-    )
-  );
+    // Cria uma nova data mantendo os componentes locais mas marcando como UTC
+    return new Date(
+        Date.UTC(
+            localDate.getFullYear(),
+            localDate.getMonth(),
+            localDate.getDate(),
+            localDate.getHours(),
+            localDate.getMinutes(),
+            0, // segundos
+            0  // milissegundos
+        )
+    );
 };
 
 // Função para converter Timestamp do Firestore para Date local
 const firestoreTimestampToLocalDate = (timestamp: any) => {
-  if (!timestamp) return new Date();
-  
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-  
-  // Cria uma nova data com os componentes UTC interpretados como locais
-  return new Date(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate(),
-    date.getUTCHours(),
-    date.getUTCMinutes()
-  );
+    if (!timestamp) return new Date();
+
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+
+    // Cria uma nova data com os componentes UTC interpretados como locais
+    return new Date(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        date.getUTCHours(),
+        date.getUTCMinutes()
+    );
 };
 
 export default function Agendar() {
@@ -90,15 +90,15 @@ export default function Agendar() {
                 const ocupados: string[] = [];
 
                 querySnapshot.forEach((docSnap) => {
-                    const dataField = docSnap.data().dataHoraAgendamento;
-                    
-                    // Converte do Firestore para data local
-                    const dateObj = firestoreTimestampToLocalDate(dataField);
-                    
-                    // Formata como string local (HH:MM)
-                    const horaLocal = dateObj.getHours().toString().padStart(2, '0') + ':' +
-                                    dateObj.getMinutes().toString().padStart(2, '0');
+                    const data = docSnap.data();
+                    // ✅ Filtra no cliente
+                    if (data.status === "Cancelado" || data.status === "Concluído") {
+                        return; // ignora
+                    }
 
+                    const dateObj = firestoreTimestampToLocalDate(data.dataHoraAgendamento);
+                    const horaLocal = dateObj.getHours().toString().padStart(2, '0') + ':' +
+                        dateObj.getMinutes().toString().padStart(2, '0');
                     ocupados.push(horaLocal);
                 });
 
