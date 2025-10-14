@@ -204,8 +204,15 @@ export default function Agendar() {
         }
     };
 
-    const getPetImage = (type: string) => {
-        switch (type.toLowerCase()) {
+    const getPetImage = (type?: string) => {
+        // Se type for falsy ou não for string, retorna imagem padrão
+        if (!type || typeof type !== 'string') {
+            return require("../../assets/pets/pet.png");
+        }
+
+        const t = type.toLowerCase();
+
+        switch (t) {
             case "dog": return require("../../assets/pets/dog.png");
             case "cat": return require("../../assets/pets/cat.png");
             case "hamster": return require("../../assets/pets/hamster.png");
@@ -373,15 +380,16 @@ export default function Agendar() {
                     />
                 )}
             </ScrollView>
-
-            <ModalDetalhesAgendamento
-                modalDetalhesVisible={modalDetalhesVisible}
-                setModalDetalhesVisible={setModalDetalhesVisible}
-                agendamentoSelecionado={agendamentoSelecionado}
-                unidades={unidades}
-                getPetImage={getPetImage}
-                onCancelarAgendamento={cancelarAgendamento}
-            />
+            {modalDetalhesVisible && agendamentoSelecionado && (
+                <ModalDetalhesAgendamento
+                    modalDetalhesVisible={modalDetalhesVisible}
+                    setModalDetalhesVisible={setModalDetalhesVisible}
+                    agendamentoSelecionado={agendamentoSelecionado}
+                    unidades={unidades}
+                    getPetImage={getPetImage}
+                    onCancelarAgendamento={cancelarAgendamento}
+                />
+            )}
         </View>
     );
 }

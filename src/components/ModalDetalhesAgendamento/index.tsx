@@ -100,11 +100,11 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
 
     // CORREÇÃO: Garantir que é um objeto Date válido
     let date: Date | null = null;
-    
+
     if (agendamentoSelecionado.dataHoraAgendamento instanceof Date) {
         date = agendamentoSelecionado.dataHoraAgendamento;
-    } else if (agendamentoSelecionado.dataHoraAgendamento && 
-               agendamentoSelecionado.dataHoraAgendamento.toDate) {
+    } else if (agendamentoSelecionado.dataHoraAgendamento &&
+        agendamentoSelecionado.dataHoraAgendamento.toDate) {
         // Se for um Timestamp do Firestore
         date = agendamentoSelecionado.dataHoraAgendamento.toDate();
     } else if (agendamentoSelecionado.dataHoraAgendamento) {
@@ -120,11 +120,11 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
         : 'Data Indisponível';
 
     const formattedTime = date
-        ? date.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
+        ? date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
             minute: '2-digit',
             timeZone: 'America/Sao_Paulo'
-          })
+        })
         : '';
 
     console.log('Horário formatado:', formattedTime);
@@ -242,7 +242,7 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                         </View>
 
                         {/* Local e Mapa */}
-                        {unidade && (
+                        {unidade?.lat && unidade?.lng ? (
                             <View style={style.section}>
                                 <Text style={style.sectionTitle}>Local da Unidade</Text>
                                 <View style={style.locationCard}>
@@ -250,12 +250,13 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                         <Text style={style.locationName}>{unidade.nome}</Text>
                                         <Text style={style.locationAddress}>{unidade.endereco}</Text>
                                     </View>
+
                                     <View style={style.mapContainer}>
                                         <MapView
                                             style={style.map}
                                             initialRegion={{
-                                                latitude: unidade.lat,
-                                                longitude: unidade.lng,
+                                                latitude: Number(unidade.lat),
+                                                longitude: Number(unidade.lng),
                                                 latitudeDelta: 0.01,
                                                 longitudeDelta: 0.01,
                                             }}
@@ -263,12 +264,21 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                             zoomEnabled={false}
                                         >
                                             <Marker
-                                                coordinate={{ latitude: unidade.lat, longitude: unidade.lng }}
+                                                coordinate={{
+                                                    latitude: Number(unidade.lat),
+                                                    longitude: Number(unidade.lng),
+                                                }}
                                                 title={unidade.nome}
                                             />
                                         </MapView>
                                     </View>
                                 </View>
+                            </View>
+                        ) : (
+                            <View style={style.section}>
+                                <Text style={[style.sectionTitle, { color: '#999' }]}>
+                                    Local não disponível
+                                </Text>
                             </View>
                         )}
 
