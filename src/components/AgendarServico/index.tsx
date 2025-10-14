@@ -21,8 +21,6 @@ interface AgendarServicoProps {
     setDataAgendamento: (date: Date) => void;
     showDatePicker: boolean;
     setShowDatePicker: (show: boolean) => void;
-    showTimePicker: boolean;
-    setShowTimePicker: (show: boolean) => void;
     showServiceList: boolean;
     setShowServiceList: (show: boolean) => void;
     pets: any[];
@@ -35,7 +33,6 @@ interface AgendarServicoProps {
     unidades: any[];
     handleSelectService: (service: string) => void;
     onChangeDate: (event: any, selectedDate?: Date) => void;
-    onChangeTime: (event: any, selectedTime?: Date) => void;
     handleAgendar: () => void;
     getPetImage: (type: string) => any;
     formatDate: (date: Date) => string;
@@ -59,8 +56,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     setDataAgendamento,
     showDatePicker,
     setShowDatePicker,
-    showTimePicker,
-    setShowTimePicker,
     showServiceList,
     setShowServiceList,
     pets,
@@ -73,7 +68,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     unidades,
     handleSelectService,
     onChangeDate,
-    onChangeTime,
     handleAgendar,
     getPetImage,
     formatDate,
@@ -159,8 +153,9 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                     </Modal>
                 </View>
 
-                {/* Data e Horário */}
+                {/* Data e Pet lado a lado */}
                 <View style={style.dateTimeContainer}>
+                    {/* Data */}
                     <View style={[style.inputGroup, style.halfInput]}>
                         <Text style={style.inputLabel}>Data</Text>
                         <TouchableOpacity
@@ -185,32 +180,39 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                         </TouchableOpacity>
                     </View>
 
+                    {/* Pet */}
                     <View style={[style.inputGroup, style.halfInput]}>
-                        <Text style={style.inputLabel}>Horário</Text>
+                        <Text style={style.inputLabel}>Selecione o Pet</Text>
                         <TouchableOpacity
                             style={style.selectInput}
-                            onPress={() => setShowTimePicker(true)}
+                            onPress={() => setShowPetModal(true)}
                         >
-                            <MaterialIcons
-                                name="access-time"
+                            <Ionicons
+                                name="paw-outline"
                                 size={20}
                                 color={themes.colors.secundary}
                                 style={style.inputIcon}
                             />
-                            <Text style={[
-                                style.selectInputText,
-                                {
-                                    color: themes.colors.secundary,
-                                    fontWeight: '600',
-                                }
-                            ]}>
-                                {formatTime(dataAgendamento)}
-                            </Text>
+                            {petSelecionado ? (
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image
+                                        source={getPetImage(petSelecionado?.animalType || "dog")}
+                                        style={{ width: 24, height: 24, marginRight: 8, borderRadius: 12 }}
+                                    />
+                                    <Text style={[style.selectInputText, { color: themes.colors.secundary, fontWeight: '600' }]}>
+                                        {petSelecionado.name}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={[style.selectInputText, { color: '#888', fontWeight: '400' }]}>
+                                    Escolha o Pet...
+                                </Text>
+                            )}
                         </TouchableOpacity>
                     </View>
                 </View>
 
-                {/* Pickers */}
+                {/* Date Picker */}
                 {showDatePicker && (
                     <DateTimePicker
                         value={dataAgendamento}
@@ -220,93 +222,57 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                         minimumDate={new Date()}
                     />
                 )}
-                {showTimePicker && (
-                    <DateTimePicker
-                        value={dataAgendamento}
-                        mode="time"
-                        display="default"
-                        onChange={onChangeTime}
-                    />
-                )}
 
-                <Text style={[style.inputLabel, { marginTop: 10 }]}>Horários Disponíveis</Text>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}
-                >
-                    {horariosFixos.map((hora) => {
-                        const isOcupado = horariosOcupados.includes(hora);
-                        const isSelecionado = formatTime(dataAgendamento) === hora;
+                {/* Horários Disponíveis */}
+                <View style={style.inputGroup}>
+                    <Text style={style.inputLabel}>Horários Disponíveis</Text>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}
+                    >
+                        {horariosFixos.map((hora) => {
+                            const isOcupado = horariosOcupados.includes(hora);
+                            const isSelecionado = formatTime(dataAgendamento) === hora;
 
-                        return (
-                            <TouchableOpacity
-                                key={hora}
-                                disabled={isOcupado}
-                                onPress={() => {
-                                    const [h, m] = hora.split(':');
-                                    const novaData = new Date(dataAgendamento);
-                                    novaData.setHours(Number(h));
-                                    novaData.setMinutes(Number(m));
-                                    setDataAgendamento(novaData);
-                                }}
-                                style={{
-                                    paddingVertical: 10,
-                                    paddingHorizontal: 18,
-                                    borderRadius: 8,
-                                    backgroundColor: isSelecionado
-                                        ? themes.colors.secundary
-                                        : isOcupado
-                                            ? '#ccc'
-                                            : '#fff',
-                                    borderWidth: 1,
-                                    borderColor: isSelecionado
-                                        ? themes.colors.secundary
-                                        : '#ddd',
-                                }}
-                            >
-                                <Text
+                            return (
+                                <TouchableOpacity
+                                    key={hora}
+                                    disabled={isOcupado}
+                                    onPress={() => {
+                                        const [h, m] = hora.split(':');
+                                        const novaData = new Date(dataAgendamento);
+                                        novaData.setHours(Number(h));
+                                        novaData.setMinutes(Number(m));
+                                        setDataAgendamento(novaData);
+                                    }}
                                     style={{
-                                        color: isOcupado ? '#999' : isSelecionado ? '#fff' : themes.colors.corTexto,
-                                        fontWeight: isSelecionado ? '700' : '500',
+                                        paddingVertical: 10,
+                                        paddingHorizontal: 18,
+                                        borderRadius: 8,
+                                        backgroundColor: isSelecionado
+                                            ? themes.colors.secundary
+                                            : isOcupado
+                                                ? '#ccc'
+                                                : '#fff',
+                                        borderWidth: 1,
+                                        borderColor: isSelecionado
+                                            ? themes.colors.secundary
+                                            : '#ddd',
                                     }}
                                 >
-                                    {hora}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </ScrollView>
-
-                {/* Pet */}
-                <View style={[style.inputGroup, style.serviceDropdownContainer]}>
-                    <Text style={style.inputLabel}>Selecione o Pet</Text>
-                    <TouchableOpacity
-                        style={style.selectInput}
-                        onPress={() => setShowPetModal(true)}
-                    >
-                        <Ionicons
-                            name="paw-outline"
-                            size={20}
-                            color={themes.colors.secundary}
-                            style={style.inputIcon}
-                        />
-                        {petSelecionado ? (
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Image
-                                    source={getPetImage(petSelecionado?.animalType || "dog")}
-                                    style={{ width: 24, height: 24, marginRight: 8, borderRadius: 12 }}
-                                />
-                                <Text style={[style.selectInputText, { color: themes.colors.secundary, fontWeight: '600' }]}>
-                                    {petSelecionado.name}
-                                </Text>
-                            </View>
-                        ) : (
-                            <Text style={[style.selectInputText, { color: '#888', fontWeight: '400' }]}>
-                                Escolha o Pet...
-                            </Text>
-                        )}
-                    </TouchableOpacity>
+                                    <Text
+                                        style={{
+                                            color: isOcupado ? '#999' : isSelecionado ? '#fff' : themes.colors.corTexto,
+                                            fontWeight: isSelecionado ? '700' : '500',
+                                        }}
+                                    >
+                                        {hora}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </ScrollView>
                 </View>
 
                 {/* Modal de Pets */}

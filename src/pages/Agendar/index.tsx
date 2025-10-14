@@ -17,6 +17,38 @@ import { ModalDetalhesAgendamento } from "../../components/ModalDetalhesAgendame
 const formatDate = (date: Date) => date.toLocaleDateString('pt-BR');
 const formatTime = (date: Date) => date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
+// Função para converter Date local para Timestamp do Firestore
+const localDateToFirestoreTimestamp = (localDate: Date) => {
+  // Cria uma nova data mantendo os componentes locais mas marcando como UTC
+  return new Date(
+    Date.UTC(
+      localDate.getFullYear(),
+      localDate.getMonth(),
+      localDate.getDate(),
+      localDate.getHours(),
+      localDate.getMinutes(),
+      0, // segundos
+      0  // milissegundos
+    )
+  );
+};
+
+// Função para converter Timestamp do Firestore para Date local
+const firestoreTimestampToLocalDate = (timestamp: any) => {
+  if (!timestamp) return new Date();
+  
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  
+  // Cria uma nova data com os componentes UTC interpretados como locais
+  return new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes()
+  );
+};
+
 export default function Agendar() {
     // Estados
     const [servico, setServico] = useState('');
@@ -39,16 +71,19 @@ export default function Agendar() {
     useEffect(() => {
         const carregarHorariosOcupados = async () => {
             try {
-                // limite: início e fim do dia da dataAgendamento
+                // Cria datas de início e fim do dia em UTC
                 const inicioDoDia = new Date(dataAgendamento);
                 inicioDoDia.setHours(0, 0, 0, 0);
+                const inicioDoDiaUTC = localDateToFirestoreTimestamp(inicioDoDia);
+
                 const fimDoDia = new Date(dataAgendamento);
                 fimDoDia.setHours(23, 59, 59, 999);
+                const fimDoDiaUTC = localDateToFirestoreTimestamp(fimDoDia);
 
                 const q = query(
                     collection(db, "agendamentos"),
-                    where("dataHoraAgendamento", ">=", inicioDoDia),
-                    where("dataHoraAgendamento", "<=", fimDoDia)
+                    where("dataHoraAgendamento", ">=", inicioDoDiaUTC),
+                    where("dataHoraAgendamento", "<=", fimDoDiaUTC)
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -56,22 +91,24 @@ export default function Agendar() {
 
                 querySnapshot.forEach((docSnap) => {
                     const dataField = docSnap.data().dataHoraAgendamento;
-                    // Se for Timestamp do Firestore -> toDate(); senão, trate como Date
-                    const dateObj = dataField?.toDate ? dataField.toDate() : new Date(dataField);
-                    const hora = dateObj.toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    });
-                    ocupados.push(hora);
+                    
+                    // Converte do Firestore para data local
+                    const dateObj = firestoreTimestampToLocalDate(dataField);
+                    
+                    // Formata como string local (HH:MM)
+                    const horaLocal = dateObj.getHours().toString().padStart(2, '0') + ':' +
+                                    dateObj.getMinutes().toString().padStart(2, '0');
+
+                    ocupados.push(horaLocal);
                 });
 
                 setHorariosOcupados(ocupados);
+
             } catch (error) {
                 console.error("Erro ao carregar horários ocupados:", error);
             }
         };
 
-        // Carrega apenas quando a aba atual é agendar (ou sempre que quiser)
         if (abaAtual === 'agendar') {
             carregarHorariosOcupados();
         }
@@ -144,23 +181,13 @@ export default function Agendar() {
         }
 
         try {
-            // 🔹 Ajuste local SEM deslocamento de fuso
-            // Cria uma nova data com os mesmos componentes do horário selecionado,
-            // mas fixando o valor local literal (ex: 13:00) sem aplicar offset UTC.
-            const localDate = new Date(
-                dataAgendamento.getFullYear(),
-                dataAgendamento.getMonth(),
-                dataAgendamento.getDate(),
-                dataAgendamento.getHours(),
-                dataAgendamento.getMinutes(),
-                0,
-                0
-            );
+            // Converte a data local para formato correto do Firestore
+            const dataFirestore = localDateToFirestoreTimestamp(dataAgendamento);
 
             await addDoc(collection(db, 'agendamentos'), {
                 userId: userId,
                 service: servico,
-                dataHoraAgendamento: localDate, // ← agora salva o horário "13:00" literal
+                dataHoraAgendamento: dataFirestore, // Agora está correto
                 unidade: unidadeSelecionada?.nome || null,
                 enderecoUnidade: unidadeSelecionada?.endereco || null,
                 unidadeTelefone: unidadeSelecionada?.telefone || null,
@@ -173,7 +200,6 @@ export default function Agendar() {
             });
 
             Alert.alert('Sucesso', 'Seu agendamento foi realizado com sucesso!');
-
             setServico('');
             setDataAgendamento(new Date());
             setPetSelecionado(null);
@@ -198,7 +224,12 @@ export default function Agendar() {
     };
 
     const abrirDetalhesAgendamento = (agendamento: any) => {
-        setAgendamentoSelecionado(agendamento);
+        // Converte a data do Firestore para local antes de exibir
+        const agendamentoComDataLocal = {
+            ...agendamento,
+            dataHoraAgendamento: firestoreTimestampToLocalDate(agendamento.dataHoraAgendamento)
+        };
+        setAgendamentoSelecionado(agendamentoComDataLocal);
         setModalDetalhesVisible(true);
     };
 
@@ -237,7 +268,9 @@ export default function Agendar() {
 
                 const listaAgendamentos = querySnapshot.docs.map(doc => ({
                     id: doc.id,
-                    ...doc.data()
+                    ...doc.data(),
+                    // Converte a data do Firestore para local
+                    dataHoraAgendamento: firestoreTimestampToLocalDate(doc.data().dataHoraAgendamento)
                 }));
 
                 setMeusAgendamentos(listaAgendamentos);
@@ -303,8 +336,6 @@ export default function Agendar() {
                         setDataAgendamento={setDataAgendamento}
                         showDatePicker={showDatePicker}
                         setShowDatePicker={setShowDatePicker}
-                        showTimePicker={showTimePicker}
-                        setShowTimePicker={setShowTimePicker}
                         showServiceList={showServiceList}
                         setShowServiceList={setShowServiceList}
                         pets={pets}
@@ -317,7 +348,6 @@ export default function Agendar() {
                         unidades={unidades}
                         handleSelectService={handleSelectService}
                         onChangeDate={onChangeDate}
-                        onChangeTime={onChangeTime}
                         handleAgendar={handleAgendar}
                         getPetImage={getPetImage}
                         formatDate={formatDate}
