@@ -14,14 +14,14 @@ import { themes } from "../../global/themes";
 
 interface TopBarProps {
     userName: string;
-    petName?: string;
+
     location: string;
     onLogoPress?: () => void;
 }
 
 export default function TopBar({
     userName,
-    petName = "Alfred",
+
     location,
 }: TopBarProps) {
     const [notificationModalVisible, setNotificationModalVisible] = useState(false);
@@ -63,7 +63,6 @@ export default function TopBar({
             <View style={style.headerText}>
                 <Text style={style.hello}>Olá!</Text>
                 <Text style={style.userName}>{userName || "Visitante"}</Text>
-                <Text style={style.petnName}>Pet: {petName}</Text>
                 <Text style={style.location}>{location}</Text>
             </View>
 

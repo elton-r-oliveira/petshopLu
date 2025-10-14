@@ -9,7 +9,8 @@ import {
     Alert,
     Platform, 
     Image,
-    Modal
+    Modal,
+    ActivityIndicator
 } from "react-native";
 
 // Removendo TextInput não usado para Data/Hora/Serviço
@@ -59,6 +60,11 @@ export default function Agendar() {
     const [pets, setPets] = useState<any[]>([]);
     const [petSelecionado, setPetSelecionado] = useState<any>(null);
     const [showPetModal, setShowPetModal] = useState(false);
+
+    // 🔹 Novos estados do código 2
+    const [abaAtual, setAbaAtual] = useState<'agendar' | 'meusAgendamentos'>('agendar');
+    const [meusAgendamentos, setMeusAgendamentos] = useState<any[]>([]);
+    const [loadingAgendamentos, setLoadingAgendamentos] = useState(false);
 
     const [unidadeSelecionada, setUnidadeSelecionada] = useState<any>(null);
 
@@ -190,359 +196,522 @@ export default function Agendar() {
         }
     };
 
+    // 🔹 Novo useEffect do código 2 para carregar agendamentos
+    useEffect(() => {
+        const userId = auth.currentUser?.uid;
+        if (!userId) return;
+
+        const carregarAgendamentos = async () => {
+            try {
+                setLoadingAgendamentos(true);
+                const q = query(collection(db, "agendamentos"), where("userId", "==", userId));
+                const querySnapshot = await getDocs(q);
+
+                const listaAgendamentos = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                setMeusAgendamentos(listaAgendamentos);
+            } catch (error) {
+                console.error("Erro ao buscar agendamentos:", error);
+                Alert.alert("Erro", "Não foi possível carregar seus agendamentos.");
+            } finally {
+                setLoadingAgendamentos(false);
+            }
+        };
+
+        if (abaAtual === 'meusAgendamentos') {
+            carregarAgendamentos();
+        }
+    }, [abaAtual]);
+
     return (
         <View style={{ flex: 1 }}>
             <ScrollView style={style.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
 
-                <Text style={style.sectionTitle}>Agendar Serviço</Text>
-                <Text style={style.sectionSubtitle}>Selecione o tipo de serviço, a data e o horário desejados para o seu pet.</Text>
-
-                <View style={style.formContainer}>
-                    {/* 🔹 Serviço - Agora dentro de uma View que será o Container do Dropdown */}
-                    <View style={[style.inputGroup, style.serviceDropdownContainer]}>
-                        <Text style={style.inputLabel}>Tipo de Serviço</Text>
-
-                        {/* 1. INPUT DE SELEÇÃO */}
-                        <TouchableOpacity
-                            style={style.selectInput}
-                            // 🔹 ALTERAÇÃO: Alterna a visibilidade da lista
-                            onPress={() => setShowServiceList(!showServiceList)}
-                        >
-                            <Ionicons
-                                name="cut-outline"
-                                size={20}
-                                color={themes.colors.secundary}
-                                style={style.inputIcon}
-                            />
-                            <Text style={[
-                                style.selectInputText,
-                                {
-                                    color: servico ? themes.colors.secundary : '#888',
-                                    fontWeight: servico ? '600' : '400',
-                                }
-                            ]}>
-                                {servico || "Escolha o Serviço..."}
-                            </Text>
-                        </TouchableOpacity>
-
-                        {/* Dropdown de Serviço usando Modal */}
-                        <Modal
-                            visible={showServiceList}
-                            transparent={true}
-                            animationType="fade"
-                            onRequestClose={() => setShowServiceList(false)}
-                        >
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: 'rgba(0,0,0,0.2)',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    paddingHorizontal: 20,
-                                }}
-                                activeOpacity={1}
-                                onPressOut={() => setShowServiceList(false)} // fecha ao clicar fora
-                            >
-                                <View
-                                    style={{
-                                        width: '100%',
-                                        maxHeight: '50%',
-                                        backgroundColor: '#fff',
-                                        borderRadius: 12,
-                                        paddingVertical: 10,
-                                    }}
-                                >
-                                    <ScrollView showsVerticalScrollIndicator={true}>
-                                        {SERVICOS.map((s) => (
-                                            <TouchableOpacity
-                                                key={s}
-                                                style={{
-                                                    paddingVertical: 15,
-                                                    paddingHorizontal: 20,
-                                                }}
-                                                onPress={() => {
-                                                    handleSelectService(s);
-                                                    setShowServiceList(false);
-                                                }}
-                                            >
-                                                <Text style={{ fontSize: 16 }}>{s}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </ScrollView>
-                                </View>
-                            </TouchableOpacity>
-                        </Modal>
-
-                    </View>
-
-                    {/* 🔹 Data e Horário (Organizados lado a lado) */}
-                    <View style={style.dateTimeContainer}>
-
-                        {/* Data */}
-                        <View style={[style.inputGroup, style.halfInput]}>
-                            <Text style={style.inputLabel}>Data</Text>
-                            <TouchableOpacity
-                                style={style.selectInput}
-                                onPress={() => setShowDatePicker(true)}
-                            >
-                                <MaterialIcons
-                                    name="date-range"
-                                    size={20}
-                                    color={themes.colors.secundary}
-                                    style={style.inputIcon}
-                                />
-                                {/* CORRIGIDO: Mostra a data formatada. A cor pode ser fixa já que a data inicial sempre existirá. */}
-                                <Text style={[
-                                    style.selectInputText,
-                                    {
-                                        color: themes.colors.secundary,
-                                        fontWeight: '600',
-                                    }
-                                ]}>
-                                    {formatDate(dataAgendamento)}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Horário */}
-                        <View style={[style.inputGroup, style.halfInput]}>
-                            <Text style={style.inputLabel}>Horário</Text>
-                            <TouchableOpacity
-                                style={style.selectInput}
-                                onPress={() => setShowTimePicker(true)}
-                            >
-                                <MaterialIcons
-                                    name="access-time"
-                                    size={20}
-                                    color={themes.colors.secundary}
-                                    style={style.inputIcon}
-                                />
-                                {/* CORRIGIDO: Mostra a hora formatada. A cor pode ser fixa. */}
-                                <Text style={[
-                                    style.selectInputText,
-                                    {
-                                        color: themes.colors.secundary,
-                                        fontWeight: '600',
-                                    }
-                                ]}>
-                                    {formatTime(dataAgendamento)}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Seletor de Data */}
-                    {showDatePicker && (
-                        <DateTimePicker
-                            value={dataAgendamento}
-                            mode="date"
-                            display="default"
-                            onChange={onChangeDate}
-                            minimumDate={new Date()}
-                        />
-                    )}
-
-                    {/* Seletor de Hora */}
-                    {showTimePicker && (
-                        <DateTimePicker
-                            value={dataAgendamento}
-                            mode="time"
-                            display="default"
-                            onChange={onChangeTime}
-                        />
-                    )}
-
-                    {/* Seletor de Pet */}
-                    <View style={[style.inputGroup, style.serviceDropdownContainer]}>
-                        <Text style={style.inputLabel}>Selecione o Pet</Text>
-
-                        <TouchableOpacity
-                            style={style.selectInput}
-                            onPress={() => setShowPetModal(true)}
-                        >
-                            <Ionicons
-                                name="paw-outline"
-                                size={20}
-                                color={themes.colors.secundary}
-                                style={style.inputIcon}
-                            />
-                            {petSelecionado ? (
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Image
-                                        source={getPetImage(petSelecionado?.animalType || "dog")}
-                                        style={{ width: 24, height: 24, marginRight: 8, borderRadius: 12 }}
-                                    />
-                                    <Text style={[style.selectInputText, { color: themes.colors.secundary, fontWeight: '600' }]}>
-                                        {petSelecionado.name}
-                                    </Text>
-                                </View>
-                            ) : (
-                                <Text style={[style.selectInputText, { color: '#888', fontWeight: '400' }]}>
-                                    Escolha o Pet...
-                                </Text>
-                            )}
-                        </TouchableOpacity>
-                    </View>
-
-                    <Modal
-                        visible={showPetModal}
-                        animationType="fade"
-                        transparent={true}
-                        onRequestClose={() => setShowPetModal(false)}
+                {/* 🔹 SWITCH DE ABAS - Adicionado do código 2 */}
+                <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 15, marginTop: 50 }}>
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: abaAtual === 'agendar' ? themes.colors.secundary : '#ddd',
+                            paddingVertical: 10,
+                            paddingHorizontal: 20,
+                            borderTopLeftRadius: 10,
+                            borderBottomLeftRadius: 10,
+                        }}
+                        onPress={() => setAbaAtual('agendar')}
                     >
-                        <View style={{
-                            flex: 1,
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                            <View style={{
-                                width: '90%',
-                                maxHeight: '70%',
-                                backgroundColor: '#fff',
-                                borderRadius: 10,
-                                padding: 10
-                            }}>
-                                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 10 }}>Selecione o Pet</Text>
+                        <Text
+                            style={{
+                                color: abaAtual === 'agendar' ? '#fff' : '#555',
+                                fontWeight: '600',
+                            }}
+                        >
+                            Agendar Serviço
+                        </Text>
+                    </TouchableOpacity>
 
-                                {/* Scroll vertical correto */}
-                                <ScrollView
-                                    showsVerticalScrollIndicator={true}
-                                    contentContainerStyle={{
-                                        flexDirection: 'row',
-                                        flexWrap: 'wrap',
-                                        justifyContent: 'space-between',
-                                        paddingBottom: 10
-                                    }}
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: abaAtual === 'meusAgendamentos' ? themes.colors.secundary : '#ddd',
+                            paddingVertical: 10,
+                            paddingHorizontal: 20,
+                            borderTopRightRadius: 10,
+                            borderBottomRightRadius: 10,
+                        }}
+                        onPress={() => setAbaAtual('meusAgendamentos')}
+                    >
+                        <Text
+                            style={{
+                                color: abaAtual === 'meusAgendamentos' ? '#fff' : '#555',
+                                fontWeight: '600',
+                            }}
+                        >
+                            Meus Agendamentos
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* 🔹 CONTEÚDO CONDICIONAL - Adicionado do código 2 */}
+                {abaAtual === 'agendar' ? (
+                    <>
+                        {/* 🔸 CONTEÚDO ORIGINAL DA ABA "AGENDAR" */}
+                        <Text style={style.sectionTitle}>Agendar Serviço</Text>
+                        <Text style={style.sectionSubtitle}>Selecione o tipo de serviço, a data e o horário desejados para o seu pet.</Text>
+
+                        <View style={style.formContainer}>
+                            {/* 🔹 Serviço - Agora dentro de uma View que será o Container do Dropdown */}
+                            <View style={[style.inputGroup, style.serviceDropdownContainer]}>
+                                <Text style={style.inputLabel}>Tipo de Serviço</Text>
+
+                                {/* 1. INPUT DE SELEÇÃO */}
+                                <TouchableOpacity
+                                    style={style.selectInput}
+                                    // 🔹 ALTERAÇÃO: Alterna a visibilidade da lista
+                                    onPress={() => setShowServiceList(!showServiceList)}
                                 >
-                                    {pets.map((pet) => (
-                                        <TouchableOpacity
-                                            key={pet.id}
+                                    <Ionicons
+                                        name="cut-outline"
+                                        size={20}
+                                        color={themes.colors.secundary}
+                                        style={style.inputIcon}
+                                    />
+                                    <Text style={[
+                                        style.selectInputText,
+                                        {
+                                            color: servico ? themes.colors.secundary : '#888',
+                                            fontWeight: servico ? '600' : '400',
+                                        }
+                                    ]}>
+                                        {servico || "Escolha o Serviço..."}
+                                    </Text>
+                                </TouchableOpacity>
+
+                                {/* Dropdown de Serviço usando Modal */}
+                                <Modal
+                                    visible={showServiceList}
+                                    transparent={true}
+                                    animationType="fade"
+                                    onRequestClose={() => setShowServiceList(false)}
+                                >
+                                    <TouchableOpacity
+                                        style={{
+                                            flex: 1,
+                                            backgroundColor: 'rgba(0,0,0,0.2)',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            paddingHorizontal: 20,
+                                        }}
+                                        activeOpacity={1}
+                                        onPressOut={() => setShowServiceList(false)} // fecha ao clicar fora
+                                    >
+                                        <View
                                             style={{
-                                                width: '30%', // 3 colunas
-                                                marginBottom: 15,
-                                                alignItems: 'center'
-                                            }}
-                                            onPress={() => {
-                                                setPetSelecionado(pet);
-                                                setShowPetModal(false);
+                                                width: '100%',
+                                                maxHeight: '50%',
+                                                backgroundColor: '#fff',
+                                                borderRadius: 12,
+                                                paddingVertical: 10,
                                             }}
                                         >
+                                            <ScrollView showsVerticalScrollIndicator={true}>
+                                                {SERVICOS.map((s) => (
+                                                    <TouchableOpacity
+                                                        key={s}
+                                                        style={{
+                                                            paddingVertical: 15,
+                                                            paddingHorizontal: 20,
+                                                        }}
+                                                        onPress={() => {
+                                                            handleSelectService(s);
+                                                            setShowServiceList(false);
+                                                        }}
+                                                    >
+                                                        <Text style={{ fontSize: 16 }}>{s}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                        </View>
+                                    </TouchableOpacity>
+                                </Modal>
+
+                            </View>
+
+                            {/* 🔹 Data e Horário (Organizados lado a lado) */}
+                            <View style={style.dateTimeContainer}>
+
+                                {/* Data */}
+                                <View style={[style.inputGroup, style.halfInput]}>
+                                    <Text style={style.inputLabel}>Data</Text>
+                                    <TouchableOpacity
+                                        style={style.selectInput}
+                                        onPress={() => setShowDatePicker(true)}
+                                    >
+                                        <MaterialIcons
+                                            name="date-range"
+                                            size={20}
+                                            color={themes.colors.secundary}
+                                            style={style.inputIcon}
+                                        />
+                                        {/* CORRIGIDO: Mostra a data formatada. A cor pode ser fixa já que a data inicial sempre existirá. */}
+                                        <Text style={[
+                                            style.selectInputText,
+                                            {
+                                                color: themes.colors.secundary,
+                                                fontWeight: '600',
+                                            }
+                                        ]}>
+                                            {formatDate(dataAgendamento)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Horário */}
+                                <View style={[style.inputGroup, style.halfInput]}>
+                                    <Text style={style.inputLabel}>Horário</Text>
+                                    <TouchableOpacity
+                                        style={style.selectInput}
+                                        onPress={() => setShowTimePicker(true)}
+                                    >
+                                        <MaterialIcons
+                                            name="access-time"
+                                            size={20}
+                                            color={themes.colors.secundary}
+                                            style={style.inputIcon}
+                                        />
+                                        {/* CORRIGIDO: Mostra a hora formatada. A cor pode ser fixa. */}
+                                        <Text style={[
+                                            style.selectInputText,
+                                            {
+                                                color: themes.colors.secundary,
+                                                fontWeight: '600',
+                                            }
+                                        ]}>
+                                            {formatTime(dataAgendamento)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            {/* Seletor de Data */}
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={dataAgendamento}
+                                    mode="date"
+                                    display="default"
+                                    onChange={onChangeDate}
+                                    minimumDate={new Date()}
+                                />
+                            )}
+
+                            {/* Seletor de Hora */}
+                            {showTimePicker && (
+                                <DateTimePicker
+                                    value={dataAgendamento}
+                                    mode="time"
+                                    display="default"
+                                    onChange={onChangeTime}
+                                />
+                            )}
+
+                            {/* Seletor de Pet */}
+                            <View style={[style.inputGroup, style.serviceDropdownContainer]}>
+                                <Text style={style.inputLabel}>Selecione o Pet</Text>
+
+                                <TouchableOpacity
+                                    style={style.selectInput}
+                                    onPress={() => setShowPetModal(true)}
+                                >
+                                    <Ionicons
+                                        name="paw-outline"
+                                        size={20}
+                                        color={themes.colors.secundary}
+                                        style={style.inputIcon}
+                                    />
+                                    {petSelecionado ? (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                             <Image
-                                                source={getPetImage(pet.animalType || "dog")}
-                                                style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 5 }}
+                                                source={getPetImage(petSelecionado?.animalType || "dog")}
+                                                style={{ width: 24, height: 24, marginRight: 8, borderRadius: 12 }}
                                             />
-                                            <Text style={{ textAlign: 'center' }}>{pet.name}</Text>
+                                            <Text style={[style.selectInputText, { color: themes.colors.secundary, fontWeight: '600' }]}>
+                                                {petSelecionado.name}
+                                            </Text>
+                                        </View>
+                                    ) : (
+                                        <Text style={[style.selectInputText, { color: '#888', fontWeight: '400' }]}>
+                                            Escolha o Pet...
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+
+                            <Modal
+                                visible={showPetModal}
+                                animationType="fade"
+                                transparent={true}
+                                onRequestClose={() => setShowPetModal(false)}
+                            >
+                                <View style={{
+                                    flex: 1,
+                                    backgroundColor: 'rgba(0,0,0,0.5)',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                    <View style={{
+                                        width: '90%',
+                                        maxHeight: '70%',
+                                        backgroundColor: '#fff',
+                                        borderRadius: 10,
+                                        padding: 10
+                                    }}>
+                                        <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 10 }}>Selecione o Pet</Text>
+
+                                        {/* Scroll vertical correto */}
+                                        <ScrollView
+                                            showsVerticalScrollIndicator={true}
+                                            contentContainerStyle={{
+                                                flexDirection: 'row',
+                                                flexWrap: 'wrap',
+                                                justifyContent: 'space-between',
+                                                paddingBottom: 10
+                                            }}
+                                        >
+                                            {pets.map((pet) => (
+                                                <TouchableOpacity
+                                                    key={pet.id}
+                                                    style={{
+                                                        width: '30%', // 3 colunas
+                                                        marginBottom: 15,
+                                                        alignItems: 'center'
+                                                    }}
+                                                    onPress={() => {
+                                                        setPetSelecionado(pet);
+                                                        setShowPetModal(false);
+                                                    }}
+                                                >
+                                                    <Image
+                                                        source={getPetImage(pet.animalType || "dog")}
+                                                        style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 5 }}
+                                                    />
+                                                    <Text style={{ textAlign: 'center' }}>{pet.name}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </ScrollView>
+
+                                        <TouchableOpacity
+                                            style={{
+                                                marginTop: 10,
+                                                alignSelf: 'flex-end',
+                                                padding: 8
+                                            }}
+                                            onPress={() => setShowPetModal(false)}
+                                        >
+                                            <Text style={{ color: 'red', fontWeight: '600' }}>Fechar</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </Modal>
+                            <View style={style.inputGroup}>
+                                <Text style={style.inputLabel}>Selecione a Unidade</Text>
+
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={{ flexDirection: "row", gap: 16, paddingVertical: 10 }}
+                                >
+                                    {unidades.map((unidade, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            activeOpacity={0.9}
+                                            onPress={() => setUnidadeSelecionada(unidade)}
+                                            style={{
+                                                width: 250,
+                                                backgroundColor:
+                                                    unidadeSelecionada?.nome === unidade.nome
+                                                        ? themes.colors.secundary
+                                                        : "#fff",
+                                                borderRadius: 16,
+                                                overflow: "hidden",
+                                                borderWidth: 2,
+                                                borderColor:
+                                                    unidadeSelecionada?.nome === unidade.nome
+                                                        ? themes.colors.corTexto
+                                                        : "#ddd",
+                                                shadowColor: "#000",
+                                                shadowOpacity: 0.15,
+                                                shadowRadius: 4,
+                                                elevation: 3,
+                                            }}
+                                        >
+                                            {/* Nome da Unidade */}
+                                            <View style={{ padding: 10 }}>
+                                                <Text
+                                                    style={{
+                                                        fontWeight: "700",
+                                                        fontSize: 16,
+                                                        color:
+                                                            unidadeSelecionada?.nome === unidade.nome
+                                                                ? "#fff"
+                                                                : "#333",
+                                                    }}
+                                                >
+                                                    {unidade.nome}
+                                                </Text>
+                                                <Text
+                                                    style={{
+                                                        fontSize: 13,
+                                                        color:
+                                                            unidadeSelecionada?.nome === unidade.nome
+                                                                ? "#f1f1f1"
+                                                                : "#777",
+                                                    }}
+                                                >
+                                                    {unidade.endereco}
+                                                </Text>
+                                            </View>
+
+                                            {/* Mapa Miniatura */}
+                                            <View style={{ height: 140 }}>
+                                                <MapView
+                                                    style={{ flex: 1 }}
+                                                    initialRegion={{
+                                                        latitude: unidade.lat,
+                                                        longitude: unidade.lng,
+                                                        latitudeDelta: 0.01,
+                                                        longitudeDelta: 0.01,
+                                                    }}
+                                                    scrollEnabled={false}
+                                                    zoomEnabled={false}
+                                                >
+                                                    <Marker
+                                                        coordinate={{
+                                                            latitude: unidade.lat,
+                                                            longitude: unidade.lng,
+                                                        }}
+                                                        title={unidade.nome}
+                                                    />
+                                                </MapView>
+                                            </View>
                                         </TouchableOpacity>
                                     ))}
                                 </ScrollView>
 
-                                <TouchableOpacity
-                                    style={{
-                                        marginTop: 10,
-                                        alignSelf: 'flex-end',
-                                        padding: 8
-                                    }}
-                                    onPress={() => setShowPetModal(false)}
-                                >
-                                    <Text style={{ color: 'red', fontWeight: '600' }}>Fechar</Text>
-                                </TouchableOpacity>
+
                             </View>
+                            {/* Botão de Agendar */}
+                            <TouchableOpacity style={style.button} onPress={handleAgendar}>
+                                <Text style={style.buttonText}>Confirmar Agendamento</Text>
+                                <MaterialIcons name="done-all" size={24} color="#fff" style={{ marginLeft: 10 }} />
+                            </TouchableOpacity>
                         </View>
-                    </Modal>
-                    <View style={style.inputGroup}>
-                        <Text style={style.inputLabel}>Selecione a Unidade</Text>
+                    </>
+                ) : (
+                    <>
+                        {/* 🔸 CONTEÚDO DA ABA "MEUS AGENDAMENTOS" - Adicionado do código 2 */}
+                        <Text style={style.sectionTitle}>Meus Agendamentos</Text>
 
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ flexDirection: "row", gap: 16, paddingVertical: 10 }}
-                        >
-                            {unidades.map((unidade, index) => (
-                                <TouchableOpacity
-                                    key={index}
-                                    activeOpacity={0.9}
-                                    onPress={() => setUnidadeSelecionada(unidade)}
+                        {loadingAgendamentos ? (
+                            <ActivityIndicator
+                                size="large"
+                                color={themes.colors.secundary}
+                                style={{ marginTop: 20 }}
+                            />
+                        ) : meusAgendamentos.length === 0 ? (
+                            <Text
+                                style={{
+                                    textAlign: 'center',
+                                    marginTop: 20,
+                                    color: '#666',
+                                }}
+                            >
+                                Você ainda não possui agendamentos.
+                            </Text>
+                        ) : (
+                            meusAgendamentos.map((item) => (
+                                <View
+                                    key={item.id}
                                     style={{
-                                        width: 250,
-                                        backgroundColor:
-                                            unidadeSelecionada?.nome === unidade.nome
-                                                ? themes.colors.secundary
-                                                : "#fff",
-                                        borderRadius: 16,
-                                        overflow: "hidden",
-                                        borderWidth: 2,
-                                        borderColor:
-                                            unidadeSelecionada?.nome === unidade.nome
-                                                ? themes.colors.corTexto
-                                                : "#ddd",
-                                        shadowColor: "#000",
-                                        shadowOpacity: 0.15,
+                                        backgroundColor: '#fff',
+                                        marginVertical: 10,
+                                        marginHorizontal: 10,
+                                        borderRadius: 12,
+                                        padding: 15,
+                                        shadowColor: '#000',
+                                        shadowOpacity: 0.1,
                                         shadowRadius: 4,
-                                        elevation: 3,
+                                        elevation: 2,
                                     }}
                                 >
-                                    {/* Nome da Unidade */}
-                                    <View style={{ padding: 10 }}>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                        }}
+                                    >
                                         <Text
                                             style={{
-                                                fontWeight: "700",
-                                                fontSize: 16,
-                                                color:
-                                                    unidadeSelecionada?.nome === unidade.nome
-                                                        ? "#fff"
-                                                        : "#333",
+                                                fontWeight: '700',
+                                                color: themes.colors.secundary,
                                             }}
                                         >
-                                            {unidade.nome}
+                                            {item.service}
                                         </Text>
-                                        <Text
-                                            style={{
-                                                fontSize: 13,
-                                                color:
-                                                    unidadeSelecionada?.nome === unidade.nome
-                                                        ? "#f1f1f1"
-                                                        : "#777",
-                                            }}
-                                        >
-                                            {unidade.endereco}
-                                        </Text>
+                                        <Text style={{ color: '#555' }}>{item.status}</Text>
                                     </View>
 
-                                    {/* Mapa Miniatura */}
-                                    <View style={{ height: 140 }}>
-                                        <MapView
-                                            style={{ flex: 1 }}
-                                            initialRegion={{
-                                                latitude: unidade.lat,
-                                                longitude: unidade.lng,
-                                                latitudeDelta: 0.01,
-                                                longitudeDelta: 0.01,
-                                            }}
-                                            scrollEnabled={false}
-                                            zoomEnabled={false}
-                                        >
-                                            <Marker
-                                                coordinate={{
-                                                    latitude: unidade.lat,
-                                                    longitude: unidade.lng,
-                                                }}
-                                                title={unidade.nome}
-                                            />
-                                        </MapView>
-                                    </View>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
+                                    {item.petNome && (
+                                        <Text style={{ marginTop: 5 }}>
+                                            🐾 Pet:{' '}
+                                            <Text style={{ fontWeight: '600' }}>{item.petNome}</Text>
+                                        </Text>
+                                    )}
 
+                                    {item.dataHoraAgendamento?.seconds && (
+                                        <Text style={{ marginTop: 3 }}>
+                                            📅{' '}
+                                            {new Date(
+                                                item.dataHoraAgendamento.seconds * 1000
+                                            ).toLocaleDateString('pt-BR')}{' '}
+                                            às{' '}
+                                            {new Date(
+                                                item.dataHoraAgendamento.seconds * 1000
+                                            ).toLocaleTimeString('pt-BR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </Text>
+                                    )}
 
-                    </View>
-                    {/* Botão de Agendar */}
-                    <TouchableOpacity style={style.button} onPress={handleAgendar}>
-                        <Text style={style.buttonText}>Confirmar Agendamento</Text>
-                        <MaterialIcons name="done-all" size={24} color="#fff" style={{ marginLeft: 10 }} />
-                    </TouchableOpacity>
-                </View>
+                                    {item.unidade && (
+                                        <Text style={{ marginTop: 3 }}>📍 {item.unidade}</Text>
+                                    )}
+                                </View>
+                            ))
+                        )}
+                    </>
+                )}
 
             </ScrollView>
         </View>

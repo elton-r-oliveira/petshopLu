@@ -51,8 +51,8 @@ export default function Home() {
     <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
       {/* TopBar */}
       <TopBar
-        userName={topBarNome || "Usuário"}
-        location={topBarEndereco || "Endereço não informado"}
+        userName={topBarNome || ""}
+        location={topBarEndereco || ""}
       />
       {/* Seção de ações rápidas */}
       <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>
