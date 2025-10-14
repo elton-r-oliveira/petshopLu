@@ -40,6 +40,8 @@ interface AgendarServicoProps {
     getPetImage: (type: string) => any;
     formatDate: (date: Date) => string;
     formatTime: (date: Date) => string;
+    horariosFixos: string[];
+    horariosOcupados: string[];
 }
 
 const SERVICOS = [
@@ -75,7 +77,9 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     handleAgendar,
     getPetImage,
     formatDate,
-    formatTime
+    formatTime,
+    horariosFixos,   
+    horariosOcupados
 }) => {
     return (
         <>
@@ -224,6 +228,55 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                         onChange={onChangeTime}
                     />
                 )}
+
+                <Text style={[style.inputLabel, { marginTop: 10 }]}>Horários Disponíveis</Text>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}
+                >
+                    {horariosFixos.map((hora) => {
+                        const isOcupado = horariosOcupados.includes(hora);
+                        const isSelecionado = formatTime(dataAgendamento) === hora;
+
+                        return (
+                            <TouchableOpacity
+                                key={hora}
+                                disabled={isOcupado}
+                                onPress={() => {
+                                    const [h, m] = hora.split(':');
+                                    const novaData = new Date(dataAgendamento);
+                                    novaData.setHours(Number(h));
+                                    novaData.setMinutes(Number(m));
+                                    setDataAgendamento(novaData);
+                                }}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 18,
+                                    borderRadius: 8,
+                                    backgroundColor: isSelecionado
+                                        ? themes.colors.secundary
+                                        : isOcupado
+                                            ? '#ccc'
+                                            : '#fff',
+                                    borderWidth: 1,
+                                    borderColor: isSelecionado
+                                        ? themes.colors.secundary
+                                        : '#ddd',
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: isOcupado ? '#999' : isSelecionado ? '#fff' : themes.colors.corTexto,
+                                        fontWeight: isSelecionado ? '700' : '500',
+                                    }}
+                                >
+                                    {hora}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
 
                 {/* Pet */}
                 <View style={[style.inputGroup, style.serviceDropdownContainer]}>

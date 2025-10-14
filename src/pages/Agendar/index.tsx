@@ -33,6 +33,49 @@ export default function Agendar() {
     const [unidadeSelecionada, setUnidadeSelecionada] = useState<any>(null);
     const [modalDetalhesVisible, setModalDetalhesVisible] = useState(false);
     const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<any>(null);
+    const [horariosOcupados, setHorariosOcupados] = useState<string[]>([]);
+    const horariosFixos = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+
+    useEffect(() => {
+        const carregarHorariosOcupados = async () => {
+            try {
+                // limite: início e fim do dia da dataAgendamento
+                const inicioDoDia = new Date(dataAgendamento);
+                inicioDoDia.setHours(0, 0, 0, 0);
+                const fimDoDia = new Date(dataAgendamento);
+                fimDoDia.setHours(23, 59, 59, 999);
+
+                const q = query(
+                    collection(db, "agendamentos"),
+                    where("dataHoraAgendamento", ">=", inicioDoDia),
+                    where("dataHoraAgendamento", "<=", fimDoDia)
+                );
+
+                const querySnapshot = await getDocs(q);
+                const ocupados: string[] = [];
+
+                querySnapshot.forEach((docSnap) => {
+                    const dataField = docSnap.data().dataHoraAgendamento;
+                    // Se for Timestamp do Firestore -> toDate(); senão, trate como Date
+                    const dateObj = dataField?.toDate ? dataField.toDate() : new Date(dataField);
+                    const hora = dateObj.toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
+                    ocupados.push(hora);
+                });
+
+                setHorariosOcupados(ocupados);
+            } catch (error) {
+                console.error("Erro ao carregar horários ocupados:", error);
+            }
+        };
+
+        // Carrega apenas quando a aba atual é agendar (ou sempre que quiser)
+        if (abaAtual === 'agendar') {
+            carregarHorariosOcupados();
+        }
+    }, [dataAgendamento, abaAtual]);
 
     const unidades = [
         {
@@ -101,14 +144,27 @@ export default function Agendar() {
         }
 
         try {
+            // 🔹 Ajuste local SEM deslocamento de fuso
+            // Cria uma nova data com os mesmos componentes do horário selecionado,
+            // mas fixando o valor local literal (ex: 13:00) sem aplicar offset UTC.
+            const localDate = new Date(
+                dataAgendamento.getFullYear(),
+                dataAgendamento.getMonth(),
+                dataAgendamento.getDate(),
+                dataAgendamento.getHours(),
+                dataAgendamento.getMinutes(),
+                0,
+                0
+            );
+
             await addDoc(collection(db, 'agendamentos'), {
                 userId: userId,
                 service: servico,
-                dataHoraAgendamento: dataAgendamento,
+                dataHoraAgendamento: localDate, // ← agora salva o horário "13:00" literal
                 unidade: unidadeSelecionada?.nome || null,
                 enderecoUnidade: unidadeSelecionada?.endereco || null,
                 unidadeTelefone: unidadeSelecionada?.telefone || null,
-                unidadeWhatsapp: unidadeSelecionada?.whatsapp || null, // ← ADICIONE ESTE CAMPO
+                unidadeWhatsapp: unidadeSelecionada?.whatsapp || null,
                 petId: petSelecionado?.id || null,
                 petNome: petSelecionado?.name || null,
                 petAnimalType: petSelecionado?.animalType || null,
@@ -116,7 +172,8 @@ export default function Agendar() {
                 agendadoEm: serverTimestamp(),
             });
 
-            Alert.alert('Sucesso', 'Seu agendamento foi realizado!');
+            Alert.alert('Sucesso', 'Seu agendamento foi realizado com sucesso!');
+
             setServico('');
             setDataAgendamento(new Date());
             setPetSelecionado(null);
@@ -265,6 +322,8 @@ export default function Agendar() {
                         getPetImage={getPetImage}
                         formatDate={formatDate}
                         formatTime={formatTime}
+                        horariosFixos={horariosFixos}
+                        horariosOcupados={horariosOcupados}
                     />
                 ) : (
                     <MeusAgendamentos
@@ -281,7 +340,7 @@ export default function Agendar() {
                 agendamentoSelecionado={agendamentoSelecionado}
                 unidades={unidades}
                 getPetImage={getPetImage}
-                onCancelarAgendamento={cancelarAgendamento} 
+                onCancelarAgendamento={cancelarAgendamento}
             />
         </View>
     );
