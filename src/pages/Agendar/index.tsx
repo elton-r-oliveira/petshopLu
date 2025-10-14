@@ -125,17 +125,19 @@ export default function Agendar() {
         },
         {
             nome: "Petshop Lu - São Bernardo",
-            endereco: "Av. Ibirapuera, 1000 - Moema",
+            endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
             lat: -23.601231,
             lng: -46.661432,
-            telefone: "(11) 9999-9999"
+            telefone: "(11) 9999-9999",
+            whatsapp: " (11) 97591-1800"
         },
         {
             nome: "Petshop Lu - São Caetano",
-            endereco: "Rua Domingos de Morais, 1500 - Vila Mariana",
+            endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
             lat: -23.589432,
             lng: -46.636232,
-            telefone: "(11) 9999-9999"
+            telefone: "(11) 9999-9999",
+            whatsapp: " (11) 97591-1800"
         },
     ];
 
@@ -153,19 +155,6 @@ export default function Agendar() {
         if (event.type === 'set' && Platform.OS !== 'ios') {
             setShowTimePicker(true);
         }
-    };
-
-    const onChangeTime = (event: any, selectedTime?: Date) => {
-        const currentTime = selectedTime || dataAgendamento;
-        setShowTimePicker(Platform.OS === 'ios');
-
-        setDataAgendamento(new Date(
-            dataAgendamento.getFullYear(),
-            dataAgendamento.getMonth(),
-            dataAgendamento.getDate(),
-            currentTime.getHours(),
-            currentTime.getMinutes()
-        ));
     };
 
     const handleAgendar = async () => {
