@@ -10,6 +10,10 @@ export const themes = {
         iconeQuickAcess2: '#F6C2B8',
         iconeQuickAcess3: '#FFF7EB',
         iconeQuickAcess4: '',
+        warning: '',
+        success: '',
+        cancelado: '',
+
     },
     login_cadastro: {
         fundo: '#FFF5E5',
