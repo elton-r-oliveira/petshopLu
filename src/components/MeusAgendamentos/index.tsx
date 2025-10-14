@@ -66,12 +66,13 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                 </Text>
             ) : (
                 meusAgendamentos.map((item) => {
+                    // console.log('item.dataHoraAgendamento:', item.dataHoraAgendamento);
+                    // console.log('typeof:', typeof item.dataHoraAgendamento);
+                    // console.log('instanceof Date:', item.dataHoraAgendamento instanceof Date);
                     const statusColor = getStatusColor(item.status);
                     const serviceIcon = getServiceIcon(item.service);
 
-                    const timestamp = item.dataHoraAgendamento?.seconds ? item.dataHoraAgendamento.seconds * 1000 : null;
-                    const date = timestamp ? new Date(timestamp) : null;
-                    const formattedDate = date ? date.toLocaleDateString('pt-BR') : 'Data Indisponível';
+                    const date = item.dataHoraAgendamento instanceof Date ? item.dataHoraAgendamento : null; const formattedDate = date ? date.toLocaleDateString('pt-BR') : 'Data Indisponível';
                     const formattedTime = date ? date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
 
                     return (

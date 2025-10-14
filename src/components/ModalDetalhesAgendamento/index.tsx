@@ -93,18 +93,25 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
     const statusColor = getStatusColor(agendamentoSelecionado.status);
     const serviceIconName = getServiceIcon(agendamentoSelecionado.service);
 
-    const timestamp = agendamentoSelecionado.dataHoraAgendamento?.seconds ? agendamentoSelecionado.dataHoraAgendamento.seconds * 1000 : null;
-    const date = timestamp ? new Date(timestamp) : null;
-    const formattedDate = date ? date.toLocaleDateString('pt-BR') : 'Data Indisponível';
-    const formattedTime = date ? date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    const date = agendamentoSelecionado.dataHoraAgendamento instanceof Date
+        ? agendamentoSelecionado.dataHoraAgendamento
+        : null;
+
+    const formattedDate = date
+        ? date.toLocaleDateString('pt-BR')
+        : 'Data Indisponível';
+
+    const formattedTime = date
+        ? date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        : '';
 
     // Use os telefones salvos diretamente do agendamento
     const telefoneUnidade = agendamentoSelecionado.unidadeTelefone;
     const whatsappUnidade = agendamentoSelecionado.unidadeWhatsapp;
-    
+
     const hasTelefone = telefoneUnidade && telefoneUnidade.trim() !== '';
     const hasWhatsapp = whatsappUnidade && whatsappUnidade.trim() !== '';
-    
+
     const telefoneFormatado = hasTelefone ? formatPhoneNumber(telefoneUnidade) : '';
     const whatsappFormatado = hasWhatsapp ? formatPhoneNumber(whatsappUnidade) : '';
 
@@ -133,8 +140,8 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
     };
 
     // Verificar se o agendamento pode ser cancelado (não pode estar cancelado ou concluído)
-    const podeCancelar = agendamentoSelecionado.status !== 'cancelado' && 
-                        agendamentoSelecionado.status !== 'concluído';
+    const podeCancelar = agendamentoSelecionado.status !== 'cancelado' &&
+        agendamentoSelecionado.status !== 'concluído';
 
     return (
         <Modal
@@ -293,19 +300,18 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                 </TouchableOpacity>
                             </View>
                         </View>
+                        {/* Botão Cancelar Agendamento - Só aparece se pode cancelar */}
+                        {podeCancelar && (
+                            <TouchableOpacity
+                                style={style.cancelButton}
+                                onPress={handleCancelarAgendamento}
+                            >
+                                <Text style={style.cancelButtonText}>
+                                    CANCELAR AGENDAMENTO
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </ScrollView>
-
-                    {/* Botão Cancelar Agendamento - Só aparece se pode cancelar */}
-                    {podeCancelar && (
-                        <TouchableOpacity
-                            style={style.cancelButton}
-                            onPress={handleCancelarAgendamento}
-                        >
-                            <Text style={style.cancelButtonText}>
-                                CANCELAR AGENDAMENTO
-                            </Text>
-                        </TouchableOpacity>
-                    )}
 
                     {/* Botão Fechar */}
                     <TouchableOpacity
