@@ -65,74 +65,79 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                     Você ainda não possui agendamentos.
                 </Text>
             ) : (
-                meusAgendamentos.map((item) => {
-                    // console.log('item.dataHoraAgendamento:', item.dataHoraAgendamento);
-                    // console.log('typeof:', typeof item.dataHoraAgendamento);
-                    // console.log('instanceof Date:', item.dataHoraAgendamento instanceof Date);
-                    const statusColor = getStatusColor(item.status);
-                    const serviceIcon = getServiceIcon(item.service);
+                meusAgendamentos
+                    .slice()
+                    .sort((a, b) => {
+                        const timeA = a.dataHoraAgendamento instanceof Date ? a.dataHoraAgendamento.getTime() : 0;
+                        const timeB = b.dataHoraAgendamento instanceof Date ? b.dataHoraAgendamento.getTime() : 0;
+                        return timeB - timeA; // mais recente primeiro
+                    })
+                    .map((item) => {
+                        const statusColor = getStatusColor(item.status);
+                        const serviceIcon = getServiceIcon(item.service);
 
-                    const date = item.dataHoraAgendamento instanceof Date ? item.dataHoraAgendamento : null; const formattedDate = date ? date.toLocaleDateString('pt-BR') : 'Data Indisponível';
-                    const formattedTime = date ? date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+                        const date = item.dataHoraAgendamento instanceof Date ? item.dataHoraAgendamento : null;
+                        const formattedDate = date ? date.toLocaleDateString('pt-BR') : 'Data Indisponível';
+                        const formattedTime = date ? date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
 
-                    return (
-                        <TouchableOpacity
-                            key={item.id}
-                            style={style.card}
-                            onPress={() => abrirDetalhesAgendamento(item)}
-                        >
-                            {/* LINHA 1: Serviço e Status (Topo do Card) */}
-                            <View style={style.headerRow}>
-                                <View style={style.serviceInfo}>
-                                    <MaterialCommunityIcons
-                                        name={serviceIcon}
-                                        size={20}
-                                        color={themes.colors.secundary || '#B8860B'}
-                                    />
-                                    <Text style={style.serviceText}>
-                                        {item.service}
-                                    </Text>
+                        return (
+                            <TouchableOpacity
+                                key={item.id}
+                                style={style.card}
+                                onPress={() => abrirDetalhesAgendamento(item)}
+                            >
+                                {/* LINHA 1: Serviço e Status (Topo do Card) */}
+                                <View style={style.headerRow}>
+                                    <View style={style.serviceInfo}>
+                                        <MaterialCommunityIcons
+                                            name={serviceIcon}
+                                            size={20}
+                                            color={themes.colors.secundary || '#B8860B'}
+                                        />
+                                        <Text style={style.serviceText}>
+                                            {item.service}
+                                        </Text>
+                                    </View>
+
+                                    {/* Status com bolinha colorida */}
+                                    <View style={style.statusPill}>
+                                        <View
+                                            style={[style.statusDot, { backgroundColor: statusColor }]}
+                                        />
+                                        <Text style={[style.statusText, { color: statusColor }]}>
+                                            {item.status}
+                                        </Text>
+                                    </View>
                                 </View>
 
-                                {/* Status com bolinha colorida */}
-                                <View style={style.statusPill}>
-                                    <View
-                                        style={[style.statusDot, { backgroundColor: statusColor }]}
-                                    />
-                                    <Text style={[style.statusText, { color: statusColor }]}>
-                                        {item.status}
-                                    </Text>
-                                </View>
-                            </View>
+                                <View style={style.divider} />
 
-                            <View style={style.divider} />
+                                {/* LINHA 2 e 3: Pet, Data e Local (Conteúdo Principal) */}
+                                {item.petNome && (
+                                    <View style={style.detailRow}>
+                                        <MaterialCommunityIcons name="paw" size={18} color="#777" />
+                                        <Text style={style.detailLabel}>Pet:</Text>
+                                        <Text style={style.detailValue}>{item.petNome}</Text>
+                                    </View>
+                                )}
 
-                            {/* LINHA 2 e 3: Pet, Data e Local (Conteúdo Principal) */}
-                            {item.petNome && (
-                                <View style={style.detailRow}>
-                                    <MaterialCommunityIcons name="paw" size={18} color="#777" />
-                                    <Text style={style.detailLabel}>Pet:</Text>
-                                    <Text style={style.detailValue}>{item.petNome}</Text>
-                                </View>
-                            )}
+                                {date && (
+                                    <View style={style.detailRow}>
+                                        <MaterialCommunityIcons name="calendar-clock" size={18} color="#777" />
+                                        <Text style={style.detailValue}> {formattedDate} às {formattedTime}</Text>
+                                    </View>
+                                )}
 
-                            {date && (
-                                <View style={style.detailRow}>
-                                    <MaterialCommunityIcons name="calendar-clock" size={18} color="#777" />
-                                    <Text style={style.detailValue}> {formattedDate} às {formattedTime}</Text>
-                                </View>
-                            )}
-
-                            {item.unidade && (
-                                <View style={style.detailRow}>
-                                    <MaterialCommunityIcons name="map-marker" size={18} color="#777" />
-                                    <Text style={style.detailValue}> {item.unidade}</Text>
-                                    <MaterialCommunityIcons name="chevron-right" size={24} color="#ccc" style={style.arrow} />
-                                </View>
-                            )}
-                        </TouchableOpacity>
-                    );
-                })
+                                {item.unidade && (
+                                    <View style={style.detailRow}>
+                                        <MaterialCommunityIcons name="map-marker" size={18} color="#777" />
+                                        <Text style={style.detailValue}> {item.unidade}</Text>
+                                        <MaterialCommunityIcons name="chevron-right" size={24} color="#ccc" style={style.arrow} />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        );
+                    })
             )}
         </View>
     );

@@ -169,6 +169,20 @@ export default function Agendar() {
             return;
         }
 
+        // 🔒 VALIDAÇÃO: horário já passou?
+        const agora = new Date();
+        if (dataAgendamento < agora) {
+            Alert.alert('Atenção', 'Não é possível agendar em um horário que já passou.');
+            return;
+        }
+
+        // 🔒 VALIDAÇÃO: horário está ocupado?
+        const horarioSelecionado = formatTime(dataAgendamento); // "10:00", etc.
+        if (horariosOcupados.includes(horarioSelecionado)) {
+            Alert.alert('Atenção', 'Este horário já está ocupado. Por favor, escolha outro.');
+            return;
+        }
+
         try {
             // Converte a data local para formato correto do Firestore
             const dataFirestore = localDateToFirestoreTimestamp(dataAgendamento);
