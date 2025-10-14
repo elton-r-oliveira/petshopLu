@@ -7,7 +7,7 @@ import {
     TouchableOpacity,
     ScrollView,
     Alert,
-    Platform, 
+    Platform,
     Image,
     Modal,
     ActivityIndicator
@@ -91,13 +91,13 @@ export default function Agendar() {
 
     const handleSelectService = (selectedService: string) => {
         setServico(selectedService);
-        setShowServiceList(false); 
+        setShowServiceList(false);
     };
 
     //  Função para lidar com a mudança no DatePicker
     const onChangeDate = (event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || dataAgendamento;
-        setShowDatePicker(Platform.OS === 'ios'); 
+        setShowDatePicker(Platform.OS === 'ios');
         setDataAgendamento(currentDate);
 
         // Se o usuário selecionou a data, abre o seletor de hora
@@ -109,7 +109,7 @@ export default function Agendar() {
     //  Função para lidar com a mudança no TimePicker
     const onChangeTime = (event: any, selectedTime?: Date) => {
         const currentTime = selectedTime || dataAgendamento;
-        setShowTimePicker(Platform.OS === 'ios'); 
+        setShowTimePicker(Platform.OS === 'ios');
 
         // Mantém a data, mas atualiza a hora
         setDataAgendamento(new Date(
@@ -225,6 +225,15 @@ export default function Agendar() {
             carregarAgendamentos();
         }
     }, [abaAtual]);
+
+    const [modalDetalhesVisible, setModalDetalhesVisible] = useState(false);
+    const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<any>(null);
+
+    // Função para abrir o modal com os detalhes
+    const abrirDetalhesAgendamento = (agendamento: any) => {
+        setAgendamentoSelecionado(agendamento);
+        setModalDetalhesVisible(true);
+    };
 
     return (
         <View style={{ flex: 1 }}>
@@ -650,7 +659,7 @@ export default function Agendar() {
                             </Text>
                         ) : (
                             meusAgendamentos.map((item) => (
-                                <View
+                                <TouchableOpacity
                                     key={item.id}
                                     style={{
                                         backgroundColor: '#fff',
@@ -663,19 +672,11 @@ export default function Agendar() {
                                         shadowRadius: 4,
                                         elevation: 2,
                                     }}
+                                    onPress={() => abrirDetalhesAgendamento(item)}
                                 >
-                                    <View
-                                        style={{
-                                            flexDirection: 'row',
-                                            justifyContent: 'space-between',
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                fontWeight: '700',
-                                                color: themes.colors.secundary,
-                                            }}
-                                        >
+                                    {/* O conteúdo do card permanece o mesmo */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={{ fontWeight: '700', color: themes.colors.secundary }}>
                                             {item.service}
                                         </Text>
                                         <Text style={{ color: '#555' }}>{item.status}</Text>
@@ -707,13 +708,282 @@ export default function Agendar() {
                                     {item.unidade && (
                                         <Text style={{ marginTop: 3 }}>📍 {item.unidade}</Text>
                                     )}
-                                </View>
+                                </TouchableOpacity>
                             ))
                         )}
                     </>
                 )}
 
             </ScrollView>
+
+            // Modal de Detalhes do Agendamento
+            <Modal
+                visible={modalDetalhesVisible}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setModalDetalhesVisible(false)}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <View style={{
+                        width: '100%',
+                        maxHeight: '80%',
+                        backgroundColor: '#fff',
+                        borderRadius: 16,
+                        padding: 20,
+                        shadowColor: '#000',
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
+                        elevation: 5,
+                    }}>
+                        {/* Header do Modal */}
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: 20,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#eee',
+                            paddingBottom: 15
+                        }}>
+                            <Text style={{
+                                fontSize: 20,
+                                fontWeight: '700',
+                                color: themes.colors.secundary
+                            }}>
+                                Detalhes do Agendamento
+                            </Text>
+                            <TouchableOpacity onPress={() => setModalDetalhesVisible(false)}>
+                                <Ionicons name="close" size={24} color="#666" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            {/* Nome do Serviço */}
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: 5
+                                }}>
+                                    Serviço
+                                </Text>
+                                <Text style={{
+                                    fontSize: 18,
+                                    fontWeight: '700',
+                                    color: themes.colors.secundary
+                                }}>
+                                    {agendamentoSelecionado?.service}
+                                </Text>
+                            </View>
+
+                            {/* Pet com Foto */}
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: 10
+                                }}>
+                                    Pet
+                                </Text>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    backgroundColor: '#f8f8f8',
+                                    padding: 15,
+                                    borderRadius: 12
+                                }}>
+                                    <Image
+                                        source={getPetImage(agendamentoSelecionado?.petAnimalType || "dog")}
+                                        style={{
+                                            width: 50,
+                                            height: 50,
+                                            borderRadius: 25,
+                                            marginRight: 15
+                                        }}
+                                    />
+                                    <Text style={{
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        color: themes.colors.secundary
+                                    }}>
+                                        {agendamentoSelecionado?.petNome || 'Pet não especificado'}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Data e Horário */}
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: 10
+                                }}>
+                                    Data e Horário
+                                </Text>
+                                <View style={{
+                                    backgroundColor: '#f8f8f8',
+                                    padding: 15,
+                                    borderRadius: 12
+                                }}>
+                                    <Text style={{
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        color: themes.colors.secundary
+                                    }}>
+                                        📅 {agendamentoSelecionado?.dataHoraAgendamento?.seconds ?
+                                            new Date(agendamentoSelecionado.dataHoraAgendamento.seconds * 1000).toLocaleDateString('pt-BR')
+                                            : 'Data não disponível'}
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        color: themes.colors.secundary,
+                                        marginTop: 5
+                                    }}>
+                                        🕒 {agendamentoSelecionado?.dataHoraAgendamento?.seconds ?
+                                            new Date(agendamentoSelecionado.dataHoraAgendamento.seconds * 1000).toLocaleTimeString('pt-BR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })
+                                            : 'Horário não disponível'}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Local com Mapa */}
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: 10
+                                }}>
+                                    Local
+                                </Text>
+
+                                {/* Encontrar a unidade correspondente */}
+                                {(() => {
+                                    const unidade = unidades.find(u => u.nome === agendamentoSelecionado?.unidade);
+                                    if (!unidade) return null;
+
+                                    return (
+                                        <View style={{
+                                            backgroundColor: '#fff',
+                                            borderRadius: 16,
+                                            overflow: "hidden",
+                                            borderWidth: 2,
+                                            borderColor: themes.colors.secundary,
+                                            shadowColor: "#000",
+                                            shadowOpacity: 0.15,
+                                            shadowRadius: 4,
+                                            elevation: 3,
+                                        }}>
+                                            {/* Nome da Unidade */}
+                                            <View style={{ padding: 15 }}>
+                                                <Text style={{
+                                                    fontWeight: "700",
+                                                    fontSize: 16,
+                                                    color: themes.colors.secundary,
+                                                }}>
+                                                    {unidade.nome}
+                                                </Text>
+                                                <Text style={{
+                                                    fontSize: 13,
+                                                    color: "#777",
+                                                    marginTop: 5
+                                                }}>
+                                                    {unidade.endereco}
+                                                </Text>
+                                            </View>
+
+                                            {/* Mapa Miniatura */}
+                                            <View style={{ height: 150 }}>
+                                                <MapView
+                                                    style={{ flex: 1 }}
+                                                    initialRegion={{
+                                                        latitude: unidade.lat,
+                                                        longitude: unidade.lng,
+                                                        latitudeDelta: 0.01,
+                                                        longitudeDelta: 0.01,
+                                                    }}
+                                                    scrollEnabled={false}
+                                                    zoomEnabled={false}
+                                                >
+                                                    <Marker
+                                                        coordinate={{
+                                                            latitude: unidade.lat,
+                                                            longitude: unidade.lng,
+                                                        }}
+                                                        title={unidade.nome}
+                                                    />
+                                                </MapView>
+                                            </View>
+                                        </View>
+                                    );
+                                })()}
+                            </View>
+
+                            {/* Contato da Unidade */}
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: 10
+                                }}>
+                                    Contato da Unidade
+                                </Text>
+                                <View style={{
+                                    backgroundColor: '#f8f8f8',
+                                    padding: 15,
+                                    borderRadius: 12,
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}>
+                                    <Ionicons name="call" size={20} color={themes.colors.secundary} style={{ marginRight: 10 }} />
+                                    <Text style={{
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        color: themes.colors.secundary
+                                    }}>
+                                        📞 (11) 1234-5678
+                                    </Text>
+                                </View>
+                            </View>
+                        </ScrollView>
+
+                        {/* Botão Fechar */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: themes.colors.secundary,
+                                padding: 15,
+                                borderRadius: 12,
+                                alignItems: 'center',
+                                marginTop: 20
+                            }}
+                            onPress={() => setModalDetalhesVisible(false)}
+                        >
+                            <Text style={{
+                                color: '#fff',
+                                fontSize: 16,
+                                fontWeight: '600'
+                            }}>
+                                Fechar
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
         </View>
     );
 }
