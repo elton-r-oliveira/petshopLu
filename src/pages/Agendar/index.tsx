@@ -1,6 +1,6 @@
 // pages/Agendar/index.tsx
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Alert, Platform } from "react-native";
+import { View, ScrollView, Alert, Platform, Dimensions  } from "react-native";
 import { style } from "./styles";
 
 // Importações do Firebase
@@ -12,18 +12,9 @@ import { TabSwitch } from "../../components/TabSwitch";
 import { AgendarServico } from "../../components/AgendarServico";
 import { MeusAgendamentos } from "../../components/MeusAgendamentos";
 import { ModalDetalhesAgendamento } from "../../components/ModalDetalhesAgendamento"
-
 // Funções auxiliares
 const formatDate = (date: Date) => date.toLocaleDateString('pt-BR');
 const formatTime = (date: Date) => date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-// Função para converter Date local para Timestamp do Firestore
-// Função para converter Date local para Timestamp do Firestore
-const localDateToFirestoreTimestamp = (localDate: Date) => {
-    // Simplesmente retorna a data local - o Firestore vai armazenar como Timestamp
-    // e cuidar da conversão para UTC internamente
-    return localDate;
-};
 
 // Função para converter Timestamp do Firestore para Date local
 const firestoreTimestampToLocalDate = (timestamp: any) => {

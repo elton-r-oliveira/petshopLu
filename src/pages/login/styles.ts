@@ -16,7 +16,7 @@ export const style = StyleSheet.create({
         justifyContent: 'center',
     },
     boxMid: {
-        height: Dimensions.get('window').height / 2.2,
+        height: Dimensions.get('window').height / 1.9,
         width: '100%',
         backgroundColor: themes.login_cadastro.fundoBox,
         paddingHorizontal: 20,
@@ -84,5 +84,18 @@ export const style = StyleSheet.create({
     linkCadastro: {
         fontSize: 15,
         fontFamily: 'Baloo2_800ExtraBold',
-    }
+    },
+     logo: {
+        width: 150, // ou o tamanho que preferir
+        height: 150, // ou o tamanho que preferir
+        resizeMode: 'contain'
+    },
+     biometricButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        backgroundColor: themes.colors.corTexto, // cor diferente para diferenciar
+        marginTop: 10,
+    },
 })

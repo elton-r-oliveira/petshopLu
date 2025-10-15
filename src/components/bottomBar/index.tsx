@@ -51,7 +51,7 @@ export default function BottomBar() {
                                 color={corIcones}
                             />
                         );
-                    } else if (route.name === "Histórico") {
+                    } else if (route.name === "Vacinas") {
                         return focused ? (
                             <MaterialCommunityIcons name="clock" size={size} color={corIcones} />
                         ) : (
@@ -72,7 +72,7 @@ export default function BottomBar() {
             <Tab.Screen name="Home" component={Home} />
             <Tab.Screen name="Pets" component={Pets} />
             <Tab.Screen name="Agendar" component={Agendar} />
-            <Tab.Screen name="Histórico" component={Historico} />
+            <Tab.Screen name="Vacinas" component={Historico} />
             <Tab.Screen name="Perfil" component={Perfil} />
         </Tab.Navigator>
     );
