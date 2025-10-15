@@ -13,7 +13,6 @@ import {
 // Usaremos Ionicons e MaterialCommunityIcons para o mix de ícones
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
-import MapView, { Marker } from "react-native-maps";
 import { style } from "./styles"
 
 interface ModalDetalhesAgendamentoProps {
@@ -77,6 +76,12 @@ const openWhatsApp = (phone: string) => {
 const makePhoneCall = (phone: string) => {
     const url = `tel:${phone}`;
     Linking.openURL(url).catch(err => console.error('Erro ao fazer ligação:', err));
+};
+
+// Função para abrir no Google Maps
+const openInGoogleMaps = (lat: number, lng: number, label: string) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${encodeURIComponent(label)}`;
+    Linking.openURL(url);
 };
 
 export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> = ({
@@ -241,7 +246,7 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                             </View>
                         </View>
 
-                        {/* Local e Mapa */}
+                        {/* Local - SUBSTITUIÇÃO DO MAPVIEW POR DEEP LINK */}
                         {unidade?.lat && unidade?.lng ? (
                             <View style={style.section}>
                                 <Text style={style.sectionTitle}>Local da Unidade</Text>
@@ -251,27 +256,64 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                         <Text style={style.locationAddress}>{unidade.endereco}</Text>
                                     </View>
 
-                                    <View style={style.mapContainer}>
-                                        <MapView
-                                            style={style.map}
-                                            initialRegion={{
-                                                latitude: Number(unidade.lat),
-                                                longitude: Number(unidade.lng),
-                                                latitudeDelta: 0.01,
-                                                longitudeDelta: 0.01,
-                                            }}
-                                            scrollEnabled={false}
-                                            zoomEnabled={false}
-                                        >
-                                            <Marker
-                                                coordinate={{
-                                                    latitude: Number(unidade.lat),
-                                                    longitude: Number(unidade.lng),
-                                                }}
-                                                title={unidade.nome}
+                                    {/* SUBSTITUIÇÃO DO MAPVIEW POR BOTÃO DO GOOGLE MAPS */}
+                                    <TouchableOpacity 
+                                        style={style.mapContainer}
+                                        onPress={() => openInGoogleMaps(unidade.lat, unidade.lng, unidade.nome)}
+                                    >
+                                        <View style={{ 
+                                            flex: 1, 
+                                            backgroundColor: '#f8f9fa',
+                                            justifyContent: 'center', 
+                                            alignItems: 'center',
+                                            borderRadius: 8,
+                                            borderWidth: 2,
+                                            borderColor: '#e9ecef',
+                                            padding: 16
+                                        }}>
+                                            <Ionicons 
+                                                name="map" 
+                                                size={40} 
+                                                color={themes.colors.secundary || '#B8860B'} 
                                             />
-                                        </MapView>
-                                    </View>
+                                            <Text style={{ 
+                                                marginTop: 12,
+                                                fontSize: 16,
+                                                fontWeight: '600',
+                                                color: themes.colors.secundary || '#B8860B',
+                                                textAlign: 'center'
+                                            }}>
+                                                Ver Localização no Mapa
+                                            </Text>
+                                            <Text style={{ 
+                                                fontSize: 14,
+                                                color: '#666',
+                                                marginTop: 8,
+                                                textAlign: 'center'
+                                            }}>
+                                                Toque para abrir no Google Maps
+                                            </Text>
+                                            <View style={{ 
+                                                flexDirection: 'row', 
+                                                alignItems: 'center', 
+                                                marginTop: 12,
+                                                backgroundColor: '#f0f7ff',
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 6,
+                                                borderRadius: 20
+                                            }}>
+                                                <Ionicons name="navigate" size={16} color="#007AFF" />
+                                                <Text style={{ 
+                                                    fontSize: 12,
+                                                    color: '#007AFF',
+                                                    fontWeight: '500',
+                                                    marginLeft: 6
+                                                }}>
+                                                    Rotas • Navegação • Horários
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                         ) : (

@@ -5,12 +5,12 @@ import {
     TouchableOpacity,
     ScrollView,
     Modal,
-    Image
+    Image,
+    Linking
 } from 'react-native';
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import MapView, { Marker } from "react-native-maps";
 import { style } from "./styles"
 
 interface AgendarServicoProps {
@@ -75,6 +75,12 @@ const isHorarioPassado = (dataAgendamento: Date, horario: string): boolean => {
     );
 
     return horarioCompleto < hoje;
+};
+
+// Função para abrir no Google Maps
+const openInGoogleMaps = (lat: number, lng: number, label: string) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${encodeURIComponent(label)}`;
+    Linking.openURL(url);
 };
 
 export const AgendarServico: React.FC<AgendarServicoProps> = ({
@@ -434,27 +440,44 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                         {unidade.endereco}
                                     </Text>
                                 </View>
-                                <View style={{ height: 140 }}>
-                                    <MapView
-                                        style={{ flex: 1 }}
-                                        initialRegion={{
-                                            latitude: unidade.lat,
-                                            longitude: unidade.lng,
-                                            latitudeDelta: 0.01,
-                                            longitudeDelta: 0.01,
-                                        }}
-                                        scrollEnabled={false}
-                                        zoomEnabled={false}
-                                    >
-                                        <Marker
-                                            coordinate={{
-                                                latitude: unidade.lat,
-                                                longitude: unidade.lng,
-                                            }}
-                                            title={unidade.nome}
+                                
+                                {/* SUBSTITUIÇÃO DO MAPVIEW POR DEEP LINK */}
+                                <TouchableOpacity 
+                                    style={{ height: 140 }}
+                                    onPress={() => openInGoogleMaps(unidade.lat, unidade.lng, unidade.nome)}
+                                >
+                                    <View style={{ 
+                                        flex: 1, 
+                                        backgroundColor: unidadeSelecionada?.nome === unidade.nome ? '#f0f7ff' : '#f8f9fa',
+                                        justifyContent: 'center', 
+                                        alignItems: 'center',
+                                        borderTopWidth: 1,
+                                        borderTopColor: unidadeSelecionada?.nome === unidade.nome ? '#d1e7ff' : '#e9ecef'
+                                    }}>
+                                        <Ionicons 
+                                            name="map" 
+                                            size={32} 
+                                            color={unidadeSelecionada?.nome === unidade.nome ? themes.colors.secundary : '#666'} 
                                         />
-                                    </MapView>
-                                </View>
+                                        <Text style={{ 
+                                            marginTop: 8,
+                                            fontSize: 14,
+                                            fontWeight: '600',
+                                            color: unidadeSelecionada?.nome === unidade.nome ? themes.colors.secundary : '#333',
+                                            textAlign: 'center'
+                                        }}>
+                                            Ver no Mapa
+                                        </Text>
+                                        <Text style={{ 
+                                            fontSize: 12,
+                                            color: unidadeSelecionada?.nome === unidade.nome ? '#99c2ff' : '#666',
+                                            marginTop: 4,
+                                            textAlign: 'center'
+                                        }}>
+                                            Toque para abrir
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
