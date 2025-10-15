@@ -13,7 +13,7 @@ import Perfil from "../../pages/Perfil";
 const Tab = createBottomTabNavigator();
 
 // cor do icones
-const corIcones = themes.BottomBar.cor_icones; 
+const corIcones = themes.BottomBar.cor_icones;
 
 export default function BottomBar() {
     return (
@@ -51,6 +51,12 @@ export default function BottomBar() {
                                 color={corIcones}
                             />
                         );
+                    } else if (route.name === "Shop") {
+                        return focused ? (
+                            <Ionicons name="cart" size={size} color={corIcones} />
+                        ) : (
+                            <Ionicons name="cart-outline" size={size} color={corIcones} />
+                        );
                     } else if (route.name === "Vacinas") {
                         return focused ? (
                             <MaterialCommunityIcons name="clock" size={size} color={corIcones} />
@@ -72,6 +78,7 @@ export default function BottomBar() {
             <Tab.Screen name="Home" component={Home} />
             <Tab.Screen name="Pets" component={Pets} />
             <Tab.Screen name="Agendar" component={Agendar} />
+            <Tab.Screen name="Shop" component={Historico} />
             <Tab.Screen name="Vacinas" component={Historico} />
             <Tab.Screen name="Perfil" component={Perfil} />
         </Tab.Navigator>
