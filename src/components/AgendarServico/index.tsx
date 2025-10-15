@@ -440,42 +440,72 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                         {unidade.endereco}
                                     </Text>
                                 </View>
-                                
-                                {/* SUBSTITUIÇÃO DO MAPVIEW POR DEEP LINK */}
-                                <TouchableOpacity 
+
+                                {/* DEEP LINK (MAPS) */}
+                                <TouchableOpacity
                                     style={{ height: 140 }}
                                     onPress={() => openInGoogleMaps(unidade.lat, unidade.lng, unidade.nome)}
                                 >
-                                    <View style={{ 
-                                        flex: 1, 
-                                        backgroundColor: unidadeSelecionada?.nome === unidade.nome ? '#f0f7ff' : '#f8f9fa',
-                                        justifyContent: 'center', 
+                                    <View style={{
+                                        flex: 1,
+                                        justifyContent: 'center',
                                         alignItems: 'center',
                                         borderTopWidth: 1,
-                                        borderTopColor: unidadeSelecionada?.nome === unidade.nome ? '#d1e7ff' : '#e9ecef'
+                                        borderTopColor: unidadeSelecionada?.nome === unidade.nome ? '#d1e7ff' : '#e9ecef',
+                                        overflow: 'hidden',
+                                        position: 'relative'
                                     }}>
-                                        <Ionicons 
-                                            name="map" 
-                                            size={32} 
-                                            color={unidadeSelecionada?.nome === unidade.nome ? themes.colors.secundary : '#666'} 
+                                        {/* Imagem local de fundo */}
+                                        <Image
+                                            source={require('../../assets/map-background.png')} // Sua imagem local
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                position: 'absolute'
+                                            }}
+                                            resizeMode="cover"
                                         />
-                                        <Text style={{ 
-                                            marginTop: 8,
-                                            fontSize: 14,
-                                            fontWeight: '600',
-                                            color: unidadeSelecionada?.nome === unidade.nome ? themes.colors.secundary : '#333',
-                                            textAlign: 'center'
+
+                                        {/* Overlay colorido baseado na seleção */}
+                                        <View style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            backgroundColor: unidadeSelecionada?.nome === unidade.nome
+                                                ? 'rgba(0, 0, 0, 0.7)'
+                                                : ''
+                                        }} />
+
+                                        {/* Conteúdo */}
+                                        <View style={{
+                                            alignItems: 'center',
+                                            zIndex: 1
                                         }}>
-                                            Ver no Mapa
-                                        </Text>
-                                        <Text style={{ 
-                                            fontSize: 12,
-                                            color: unidadeSelecionada?.nome === unidade.nome ? '#99c2ff' : '#666',
-                                            marginTop: 4,
-                                            textAlign: 'center'
-                                        }}>
-                                            Toque para abrir
-                                        </Text>
+                                            <Ionicons
+                                                name="map"
+                                                size={32}
+                                                color="#fff"
+                                            />
+                                            <Text style={{
+                                                marginTop: 8,
+                                                fontSize: 14,
+                                                fontWeight: '600',
+                                                color: '#fff',
+                                                textAlign: 'center'
+                                            }}>
+                                                Ver no Mapa
+                                            </Text>
+                                            <Text style={{
+                                                fontSize: 12,
+                                                color: 'rgba(255,255,255,0.9)',
+                                                marginTop: 4,
+                                                textAlign: 'center'
+                                            }}>
+                                                Toque para navegar
+                                            </Text>
+                                        </View>
                                     </View>
                                 </TouchableOpacity>
                             </TouchableOpacity>

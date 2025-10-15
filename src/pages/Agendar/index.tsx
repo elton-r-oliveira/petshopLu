@@ -110,8 +110,8 @@ export default function Agendar() {
         {
             nome: "Petshop Lu - Santo André",
             endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
-            lat: -23.706585,
-            lng: -46.500750,
+            lat: -23.706598,
+            lng: -46.500752,
             telefone: "(11) 95075-2980",
             whatsapp: " (11) 97591-1800"
         },
