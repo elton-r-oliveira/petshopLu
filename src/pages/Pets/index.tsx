@@ -125,7 +125,7 @@ export default function Pets({ navigation }: any) {
                 return require("../../assets/pets/dog.png");
             case "cat":
                 return require("../../assets/pets/cat.png");
-            case "hamster":
+            case "roedores":
                 return require("../../assets/pets/hamster.png");
             case "turtle":
                 return require("../../assets/pets/turtle.png");
@@ -147,7 +147,7 @@ export default function Pets({ navigation }: any) {
                 <View
                     style={{
                         flexDirection: "row",
-                        backgroundColor: "#e0e0e0",
+                        backgroundColor: themes.telaPets.fundoCard,
                         borderRadius: 45,
                         overflow: "hidden",
                         alignSelf: "flex-start",
@@ -160,7 +160,7 @@ export default function Pets({ navigation }: any) {
                         style={{
                             paddingHorizontal: 14,
                             paddingVertical: 8,
-                            backgroundColor: !isGrid ? themes.colors.secundary : "transparent",
+                            backgroundColor: !isGrid ? themes.telaPets.switchButtom : "transparent",
                             alignItems: "center",
                             justifyContent: "center",
                             borderTopLeftRadius: 12,
@@ -171,7 +171,7 @@ export default function Pets({ navigation }: any) {
                         <MaterialIcons
                             name="view-list"
                             size={22}
-                            color={!isGrid ? "#fff" : "#555"}
+                            color={!isGrid ? "#fff" : themes.telaPets.switchButtom }
                         />
                     </TouchableOpacity>
 
@@ -191,7 +191,7 @@ export default function Pets({ navigation }: any) {
                         <Fontisto
                             name="nav-icon-grid"
                             size={15}
-                            color={isGrid ? "#fff" : "#555"}
+                            color={isGrid ? "#fff" : themes.telaPets.switchButtom }
                         />
                     </TouchableOpacity>
                 </View>
@@ -214,6 +214,7 @@ export default function Pets({ navigation }: any) {
                 <Text style={style.emptyStateText}>
                     Você não tem pets cadastrados. Clique em "+" para adicionar um!
                 </Text>
+
             ) : isGrid ? (
                 //  Visualização em Grade
                 <FlatList
@@ -241,9 +242,9 @@ export default function Pets({ navigation }: any) {
                                 source={getPetImage(item.animalType)}
                                 style={{ width: 80, height: 80, marginBottom: 10 }}
                             />
-                            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
-                            <Text style={{ color: "#777" }}>{item.breed}</Text>
-                            <Text style={{ color: "#777", fontSize: 12 }}>
+                            <Text style={style.petName}>{item.name}</Text>
+                            <Text style={style.petRace}>{item.breed}</Text>
+                            <Text style={style.petRace}>
                                 {item.age} anos • {item.weight}Kg
                             </Text>
 
@@ -255,26 +256,14 @@ export default function Pets({ navigation }: any) {
                                     gap: 8,
                                 }}
                             >
-                                <TouchableOpacity
-                                    style={{
-                                        backgroundColor: themes.colors.bgScreen,
-                                        padding: 6,
-                                        borderRadius: 8,
-                                    }}
-                                    onPress={() => handleEditPet(item)}
-                                >
-                                    <MaterialIcons name="edit" size={18} color="#fff" />
+                                <TouchableOpacity style={style.iconButton} onPress={() => handleEditPet(item)}>
+                                    <MaterialIcons name="edit" size={20} style={style.icon} />
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={{
-                                        backgroundColor: "#c62828",
-                                        padding: 6,
-                                        borderRadius: 8,
-                                    }}
-                                    onPress={() => handleDeletePet(item.id, item.name)}
-                                >
-                                    <MaterialIcons name="delete" size={18} color="#fff" />
+
+                                <TouchableOpacity style={[style.iconButton, { backgroundColor: themes.telaPets.deleteButtom }]} onPress={() => handleDeletePet(item.id, item.name)}>
+                                    <MaterialIcons name="delete" size={20} style={{ color: themes.telaPets.fundo }} />
                                 </TouchableOpacity>
+
                             </View>
                         </View>
                     )}
@@ -299,25 +288,15 @@ export default function Pets({ navigation }: any) {
                             </View>
 
                             <View style={style.actions}>
-                                <TouchableOpacity
-                                    style={[
-                                        style.iconButton,
-                                        { backgroundColor: themes.colors.bgScreen },
-                                    ]}
-                                    onPress={() => handleEditPet(pet)}
-                                >
-                                    <MaterialIcons name="edit" size={20} color="#fff" />
+
+                                <TouchableOpacity style={style.iconButton} onPress={() => handleEditPet(pet)}>
+                                    <MaterialIcons name="edit" size={20} style={style.icon} />
                                 </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    style={[
-                                        style.iconButton,
-                                        { backgroundColor: "#c62828" },
-                                    ]}
-                                    onPress={() => handleDeletePet(pet.id, pet.name)}
-                                >
-                                    <MaterialIcons name="delete" size={20} color="#fff" />
+                                <TouchableOpacity style={[style.iconButton, { backgroundColor: themes.telaPets.deleteButtom }]} onPress={() => handleDeletePet(pet.id, pet.name)}>
+                                    <MaterialIcons name="delete" size={20} style={{ color: themes.telaPets.fundo }} />
                                 </TouchableOpacity>
+
                             </View>
                         </View>
                     ))}

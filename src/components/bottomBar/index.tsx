@@ -1,13 +1,13 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome6, Fontisto, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
 // Telas
 import Home from "../../pages/Home";
 import Pets from "../../pages/Pets";
 import Agendar from "../../pages/Agendar";
-import Historico from "../../pages/Historico";
+import Historico from "../../pages/Saude";
 import Perfil from "../../pages/Perfil";
 
 const Tab = createBottomTabNavigator();
@@ -51,19 +51,22 @@ export default function BottomBar() {
                                 color={corIcones}
                             />
                         );
-                    } else if (route.name === "Shop") {
-                        return focused ? (
-                            <Ionicons name="cart" size={size} color={corIcones} />
-                        ) : (
-                            <Ionicons name="cart-outline" size={size} color={corIcones} />
+                        // } else if (route.name === "Shop") {
+                        //     return focused ? (
+                        //         <Ionicons name="cart" size={size} color={corIcones} />
+                        //     ) : (
+                        //         <Ionicons name="cart-outline" size={size} color={corIcones} />
+                        //     );
+                    } else if (route.name === "Saúde") {
+                        return (
+                            <Ionicons
+                                name={focused ? "medical" : "medical-outline"}
+                                size={size}
+                                color={corIcones}
+                            />
                         );
-                    } else if (route.name === "Vacinas") {
-                        return focused ? (
-                            <MaterialCommunityIcons name="clock" size={size} color={corIcones} />
-                        ) : (
-                            <MaterialCommunityIcons name="clock-outline" size={size} color={corIcones} />
-                        );
-                    } else if (route.name === "Perfil") {
+                    }
+                    else if (route.name === "Perfil") {
                         return (
                             <Ionicons
                                 name={focused ? "person-circle" : "person-circle-outline"}
@@ -78,8 +81,8 @@ export default function BottomBar() {
             <Tab.Screen name="Home" component={Home} />
             <Tab.Screen name="Pets" component={Pets} />
             <Tab.Screen name="Agendar" component={Agendar} />
-            <Tab.Screen name="Shop" component={Historico} />
-            <Tab.Screen name="Vacinas" component={Historico} />
+            {/* <Tab.Screen name="Shop" component={Historico} /> */}
+            <Tab.Screen name="Saúde" component={Historico} />
             <Tab.Screen name="Perfil" component={Perfil} />
         </Tab.Navigator>
     );

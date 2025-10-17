@@ -38,5 +38,15 @@ export const themes = {
         texto1: '#583C2D',
         fundo2: '#A8685C',
         texto2: '#7A5947',
+    },
+    telaPets: {
+        fundo: '#FFF5E5',
+        fundoCard: '#FFFDF2',
+        borderCard: '#7A5947',
+        petName: '#7A5947',
+        petInfo: '#7A5947',
+        editButtom: '#7A5947',
+        deleteButtom: '#901812',
+        switchButtom: '#7A5947'
     }
 }

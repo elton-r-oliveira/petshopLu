@@ -9,7 +9,6 @@ import {
 import { style } from "./styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
-import TopBar from "../../components/topBar";
 
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { BottomTabParamList } from '../../@types/types'; 
@@ -23,18 +22,11 @@ export default function Pets() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
-            
-            // Se o usuário sair, você pode redirecionar para a tela de Login aqui
-            // if (!user) {
-            //     navigation.replace('Login'); 
-            // }
         });
 
-        // Limpa o observador ao desmontar o componente
         return () => unsubscribe();
     }, []);
 
-    // Pega o nome, ou usa um texto de fallback se não estiver logado
     const userName = currentUser?.displayName || "Usuário";
 
     return (
@@ -43,13 +35,7 @@ export default function Pets() {
             {/* Conteúdo com Scroll */}
             <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
 
-                {/* TopBar */}
-                <TopBar
-                    userName={userName}
-                    onLogoPress={() => console.log("Logo clicada")}
-                />
-
-                <Text style={style.sectionTitle}>Tela de Histórico</Text>
+                <Text style={style.sectionTitle}>Tela de Saúde</Text>
 
                 {/* Ações rápidas */}
                 <View style={style.quickActions}>

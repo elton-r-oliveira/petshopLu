@@ -1,5 +1,3 @@
-// pages/CadastrarPet/index.tsx
-
 import React, { useState } from "react";
 import {
     View,
@@ -10,19 +8,20 @@ import {
     TextInput,
     Image
 } from "react-native";
-import { style } from "../Agendar/styles";
+import { style } from "./styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { db, auth } from '../../firebaseConfig';
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
-// 🔹 Lista de tipos de animais com imagens
+
+// Lista de tipos de animais com imagens
 const animalTypes = [
     { label: "Cão", value: "dog", image: require("../../assets/pets/dog.png") },
     { label: "Gato", value: "cat", image: require("../../assets/pets/cat.png") },
-    { label: "Hamster", value: "hamster", image: require("../../assets/pets/hamster.png") },
-    { label: "Tartaruga", value: "turtle", image: require("../../assets/pets/turtle.png") },
+    { label: "Roedores", value: "Roedores", image: require("../../assets/pets/hamster.png") },
+    // { label: "Coelho", value: "rabbit", image: require("../../assets/pets/rabbit.png") },
+    // { label: "Reptéis", value: "turtle", image: require("../../assets/pets/turtle.png") },
     { label: "Pássaro", value: "bird", image: require("../../assets/pets/bird.png") },
-    { label: "Coelho", value: "rabbit", image: require("../../assets/pets/rabbit.png") },
 ];
 
 export default function CadastrarPet({ route, navigation }: any) {
@@ -95,16 +94,15 @@ export default function CadastrarPet({ route, navigation }: any) {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: themes.colors.lightGray }}>
-            <ScrollView style={style.containerScroll} showsVerticalScrollIndicator={false}>
-                <Text style={style.sectionTitle}>Cadastrar Novo Pet</Text>
-                <Text style={style.sectionSubtitle}>Adicione as informações do seu companheiro.</Text>
+        <View style={style.container}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                <Text style={style.sectionTitle}>Cadastrar Pet</Text>
+                {/* <Text style={style.sectionSubtitle}>Adicione as informações do seu companheiro.</Text> */}
 
                 <View style={style.formContainer}>
 
                     {/* Tipo do Animal com carrossel horizontal */}
                     <View style={style.inputGroup}>
-                        <Text style={style.inputLabel}>Tipo do Animal</Text>
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
@@ -163,11 +161,8 @@ export default function CadastrarPet({ route, navigation }: any) {
                                     </View>
                                     <Text
                                         style={{
-                                            color:
-                                                animalType === item.value
-                                                    ? themes.colors.bgScreen
-                                                    : "#555",
-                                            fontWeight: "600",
+                                            color: animalType === item.value ? themes.telaPets.petName : themes.telaPets.petName,
+                                            fontFamily: 'Baloo2_700Bold',
                                         }}
                                     >
                                         {item.label}
@@ -182,7 +177,7 @@ export default function CadastrarPet({ route, navigation }: any) {
                         <Text style={style.inputLabel}>Nome do Pet</Text>
                         <TextInput
                             style={style.selectInput}
-                            placeholder="Ex: Rex"
+                            placeholder="Ex: Totó"
                             value={name}
                             onChangeText={setName}
                         />

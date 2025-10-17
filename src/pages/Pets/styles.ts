@@ -9,7 +9,7 @@ export const style = StyleSheet.create({
 
     sectionTitle: {
         fontSize: 22,
-        fontWeight: "bold",
+        fontFamily: 'Inter_700Bold',
         marginTop: 50,
         marginBottom: 20,
         color: themes.colors.secundary,
@@ -52,14 +52,15 @@ export const style = StyleSheet.create({
     },
 
     petName: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: themes.colors.bgScreen,
+        fontFamily: 'Baloo2_700Bold',
+        fontSize: 20,
+        color: themes.telaHome.texto2,
+        marginBottom: -5
     },
 
     petRace: {
         fontSize: 14,
-        color: themes.colors.bgScreen,
+        color: themes.telaHome.texto2,
     },
 
     actions: {
@@ -70,10 +71,18 @@ export const style = StyleSheet.create({
     iconButton: {
         width: 36,
         height: 36,
-        borderRadius: 18,
+        borderRadius: 8,
         justifyContent: "center",
         alignItems: "center",
-        
+
+    },
+    icon: {
+        backgroundColor: themes.telaPets.fundoCard,
+        padding: 6,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: themes.telaPets.borderCard,
+        color: themes.telaPets.editButtom
     },
     headerWithButton: { // NOVO ESTILO
         flexDirection: 'row',

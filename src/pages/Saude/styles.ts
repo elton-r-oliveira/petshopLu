@@ -71,7 +71,7 @@ export const style = StyleSheet.create({
     sectionTitle: {
         fontSize: 22,
         fontWeight: "bold",
-        marginTop: 20,
+        marginTop: 50,
         marginBottom: 20,
         color: themes.colors.secundary,
         marginLeft: 15

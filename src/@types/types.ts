@@ -11,6 +11,6 @@ export type BottomTabParamList = {
   Home: undefined;
   Pets: undefined;
   Agendar: undefined;
-  Histórico: undefined;
+  Saude: undefined;
   Perfil: undefined;
 };

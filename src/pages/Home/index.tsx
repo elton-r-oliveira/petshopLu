@@ -46,13 +46,13 @@ export default function Home() {
     });
 
     return () => unsubscribe();
-  }, []);  
+  }, []);
   return (
     <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
       {/* TopBar */}
       <TopBar
         userName={topBarNome || ""}
-        location={topBarEndereco || ""}
+        location={topBarEndereco || "Endereço não informado"}
       />
       {/* Seção de ações rápidas */}
       <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>
@@ -77,10 +77,10 @@ export default function Home() {
 
         <TouchableOpacity
           style={[style.actionBox, { borderWidth: 3, borderColor: themes.telaHome.texto2 }]}
-          onPress={() => navigation.navigate('Histórico')} // Navega para Histórico
+          onPress={() => navigation.navigate('Saude')} // Navega para Histórico
         >
           <Ionicons name="list" size={35} color={themes.colors.iconeQuickAcess1} />
-          <Text style={style.actionText}>Agendamentos</Text>
+          <Text style={style.actionText}>Saude</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
