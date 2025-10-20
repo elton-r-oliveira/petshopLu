@@ -13,7 +13,7 @@ import { style } from "./styles";
 import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
 import { signOut, onAuthStateChanged, updateProfile, User } from "firebase/auth";
-import { auth, db } from "../../firebaseConfig";
+import { auth, db } from "../../lib/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigation, CommonActions, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";

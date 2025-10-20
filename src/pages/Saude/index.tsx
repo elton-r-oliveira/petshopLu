@@ -13,7 +13,7 @@ import { themes } from "../../global/themes";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { BottomTabParamList } from '../../@types/types'; 
 
-import { auth } from "../../firebaseConfig";
+import { auth } from "../../lib/firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
 
 export default function Pets() {

@@ -20,7 +20,7 @@ import { RootStackParamList } from "../../@types/types";
 
 // 🔹 Import Firebase
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebaseConfig";
+import { auth } from "../../lib/firebaseConfig";
 
 import BiometricAuth from "./biometricAuth";
 import AsyncStorage from "@react-native-async-storage/async-storage";

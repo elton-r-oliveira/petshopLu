@@ -11,7 +11,7 @@ import { RootStackParamList } from "../../@types/types";
 
 // Firebase
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../firebaseConfig"
+import { auth, db } from "../../lib/firebaseConfig"
 
 type CadastroScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

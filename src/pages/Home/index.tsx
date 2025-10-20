@@ -8,7 +8,7 @@ import TopBar from "../../components/topBar";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { BottomTabParamList } from '../../@types/types';
 
-import { auth, db } from "../../firebaseConfig";
+import { auth, db } from "../../lib/firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 

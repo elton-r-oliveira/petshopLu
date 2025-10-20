@@ -14,7 +14,7 @@ import { MaterialIcons, Fontisto } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
 
-import { db, auth } from "../../firebaseConfig";
+import { db, auth } from "../../lib/firebaseConfig";
 import {
     collection,
     query,

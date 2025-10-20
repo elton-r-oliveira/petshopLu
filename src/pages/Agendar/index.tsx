@@ -4,7 +4,7 @@ import { View, ScrollView, Alert, Platform, Dimensions  } from "react-native";
 import { style } from "./styles";
 
 // Importações do Firebase
-import { db, auth } from '../../firebaseConfig';
+import { db, auth } from '../../lib/firebaseConfig';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 // Componentes

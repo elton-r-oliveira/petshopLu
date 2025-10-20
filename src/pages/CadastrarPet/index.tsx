@@ -11,7 +11,7 @@ import {
 import { style } from "./styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
-import { db, auth } from '../../firebaseConfig';
+import { db, auth } from '../../lib/firebaseConfig';
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 
 // Lista de tipos de animais com imagens
