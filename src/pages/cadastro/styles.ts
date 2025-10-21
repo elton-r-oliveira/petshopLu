@@ -1,26 +1,33 @@
-import { Dimensions, StyleSheet, Platform } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import { themes } from "../../global/themes";
 
 export const style = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
+        justifyContent: "flex-start", // Mantém o card mais pra cima
+        alignItems: "center",
+        paddingHorizontal: 20,
+        paddingTop: 60,
         backgroundColor: themes.login_cadastro.fundo,
     },
+
     boxTop: {
-        height: Dimensions.get('window').height / 4, //dimensiona a tela de forma responsiva
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 20,
     },
+
     boxMid: {
-        height: Dimensions.get('window').height / 1.7,
-        width: '100%',
+        width: "100%",
         backgroundColor: themes.login_cadastro.fundoBox,
         paddingHorizontal: 20,
+        paddingVertical: 25,
         borderRadius: 30,
+
+        // Alinhamento e espaçamento interno
+        alignSelf: "center",
+        justifyContent: "center",
 
         // 👉 Android
         elevation: 5,
@@ -31,31 +38,38 @@ export const style = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 6,
     },
+
     boxBottom: {
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 25,
     },
+
     titulo: {
         fontSize: 15,
-        marginTop: 20,
-        marginBottom: 40,
+        marginTop: 10,
+        marginBottom: 30,
         color: themes.login_cadastro.titulo,
-        fontFamily: 'Inter_600SemiBold'
+        fontFamily: "Inter_600SemiBold",
+        textAlign: "center",
     },
+
     entrar: {
         fontSize: 25,
-        marginTop: 20,
-        textAlign: 'center',
+         marginTop: 20,
+        marginBottom: 10,
+        textAlign: "center",
         color: themes.login_cadastro.titulo,
-        fontFamily: 'Inter_600SemiBold'
+        fontFamily: "Inter_600SemiBold",
     },
+
     button: {
-        marginTop: 40,
+        marginTop: 30,
         alignSelf: "center",
         alignItems: "center",
         justifyContent: "center",
-        width: '100%',
+        width: "100%",
         height: 50,
         backgroundColor: themes.login_cadastro.titulo,
         borderRadius: 20,
@@ -69,20 +83,23 @@ export const style = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 6,
     },
+
     textButton: {
         color: themes.login_cadastro.fundoBox,
-        fontFamily: 'Inter_600SemiBold',
+        fontFamily: "Inter_600SemiBold",
         fontSize: 15,
     },
+
     textCadastro: {
-        marginTop: 31,
+        marginTop: 25,
         textAlign: "center",
         color: themes.login_cadastro.titulo,
         fontSize: 15,
-        fontFamily: 'Baloo2_400Regular',
+        fontFamily: "Baloo2_400Regular",
     },
+
     linkCadastro: {
         fontSize: 15,
-        fontFamily: 'Baloo2_800ExtraBold',
-    }
-})
+        fontFamily: "Baloo2_800ExtraBold",
+    },
+});

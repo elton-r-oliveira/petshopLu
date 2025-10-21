@@ -81,75 +81,61 @@ export default function Cadastro({ navigation }: Props) {
       <View style={style.boxTop}>
         <Image source={Logo} />
         <Text style={style.titulo}>Bem-vindo a Lu PetShop</Text>
-
-        {/* Toggle Cliente / Funcionário */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: -40.2, 
-            left: 0,
-            right: 0,
-            zIndex: 10,
-            flexDirection: "row",
-            justifyContent: "center",
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              width: "70%", // largura do grupo de botões
-              borderRadius: 25,
-              overflow: "hidden",
-              elevation: 5, // sombra Android
-              shadowColor: "#000", // sombra iOS
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 6,
-            }}
-          >
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: tipo === "cliente" ? themes.colors.secundary : "#ddd",
-                paddingVertical: 10,
-                alignItems: "center",
-              }}
-              onPress={() => setTipo("cliente")}
-            >
-              <Text
-                style={{
-                  color: tipo === "cliente" ? "#fff" : "#555",
-                  fontWeight: "600",
-                }}
-              >
-                Cliente
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: tipo === "funcionario" ? themes.colors.secundary : "#ddd",
-                paddingVertical: 10,
-                alignItems: "center",
-              }}
-              onPress={() => setTipo("funcionario")}
-            >
-              <Text
-                style={{
-                  color: tipo === "funcionario" ? "#fff" : "#555",
-                  fontWeight: "600",
-                }}
-              >
-                Funcionário
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
       </View>
 
       <View style={style.boxMid}>
         <Text style={style.entrar}>Cadastre-se</Text>
+
+        {/* Toggle Cliente / Funcionário */}
+        <View
+          style={{
+            flexDirection: "row",
+            marginHorizontal: 10,
+            marginTop: 20,
+            marginBottom: 25,
+            borderRadius: 25, // mantém bordas suaves
+            overflow: "hidden", // garante que o arredondamento apareça
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: tipo === "cliente" ? themes.colors.secundary : "#ddd",
+              paddingVertical: 10,
+              alignItems: "center",
+            }}
+            onPress={() => setTipo("cliente")}
+          >
+            <Text
+              style={{
+                color: tipo === "cliente" ? "#fff" : "#555",
+                fontWeight: "600",
+              }}
+            >
+              Cliente
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: tipo === "funcionario" ? themes.colors.secundary : "#ddd",
+              paddingVertical: 10,
+              alignItems: "center",
+            }}
+            onPress={() => setTipo("funcionario")}
+          >
+            <Text
+              style={{
+                color: tipo === "funcionario" ? "#fff" : "#555",
+                fontWeight: "600",
+              }}
+            >
+              Funcionário
+            </Text>
+          </TouchableOpacity>
+        </View>
+
 
         {/* Nome + Código funcionário */}
         {tipo === "funcionario" ? (

@@ -1,4 +1,3 @@
-// components/TabSwitch.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { themes } from '../../global/themes';
