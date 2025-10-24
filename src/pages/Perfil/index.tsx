@@ -1,14 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    Alert,
-    ScrollView,
-    ActivityIndicator,
-    BackHandler,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ActivityIndicator, } from "react-native";
 import { style } from "./styles";
 import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
@@ -48,13 +39,11 @@ export default function Perfil() {
     const [topBarNome, setTopBarNome] = useState("");
     const [topBarEndereco, setTopBarEndereco] = useState("");
 
-    // Refs para valores atuais
     const editingRef = useRef(editing);
     const logoutInProgressRef = useRef(logoutInProgress);
     const isDirtyRef = useRef(false);
     const alertShownRef = useRef(false);
 
-    // Atualizar refs quando estados mudam
     useEffect(() => {
         editingRef.current = editing;
     }, [editing]);
@@ -63,7 +52,6 @@ export default function Perfil() {
         logoutInProgressRef.current = logoutInProgress;
     }, [logoutInProgress]);
 
-    // Função para verificar se há alterações
     const checkIsDirty = () => {
         const dirty = nome !== originalData.nome ||
             telefone !== originalData.telefone ||
@@ -93,14 +81,6 @@ export default function Perfil() {
         return unsubscribeAuth;
     }, []);
 
-    // Função para descartar alterações e sair do modo edição
-    const descartarAlteracoes = () => {
-        // Apenas sai do modo edição, NÃO reseta os campos
-        // Os campos já contêm os dados atuais (incluindo o nome salvo anteriormente)
-        setEditing(false);
-    };
-
-    // Função para resetar campos para os valores originais (usada apenas no cancelar)
     const resetarCamposParaOriginais = () => {
         const orig = originalDataRef.current;
         setNome(orig.nome ?? "");
@@ -109,13 +89,10 @@ export default function Perfil() {
         setEditing(false);
     };
 
-    // ÚNICO listener para BottomBar - useFocusEffect
-    // Quando a tela perde o foco (mudança de aba, navegação, etc.)
     useFocusEffect(
         React.useCallback(() => {
             alertShownRef.current = false;
 
-            // Ao entrar em foco: se não estiver editando e tivermos currentUser, recarrega dados
             let active = true;
             (async () => {
                 if (!editingRef.current && currentUser && active) {
@@ -125,7 +102,6 @@ export default function Perfil() {
 
             return () => {
                 active = false;
-                // Quando perde o foco: se estava editando e há mudanças, pergunta (mantém seu comportamento)
                 if (editingRef.current && isDirtyRef.current && !logoutInProgressRef.current && !alertShownRef.current) {
                     alertShownRef.current = true;
 
@@ -156,7 +132,6 @@ export default function Perfil() {
         }, [navigation, currentUser])
     );
 
-    // Listener do botão físico ou gesto de voltar
     useEffect(() => {
         const unsubscribe = navigation.addListener("beforeRemove", (e) => {
             if (editingRef.current && isDirtyRef.current && !logoutInProgressRef.current && !alertShownRef.current) {
@@ -178,7 +153,7 @@ export default function Perfil() {
                             text: "Descartar e sair",
                             style: "destructive",
                             onPress: () => {
-                                resetarCamposParaOriginais(); // ✅ restaura valores originais
+                                resetarCamposParaOriginais();
                                 navigation.dispatch(e.data.action);
                                 alertShownRef.current = false;
                             },
@@ -191,7 +166,6 @@ export default function Perfil() {
         return unsubscribe;
     }, [navigation]);
 
-
     async function carregarDadosExtras(uid: string, displayName: string) {
         try {
             const docRef = doc(db, "usuarios", uid);
@@ -203,7 +177,6 @@ export default function Perfil() {
                 const telefoneFirestore = data.telefone || "";
                 const enderecoFirestore = data.endereco || "";
 
-                // preencha o estado com os valores corretos (Firestore tem prioridade)
                 setNome(nomeFirestore || displayName || "");
                 setTelefone(telefoneFirestore);
                 setEndereco(enderecoFirestore);
@@ -217,7 +190,6 @@ export default function Perfil() {
                     endereco: enderecoFirestore,
                 });
             } else {
-                // documento não existe — usa displayName do auth
                 setNome(displayName || "");
                 setTelefone("");
                 setEndereco("");
@@ -257,7 +229,6 @@ export default function Perfil() {
             setTopBarNome(nome);
             setTopBarEndereco(endereco);
 
-            // ATUALIZA os dados originais com os novos valores salvos
             setOriginalData({
                 nome: nome,
                 telefone: telefone,
@@ -276,12 +247,10 @@ export default function Perfil() {
 
     function cancelarEdicao() {
         console.log('Cancelando edição...');
-        // Usa a função que RESETA os campos para os valores originais
         resetarCamposParaOriginais();
     }
 
     async function handleLogout() {
-        // Se está editando e há alterações, mantém alerta atual
         if (editing && checkIsDirty()) {
             Alert.alert(
                 "Alterações não salvas",
@@ -292,10 +261,9 @@ export default function Perfil() {
                         text: "Sair mesmo assim",
                         style: "destructive",
                         onPress: () => {
-                            // 🔧 Restaura campos e sai do modo edição
                             resetarCamposParaOriginais();
                             alertShownRef.current = false;
-                            confirmarLogout(); // chama o alerta de confirmação de logout
+                            confirmarLogout();
                         }
                     },
                     {
@@ -308,7 +276,6 @@ export default function Perfil() {
                 ]
             );
         } else {
-            // 🔔 Novo alerta simples de confirmação de logout
             confirmarLogout();
         }
     }
@@ -361,7 +328,6 @@ export default function Perfil() {
                 <Text style={style.sectionTitle}>Informações do Perfil</Text>
 
                 <View style={{ margin: 20 }}>
-                    {/* 🧾 NOME */}
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Nome</Text>
                         <View style={style.selectInput}>
@@ -382,7 +348,6 @@ export default function Perfil() {
                         </View>
                     </View>
 
-                    {/* 📧 EMAIL */}
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>E-mail</Text>
                         <View style={style.selectInput}>
@@ -400,7 +365,6 @@ export default function Perfil() {
                         </View>
                     </View>
 
-                    {/* 📞 TELEFONE */}
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Telefone</Text>
                         <View style={style.selectInput}>
@@ -422,7 +386,6 @@ export default function Perfil() {
                         </View>
                     </View>
 
-                    {/* 📍 ENDEREÇO */}
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Endereço</Text>
                         <View style={style.selectInput}>
@@ -447,9 +410,7 @@ export default function Perfil() {
                 <View style={{ marginTop: 5, gap: 10, margin: 20 }}>
                     {editing ? (
                         <>
-                            {/* Linha com Salvar e Cancelar */}
                             <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 10 }}>
-                                {/* SALVAR */}
                                 <TouchableOpacity
                                     style={[style.buttonSave, { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
                                     onPress={salvarAlteracoes}
@@ -465,7 +426,6 @@ export default function Perfil() {
                                     )}
                                 </TouchableOpacity>
 
-                                {/* CANCELAR */}
                                 <TouchableOpacity
                                     style={[
                                         style.buttonEdit,
@@ -478,7 +438,6 @@ export default function Perfil() {
                                 </TouchableOpacity>
                             </View>
 
-                            {/* SAIR */}
                             <TouchableOpacity
                                 style={[style.buttonLogout, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
                                 onPress={handleLogout}
@@ -496,7 +455,6 @@ export default function Perfil() {
                         </>
                     ) : (
                         <>
-                            {/* EDITAR PERFIL */}
                             <TouchableOpacity
                                 style={[style.buttonEdit, { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
                                 onPress={handleEditPress}
@@ -505,7 +463,6 @@ export default function Perfil() {
                                 <Text style={style.textButton}>Editar Perfil</Text>
                             </TouchableOpacity>
 
-                            {/* SAIR */}
                             <TouchableOpacity
                                 style={[style.buttonLogout, { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
                                 onPress={handleLogout}
@@ -523,7 +480,6 @@ export default function Perfil() {
                         </>
                     )}
                 </View>
-
             </ScrollView>
         </View>
     );
