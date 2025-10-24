@@ -1,18 +1,15 @@
-// pages/Agendar/index.tsx
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, Alert, Platform, Dimensions  } from "react-native";
 import { style } from "./styles";
 
-// Importações do Firebase
 import { db, auth } from '../../lib/firebaseConfig';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 
-// Componentes
 import { TabSwitch } from "../../components/TabSwitch";
 import { AgendarServico } from "../../components/AgendarServico";
 import { MeusAgendamentos } from "../../components/MeusAgendamentos";
 import { ModalDetalhesAgendamento } from "../../components/ModalDetalhesAgendamento"
-// Funções auxiliares
+
 const formatDate = (date: Date) => date.toLocaleDateString('pt-BR');
 const formatTime = (date: Date) => date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
@@ -206,7 +203,7 @@ export default function Agendar() {
         switch (t) {
             case "dog": return require("../../assets/pets/dog.png");
             case "cat": return require("../../assets/pets/cat.png");
-            case "hamster": return require("../../assets/pets/hamster.png");
+            case "roedores": return require("../../assets/pets/hamster.png");
             case "turtle": return require("../../assets/pets/turtle.png");
             case "bird": return require("../../assets/pets/bird.png");
             case "rabbit": return require("../../assets/pets/rabbit.png");
