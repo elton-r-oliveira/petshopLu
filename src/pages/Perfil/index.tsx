@@ -10,6 +10,7 @@ import { useNavigation, CommonActions, useFocusEffect } from "@react-navigation/
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../@types/types";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import EnderecoInput from "../../components/EnderecoInput";
 
 type PerfilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Perfil">;
 
@@ -24,6 +25,11 @@ export default function Perfil() {
     const [email, setEmail] = useState("");
     const [telefone, setTelefone] = useState("");
     const [endereco, setEndereco] = useState("");
+    const [rua, setRua] = useState("");
+    const [cidade, setCidade] = useState("");
+    const [estado, setEstado] = useState("");
+    const [numero, setNumero] = useState("");
+    const [cep, setCep] = useState("");
 
     const [originalData, setOriginalData] = useState({
         nome: "",
@@ -222,9 +228,19 @@ export default function Perfil() {
             const docRef = doc(db, "usuarios", currentUser.uid);
             await setDoc(
                 docRef,
-                { nome, email, telefone, endereco },
+                {
+                    nome,
+                    email,
+                    telefone,
+                    endereco: `${rua}, ${numero} - ${cidade}/${estado}`,
+                    cep,
+                    rua,
+                    cidade,
+                    estado,
+                    numero
+                },
                 { merge: true }
-            );
+            )
 
             setTopBarNome(nome);
             setTopBarEndereco(endereco);
@@ -388,7 +404,7 @@ export default function Perfil() {
 
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Endereço</Text>
-                        <View style={style.selectInput}>
+                        {/* <View style={style.selectInput}>
                             <Ionicons
                                 name="location-outline"
                                 size={20}
@@ -403,7 +419,26 @@ export default function Perfil() {
                                 placeholderTextColor="#888"
                                 editable={editing}
                             />
+                        </View> */}
+
+                        <View style={style.inputGroup}>
+                            <EnderecoInput
+                                cep={cep}
+                                setCep={setCep}
+                                rua={rua}
+                                setRua={setRua}
+                                cidade={cidade}
+                                setCidade={setCidade}
+                                estado={estado}
+                                setEstado={setEstado}
+                                numero={numero}
+                                setNumero={setNumero}
+                                editable={editing}
+                            />
+
                         </View>
+
+
                     </View>
                 </View>
 

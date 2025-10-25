@@ -13,7 +13,6 @@ export const themes = {
         warning: '',
         success: '',
         cancelado: '',
-
     },
     login_cadastro: {
         fundo: '#FFF5E5',

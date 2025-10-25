@@ -4,22 +4,48 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { style } from "./styles";
 import { themes } from "../../global/themes";
 
+// 🔹 Adicione no topo:
 interface EnderecoInputProps {
-  endereco: string;
-  setEndereco: (value: string) => void;
+  cep: string;
+  setCep: (value: string) => void;
+  rua: string;
+  setRua: (value: string) => void;
+  cidade: string;
+  setCidade: (value: string) => void;
+  estado: string;
+  setEstado: (value: string) => void;
+  numero: string;
+  setNumero: (value: string) => void;
   editable: boolean;
 }
 
-export default function EnderecoInput({ endereco, setEndereco, editable }: EnderecoInputProps) {
+
+export default function EnderecoInput({
+  rua,
+  setRua,
+  cidade,
+  setCidade,
+  estado,
+  setEstado,
+  numero,
+  setNumero,
+  editable,
+}: EnderecoInputProps) {
   const [cep, setCep] = useState("");
-  const [numero, setNumero] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function buscarEnderecoPorCep(value: string) {
-    const cepLimpo = value.replace(/\D/g, ""); // remove caracteres não numéricos
+  // 🔹 Função para formatar CEP automaticamente
+  function formatarCep(value: string) {
+    // Remove tudo que não for número
+    const numeric = value.replace(/\D/g, "");
+    // Adiciona o hífen após o quinto número
+    if (numeric.length > 5) {
+      return numeric.replace(/(\d{5})(\d{1,3})/, "$1-$2");
+    }
+    return numeric;
+  }
 
-    if (cepLimpo.length !== 8) return; // CEP válido tem 8 dígitos
-
+  async function buscarEnderecoPorCep(cepLimpo: string) {
     setLoading(true);
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
@@ -27,12 +53,15 @@ export default function EnderecoInput({ endereco, setEndereco, editable }: Ender
 
       if (data.erro) {
         Alert.alert("CEP inválido", "Não foi possível encontrar este CEP.");
+        setRua("");
+        setCidade("");
+        setEstado("");
         return;
       }
 
-      // Monta o endereço completo
-      const enderecoCompleto = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
-      setEndereco(enderecoCompleto);
+      setRua(data.logradouro || "");
+      setCidade(data.localidade || "");
+      setEstado(data.uf || "");
     } catch (error) {
       Alert.alert("Erro", "Não foi possível buscar o endereço. Verifique sua conexão.");
     } finally {
@@ -42,32 +71,62 @@ export default function EnderecoInput({ endereco, setEndereco, editable }: Ender
 
   return (
     <View style={{ gap: 10 }}>
-      <Text style={style.inputLabel}>CEP</Text>
-      <View style={style.selectInput}>
-        <MaterialIcons
-          name="location-searching"
-          size={20}
-          color={themes.colors.secundary}
-          style={style.inputIcon}
-        />
-        <TextInput
-          style={style.selectInputText}
-          placeholder="Digite o CEP"
-          placeholderTextColor="#888"
-          keyboardType="numeric"
-          value={cep}
-          onChangeText={(value) => {
-            setCep(value);
-            if (value.replace(/\D/g, "").length === 8) {
-              buscarEnderecoPorCep(value);
-            }
-          }}
-          editable={editable}
-        />
-        {loading && <ActivityIndicator size="small" color={themes.colors.secundary} />}
+      {/* 🔹 Primeira linha: CEP e Número */}
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={style.inputLabel}>CEP</Text>
+          <View style={style.selectInput}>
+            <MaterialIcons
+              name="location-searching"
+              size={20}
+              color={themes.colors.secundary}
+              style={style.inputIcon}
+            />
+            <TextInput
+              style={style.selectInputText}
+              placeholder="Digite o CEP"
+              placeholderTextColor="#888"
+              keyboardType="numeric"
+              maxLength={9}
+              value={cep} // ✅ mantém o valor visível
+              onChangeText={(value) => {
+                const formatted = formatarCep(value);
+                setCep(formatted); // ✅ atualiza o estado do pai
+                const cleanCep = formatted.replace(/\D/g, "");
+                if (cleanCep.length === 8) {
+                  buscarEnderecoPorCep(cleanCep);
+                }
+              }}
+              editable={editable}
+            />
+            {loading && <ActivityIndicator size="small" color={themes.colors.secundary} />}
+          </View>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={style.inputLabel}>Número</Text>
+          <View style={style.selectInput}>
+            <Ionicons
+              name="home-outline"
+              size={20}
+              color={themes.colors.secundary}
+              style={style.inputIcon}
+            />
+            <TextInput
+              style={style.selectInputText}
+              placeholder="Número"
+              placeholderTextColor="#888"
+              keyboardType="numeric"
+              value={numero}
+              onChangeText={setNumero}
+              editable={editable}
+            />
+          </View>
+        </View>
       </View>
 
-      <Text style={style.inputLabel}>Endereço</Text>
+      {/* 🔹 Rua */}
+      <Text style={style.inputLabel}>Rua</Text>
       <View style={style.selectInput}>
         <Ionicons
           name="location-outline"
@@ -76,32 +135,53 @@ export default function EnderecoInput({ endereco, setEndereco, editable }: Ender
           style={style.inputIcon}
         />
         <TextInput
-          style={[style.selectInputText, { color: editable ? "#FFF" : "#888" }]}
-          value={endereco}
-          onChangeText={setEndereco}
-          placeholder="Rua, bairro, cidade - UF"
+          style={[style.selectInputText, { color: "#888" }]}
+          value={rua}
+          placeholder="Rua"
           placeholderTextColor="#888"
-          editable={editable}
+          editable={false}
         />
       </View>
 
-      <Text style={style.inputLabel}>Número</Text>
-      <View style={style.selectInput}>
-        <Ionicons
-          name="home-outline"
-          size={20}
-          color={themes.colors.secundary}
-          style={style.inputIcon}
-        />
-        <TextInput
-          style={style.selectInputText}
-          placeholder="Número da residência"
-          placeholderTextColor="#888"
-          keyboardType="numeric"
-          value={numero}
-          onChangeText={setNumero}
-          editable={editable}
-        />
+      {/* 🔹 Cidade e Estado */}
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={{ flex: 2 }}>
+          <Text style={style.inputLabel}>Cidade</Text>
+          <View style={style.selectInput}>
+            <Ionicons
+              name="business-outline"
+              size={20}
+              color={themes.colors.secundary}
+              style={style.inputIcon}
+            />
+            <TextInput
+              style={[style.selectInputText, { color: "#888" }]}
+              value={cidade}
+              placeholder="Cidade"
+              placeholderTextColor="#888"
+              editable={false}
+            />
+          </View>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={style.inputLabel}>Estado</Text>
+          <View style={style.selectInput}>
+            <Ionicons
+              name="flag-outline"
+              size={20}
+              color={themes.colors.secundary}
+              style={style.inputIcon}
+            />
+            <TextInput
+              style={[style.selectInputText, { color: "#888" }]}
+              value={estado}
+              placeholder="UF"
+              placeholderTextColor="#888"
+              editable={false}
+            />
+          </View>
+        </View>
       </View>
     </View>
   );
