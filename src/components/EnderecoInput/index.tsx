@@ -4,7 +4,6 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { style } from "./styles";
 import { themes } from "../../global/themes";
 
-// 🔹 Adicione no topo:
 interface EnderecoInputProps {
   cep: string;
   setCep: (value: string) => void;
@@ -19,8 +18,9 @@ interface EnderecoInputProps {
   editable: boolean;
 }
 
-
 export default function EnderecoInput({
+  cep,
+  setCep,
   rua,
   setRua,
   cidade,
@@ -31,14 +31,10 @@ export default function EnderecoInput({
   setNumero,
   editable,
 }: EnderecoInputProps) {
-  const [cep, setCep] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Função para formatar CEP automaticamente
   function formatarCep(value: string) {
-    // Remove tudo que não for número
     const numeric = value.replace(/\D/g, "");
-    // Adiciona o hífen após o quinto número
     if (numeric.length > 5) {
       return numeric.replace(/(\d{5})(\d{1,3})/, "$1-$2");
     }
@@ -88,10 +84,10 @@ export default function EnderecoInput({
               placeholderTextColor="#888"
               keyboardType="numeric"
               maxLength={9}
-              value={cep} // ✅ mantém o valor visível
+              value={cep}
               onChangeText={(value) => {
                 const formatted = formatarCep(value);
-                setCep(formatted); // ✅ atualiza o estado do pai
+                setCep(formatted);
                 const cleanCep = formatted.replace(/\D/g, "");
                 if (cleanCep.length === 8) {
                   buscarEnderecoPorCep(cleanCep);
@@ -135,7 +131,7 @@ export default function EnderecoInput({
           style={style.inputIcon}
         />
         <TextInput
-          style={[style.selectInputText, { color: "#888" }]}
+          style={[style.selectInputText, { color: rua ? "#000" : "#888" }]}
           value={rua}
           placeholder="Rua"
           placeholderTextColor="#888"
@@ -155,7 +151,7 @@ export default function EnderecoInput({
               style={style.inputIcon}
             />
             <TextInput
-              style={[style.selectInputText, { color: "#888" }]}
+              style={[style.selectInputText, { color: cidade ? "#000" : "#888" }]}
               value={cidade}
               placeholder="Cidade"
               placeholderTextColor="#888"
@@ -174,7 +170,7 @@ export default function EnderecoInput({
               style={style.inputIcon}
             />
             <TextInput
-              style={[style.selectInputText, { color: "#888" }]}
+              style={[style.selectInputText, { color: estado ? "#000" : "#888" }]}
               value={estado}
               placeholder="UF"
               placeholderTextColor="#888"

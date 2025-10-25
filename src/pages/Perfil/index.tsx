@@ -35,6 +35,11 @@ export default function Perfil() {
         nome: "",
         telefone: "",
         endereco: "",
+        cep: "",
+        rua: "",
+        cidade: "",
+        estado: "",
+        numero: "",
     });
     const originalDataRef = useRef(originalData);
 
@@ -61,7 +66,12 @@ export default function Perfil() {
     const checkIsDirty = () => {
         const dirty = nome !== originalData.nome ||
             telefone !== originalData.telefone ||
-            endereco !== originalData.endereco;
+            endereco !== originalData.endereco ||
+            cep !== originalData.cep ||
+            rua !== originalData.rua ||
+            cidade !== originalData.cidade ||
+            estado !== originalData.estado ||
+            numero !== originalData.numero;
 
         isDirtyRef.current = dirty;
         return dirty;
@@ -69,7 +79,7 @@ export default function Perfil() {
 
     useEffect(() => {
         checkIsDirty();
-    }, [nome, telefone, endereco, originalData]);
+    }, [nome, telefone, endereco, cep, rua, cidade, estado, numero, originalData]);
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -92,6 +102,11 @@ export default function Perfil() {
         setNome(orig.nome ?? "");
         setTelefone(orig.telefone ?? "");
         setEndereco(orig.endereco ?? "");
+        setCep(orig.cep ?? "");
+        setRua(orig.rua ?? "");
+        setCidade(orig.cidade ?? "");
+        setEstado(orig.estado ?? "");
+        setNumero(orig.numero ?? "");
         setEditing(false);
     };
 
@@ -182,10 +197,24 @@ export default function Perfil() {
                 const nomeFirestore = data.nome || "";
                 const telefoneFirestore = data.telefone || "";
                 const enderecoFirestore = data.endereco || "";
+                
+                // ✅ CARREGA OS DADOS DO ENDEREÇO DO FIREBASE
+                const cepFirestore = data.cep || "";
+                const ruaFirestore = data.rua || "";
+                const cidadeFirestore = data.cidade || "";
+                const estadoFirestore = data.estado || "";
+                const numeroFirestore = data.numero || "";
 
                 setNome(nomeFirestore || displayName || "");
                 setTelefone(telefoneFirestore);
                 setEndereco(enderecoFirestore);
+                
+                // ✅ ATUALIZA OS ESTADOS DO ENDEREÇO
+                setCep(cepFirestore);
+                setRua(ruaFirestore);
+                setCidade(cidadeFirestore);
+                setEstado(estadoFirestore);
+                setNumero(numeroFirestore);
 
                 setTopBarNome(nomeFirestore || displayName || "");
                 setTopBarEndereco(enderecoFirestore);
@@ -194,17 +223,33 @@ export default function Perfil() {
                     nome: nomeFirestore || displayName || "",
                     telefone: telefoneFirestore,
                     endereco: enderecoFirestore,
+                    cep: cepFirestore,
+                    rua: ruaFirestore,
+                    cidade: cidadeFirestore,
+                    estado: estadoFirestore,
+                    numero: numeroFirestore,
                 });
             } else {
                 setNome(displayName || "");
                 setTelefone("");
                 setEndereco("");
+                setCep("");
+                setRua("");
+                setCidade("");
+                setEstado("");
+                setNumero("");
+                
                 setTopBarNome(displayName || "");
                 setTopBarEndereco("");
                 setOriginalData({
                     nome: displayName || "",
                     telefone: "",
                     endereco: "",
+                    cep: "",
+                    rua: "",
+                    cidade: "",
+                    estado: "",
+                    numero: "",
                 });
             }
         } catch (error) {
@@ -225,6 +270,8 @@ export default function Perfil() {
 
             await updateProfile(currentUser, { displayName: nome });
 
+            const enderecoFormatado = `${rua}, ${numero} - ${cidade}/${estado}`;
+            
             const docRef = doc(db, "usuarios", currentUser.uid);
             await setDoc(
                 docRef,
@@ -232,7 +279,7 @@ export default function Perfil() {
                     nome,
                     email,
                     telefone,
-                    endereco: `${rua}, ${numero} - ${cidade}/${estado}`,
+                    endereco: enderecoFormatado,
                     cep,
                     rua,
                     cidade,
@@ -243,12 +290,18 @@ export default function Perfil() {
             )
 
             setTopBarNome(nome);
-            setTopBarEndereco(endereco);
+            setTopBarEndereco(enderecoFormatado);
+            setEndereco(enderecoFormatado);
 
             setOriginalData({
                 nome: nome,
                 telefone: telefone,
-                endereco: endereco
+                endereco: enderecoFormatado,
+                cep: cep,
+                rua: rua,
+                cidade: cidade,
+                estado: estado,
+                numero: numero
             });
 
             Alert.alert("Sucesso", "Informações atualizadas com sucesso!");
@@ -404,23 +457,6 @@ export default function Perfil() {
 
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>Endereço</Text>
-                        {/* <View style={style.selectInput}>
-                            <Ionicons
-                                name="location-outline"
-                                size={20}
-                                color={themes.colors.secundary}
-                                style={style.inputIcon}
-                            />
-                            <TextInput
-                                style={style.selectInputText}
-                                value={endereco}
-                                onChangeText={setEndereco}
-                                placeholder="Rua, número, bairro..."
-                                placeholderTextColor="#888"
-                                editable={editing}
-                            />
-                        </View> */}
-
                         <View style={style.inputGroup}>
                             <EnderecoInput
                                 cep={cep}
@@ -435,10 +471,7 @@ export default function Perfil() {
                                 setNumero={setNumero}
                                 editable={editing}
                             />
-
                         </View>
-
-
                     </View>
                 </View>
 
