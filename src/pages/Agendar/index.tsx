@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Alert, Platform, Dimensions } from "react-native";
+import { View, ScrollView, Alert } from "react-native";
 import { style } from "./styles";
 
 import { db, auth } from '../../lib/firebaseConfig';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
 
 import { TabSwitch } from "../../components/TabSwitch";
 import { AgendarServico } from "../../components/AgendarServico";
@@ -35,8 +35,6 @@ export default function Agendar() {
     // Estados
     const [servico, setServico] = useState('');
     const [dataAgendamento, setDataAgendamento] = useState(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [showTimePicker, setShowTimePicker] = useState(false);
     const [showServiceList, setShowServiceList] = useState(false);
     const [pets, setPets] = useState<any[]>([]);
     const [petSelecionado, setPetSelecionado] = useState<any>(null);
@@ -53,7 +51,7 @@ export default function Agendar() {
     useEffect(() => {
         const carregarHorariosOcupados = async () => {
             try {
-                // Usa datas locais diretamente
+                // CORREÇÃO: Usar Timestamp para consulta
                 const inicioDoDia = new Date(dataAgendamento);
                 inicioDoDia.setHours(0, 0, 0, 0);
 
@@ -62,8 +60,8 @@ export default function Agendar() {
 
                 const q = query(
                     collection(db, "agendamentos"),
-                    where("dataHoraAgendamento", ">=", inicioDoDia),
-                    where("dataHoraAgendamento", "<=", fimDoDia)
+                    where("dataHoraAgendamento", ">=", Timestamp.fromDate(inicioDoDia)),
+                    where("dataHoraAgendamento", "<=", Timestamp.fromDate(fimDoDia))
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -76,7 +74,8 @@ export default function Agendar() {
                         return; // ignora
                     }
 
-                    const dateObj = firestoreTimestampToLocalDate(data.dataHoraAgendamento);
+                    // Converter Timestamp para Date local
+                    const dateObj = data.dataHoraAgendamento.toDate();
                     const horaLocal = dateObj.getHours().toString().padStart(2, '0') + ':' +
                         dateObj.getMinutes().toString().padStart(2, '0');
                     ocupados.push(horaLocal);
@@ -127,9 +126,8 @@ export default function Agendar() {
         setShowServiceList(false);
     };
 
-    // Na função Agendar, atualize o onChangeDate para ser mais simples:
+    // Função simplificada para compatibilidade
     const onChangeDate = (event: any, selectedDate?: Date) => {
-        // Esta função pode ser simplificada agora, mas mantemos para compatibilidade
         const currentDate = selectedDate || dataAgendamento;
         setDataAgendamento(currentDate);
     };
@@ -154,18 +152,25 @@ export default function Agendar() {
         }
 
         // 🔒 VALIDAÇÃO: horário está ocupado?
-        const horarioSelecionado = formatTime(dataAgendamento); // "10:00", etc.
+        const horarioSelecionado = formatTime(dataAgendamento);
         if (horariosOcupados.includes(horarioSelecionado)) {
             Alert.alert('Atenção', 'Este horário já está ocupado. Por favor, escolha outro.');
             return;
         }
 
         try {
-            // Usa a data local diretamente - Firestore cuida da conversão
+            // SOLUÇÃO DEFINITIVA PARA FUSO HORÁRIO: Usar Timestamp do Firebase
+            const timestampAgendamento = Timestamp.fromDate(dataAgendamento);
+
+            console.log('Data local selecionada:', dataAgendamento);
+            console.log('Data formatada:', formatDate(dataAgendamento));
+            console.log('Hora formatada:', formatTime(dataAgendamento));
+            console.log('Timestamp para Firebase:', timestampAgendamento.toDate());
+
             await addDoc(collection(db, 'agendamentos'), {
                 userId: userId,
                 service: servico,
-                dataHoraAgendamento: dataAgendamento, // Agora está correto
+                dataHoraAgendamento: timestampAgendamento, // Usa Timestamp diretamente
                 unidade: unidadeSelecionada?.nome || null,
                 enderecoUnidade: unidadeSelecionada?.endereco || null,
                 unidadeTelefone: unidadeSelecionada?.telefone || null,
@@ -331,14 +336,11 @@ export default function Agendar() {
                 <TabSwitch abaAtual={abaAtual} setAbaAtual={setAbaAtual} />
 
                 {abaAtual === 'agendar' ? (
-                    // No retorno do AgendarServico, remova a prop showDatePicker ou ajuste:
                     <AgendarServico
                         servico={servico}
                         setServico={setServico}
                         dataAgendamento={dataAgendamento}
                         setDataAgendamento={setDataAgendamento}
-                        // showDatePicker={showDatePicker} // Pode remover esta linha
-                        // setShowDatePicker={setShowDatePicker} // Pode remover esta linha
                         showServiceList={showServiceList}
                         setShowServiceList={setShowServiceList}
                         pets={pets}

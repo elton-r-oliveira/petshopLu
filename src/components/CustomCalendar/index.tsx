@@ -9,7 +9,7 @@ import {
   ScrollView 
 } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
-import { themes } from "../global/themes";
+import { themes } from "../../global/themes";
 import { MaterialIcons } from "@expo/vector-icons";
 
 // Configurar português
@@ -35,7 +35,6 @@ interface CustomCalendarProps {
   onClose: () => void;
   onDateSelect: (date: Date) => void;
   selectedDate: Date;
-  // Você pode passar dias ocupados do Firebase futuramente
 }
 
 export const CustomCalendar: React.FC<CustomCalendarProps> = ({
@@ -46,7 +45,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
 }) => {
   const [diasDisponiveis, setDiasDisponiveis] = useState<string[]>([]);
 
-  // Simulação de dias disponíveis - você pode substituir por dados do Firebase
+  // Simulação de dias disponíveis
   useEffect(() => {
     const carregarDiasDisponiveis = () => {
       const hoje = new Date();
@@ -68,6 +67,13 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
     
     carregarDiasDisponiveis();
   }, []);
+
+  // CORREÇÃO: Função para criar data no fuso horário local
+  const createLocalDate = (dateString: string): Date => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    // Criar data no fuso horário local
+    return new Date(year, month - 1, day, 12, 0, 0); // Usar meio-dia para evitar problemas de fuso
+  };
 
   // Preparar os dias marcados
   const prepareMarkedDates = () => {
@@ -135,8 +141,24 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   };
 
   const onDayPress = (day: any) => {
-    const selectedDate = new Date(day.dateString);
-    onDateSelect(selectedDate);
+    // CORREÇÃO: Usar a função createLocalDate para evitar problemas de fuso
+    const selectedDateLocal = createLocalDate(day.dateString);
+    
+    // Manter o horário atual se já tiver um selecionado
+    const horaAtual = selectedDate.getHours();
+    const minutoAtual = selectedDate.getMinutes();
+    
+    selectedDateLocal.setHours(horaAtual, minutoAtual, 0, 0);
+    
+    console.log('Data selecionada no calendário:', {
+      dateString: day.dateString,
+      localDate: selectedDateLocal,
+      formatted: selectedDateLocal.toLocaleDateString('pt-BR'),
+      hours: selectedDateLocal.getHours(),
+      minutes: selectedDateLocal.getMinutes()
+    });
+    
+    onDateSelect(selectedDateLocal);
   };
 
   return (
@@ -152,7 +174,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
           {/* Header Personalizado */}
           <View style={styles.calendarHeader}>
             <Image 
-              source={require('../assets/logo.png')} // Sua logo
+              source={require('../../assets/logoCalendario.png')} // Sua logo
               style={styles.logo}
               resizeMode="contain"
             />
