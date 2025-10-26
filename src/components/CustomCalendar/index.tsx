@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  Modal, 
-  Image, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Image,
   StyleSheet,
-  ScrollView 
+  ScrollView
 } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { themes } from "../../global/themes";
@@ -50,21 +50,21 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
     const carregarDiasDisponiveis = () => {
       const hoje = new Date();
       const disponiveis: string[] = [];
-      
+
       // Próximos 60 dias, exceto domingos (exemplo)
       for (let i = 0; i < 60; i++) {
         const data = new Date(hoje);
         data.setDate(hoje.getDate() + i);
-        
+
         // Não incluir domingos (exemplo de regra de negócio)
         if (data.getDay() !== 0) {
           disponiveis.push(data.toISOString().split('T')[0]);
         }
       }
-      
+
       setDiasDisponiveis(disponiveis);
     };
-    
+
     carregarDiasDisponiveis();
   }, []);
 
@@ -79,7 +79,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   const prepareMarkedDates = () => {
     const marked: any = {};
     const selectedDateStr = selectedDate.toISOString().split('T')[0];
-    
+
     // Marcar data selecionada
     marked[selectedDateStr] = {
       selected: true,
@@ -120,7 +120,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
       const data = new Date(hoje);
       data.setDate(hoje.getDate() + i);
       const dateStr = data.toISOString().split('T')[0];
-      
+
       if (!diasDisponiveis.includes(dateStr) && !marked[dateStr]) {
         marked[dateStr] = {
           disabled: true,
@@ -143,13 +143,13 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   const onDayPress = (day: any) => {
     // CORREÇÃO: Usar a função createLocalDate para evitar problemas de fuso
     const selectedDateLocal = createLocalDate(day.dateString);
-    
+
     // Manter o horário atual se já tiver um selecionado
     const horaAtual = selectedDate.getHours();
     const minutoAtual = selectedDate.getMinutes();
-    
+
     selectedDateLocal.setHours(horaAtual, minutoAtual, 0, 0);
-    
+
     console.log('Data selecionada no calendário:', {
       dateString: day.dateString,
       localDate: selectedDateLocal,
@@ -157,7 +157,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
       hours: selectedDateLocal.getHours(),
       minutes: selectedDateLocal.getMinutes()
     });
-    
+
     onDateSelect(selectedDateLocal);
   };
 
@@ -169,16 +169,26 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
+
+        {/* Logo 3D FORA do container do calendário */}
+        <View style={styles.logo3DContainer}>
+          <Image
+            source={require('../../assets/logoCalendario.png')}
+            style={styles.logo3D}
+            resizeMode="contain"
+          />
+        </View>
+
         <View style={styles.calendarContainer}>
-          
+
           {/* Header Personalizado */}
           <View style={styles.calendarHeader}>
-            <Image 
-              source={require('../../assets/logoCalendario.png')} // Sua logo
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.headerTitle}>Selecione a Data</Text>
+            <View style={styles.headerContent}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.headerTitle}>Selecione a Data</Text>
+              </View>
+            </View>
+
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <MaterialIcons name="close" size={24} color="#FFFFFF" />
             </TouchableOpacity>
@@ -193,7 +203,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
               minDate={new Date().toISOString().split('T')[0]}
               hideExtraDays={true}
               firstDay={1} // Começa na segunda-feira
-              
+
               // Customização do tema
               theme={{
                 // Cores principais
@@ -205,24 +215,24 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                 dayTextColor: '#2d4150',
                 textDisabledColor: '#d9e1e8',
                 dotColor: themes.colors.secundary,
-                
+
                 // Header do mês
                 monthTextColor: themes.colors.secundary,
                 textMonthFontSize: 18,
                 textMonthFontWeight: 'bold',
-                
+
                 // Dias da semana
                 textSectionTitleColor: themes.colors.secundary,
                 textDayHeaderFontSize: 14,
                 textDayHeaderFontWeight: '600',
-                
+
                 // Setas de navegação
                 arrowColor: themes.colors.secundary,
                 arrowStyle: {
                   padding: 10,
                 },
               }}
-              
+
               // Day component customizado para melhor controle
               dayComponent={({ date, state, marking }: any) => {
                 const dateStr = date.dateString;
@@ -230,7 +240,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                 const isAvailable = marking?.dotColor === '#4CAF50';
                 const isUnavailable = marking?.dotColor === '#F44336';
                 const isToday = dateStr === new Date().toISOString().split('T')[0];
-                
+
                 return (
                   <TouchableOpacity
                     style={[
@@ -251,7 +261,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                     ]}>
                       {date.day}
                     </Text>
-                    
+
                     {/* Indicador de disponibilidade */}
                     {isAvailable && !isSelected && (
                       <View style={styles.availableDot} />
@@ -263,22 +273,6 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                 );
               }}
             />
-
-            {/* Legenda */}
-            <View style={styles.legendContainer}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, styles.availableDot]} />
-                <Text style={styles.legendText}>Disponível</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, styles.unavailableDot]} />
-                <Text style={styles.legendText}>Indisponível</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: themes.colors.secundary }]} />
-                <Text style={styles.legendText}>Selecionado</Text>
-              </View>
-            </View>
 
             {/* Botão de Confirmar */}
             <TouchableOpacity style={styles.confirmButton} onPress={onClose}>
@@ -299,40 +293,69 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    position: 'relative', // Para posicionar a logo absolutamente
   },
   calendarContainer: {
     width: '100%',
     maxHeight: '90%',
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    overflow: 'hidden',
+    // REMOVI o overflow: 'hidden' para não cortar a logo
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
+  // Logo 3D POSICIONADA FORA do calendário
+  logo3DContainer: {
+    position: 'absolute',
+    top: 90, // Posiciona acima do calendário
+    left: 20, // Ajuste para alinhar com a borda
+    zIndex: 1000, // Z-index muito alto para ficar acima de tudo
+    // shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 20,
+  },
+  logo3D: {
+    width: 160, // Tamanho aumentado
+    height: 190, // Tamanho aumentado
+  },
   calendarHeader: {
     backgroundColor: themes.colors.secundary,
     padding: 20,
-    alignItems: 'center',
+    paddingTop: 30, // Mais espaço no topo
     position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    minHeight: 100,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
-  logo: {
-    width: 80,
-    height: 40,
-    marginBottom: 10,
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: 140, // Espaço para a logo não sobrepor o título
+  },
+  titleContainer: {
+    flex: 1,
   },
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    marginTop: 10,
   },
   closeButton: {
-    position: 'absolute',
-    top: 15,
-    right: 15,
     padding: 5,
+    marginTop: 5,
   },
   calendarScroll: {
     maxHeight: 500,
@@ -390,28 +413,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F44336',
     position: 'absolute',
     bottom: 3,
-  },
-  legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 15,
-    backgroundColor: '#f9f9f9',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 5,
-  },
-  legendText: {
-    fontSize: 12,
-    color: '#666',
   },
   confirmButton: {
     flexDirection: 'row',
