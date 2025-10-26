@@ -256,61 +256,89 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                         <Text style={style.locationAddress}>{unidade.endereco}</Text>
                                     </View>
 
-                                    {/* SUBSTITUIÇÃO DO MAPVIEW POR BOTÃO DO GOOGLE MAPS */}
+                                    {/* SUBSTITUIÇÃO DO MAPVIEW POR BOTÃO DO GOOGLE MAPS COM FUNDO DE IMAGEM */}
                                     <TouchableOpacity 
                                         style={style.mapContainer}
                                         onPress={() => openInGoogleMaps(unidade.lat, unidade.lng, unidade.nome)}
                                     >
                                         <View style={{ 
                                             flex: 1, 
-                                            backgroundColor: '#f8f9fa',
                                             justifyContent: 'center', 
                                             alignItems: 'center',
                                             borderRadius: 8,
                                             borderWidth: 2,
                                             borderColor: '#e9ecef',
-                                            padding: 16
+                                            overflow: 'hidden',
+                                            position: 'relative',
+                                            height: 140
                                         }}>
-                                            <Ionicons 
-                                                name="map" 
-                                                size={40} 
-                                                color={themes.colors.secundary || '#B8860B'} 
+                                            {/* IMAGEM DE FUNDO DO MAPA - MESMA DO AGENDARSERVICO */}
+                                            <Image
+                                                source={require('../../assets/map-background.png')}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    position: 'absolute'
+                                                }}
+                                                resizeMode="cover"
                                             />
-                                            <Text style={{ 
-                                                marginTop: 12,
-                                                fontSize: 16,
-                                                fontWeight: '600',
-                                                color: themes.colors.secundary || '#B8860B',
-                                                textAlign: 'center'
+
+                                            {/* Overlay para melhor contraste */}
+                                            <View style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                right: 0,
+                                                bottom: 0,
+                                                backgroundColor: 'rgba(0, 0, 0, 0.4)'
+                                            }} />
+
+                                            {/* Conteúdo sobre a imagem */}
+                                            <View style={{
+                                                alignItems: 'center',
+                                                zIndex: 1
                                             }}>
-                                                Ver Localização no Mapa
-                                            </Text>
-                                            <Text style={{ 
-                                                fontSize: 14,
-                                                color: '#666',
-                                                marginTop: 8,
-                                                textAlign: 'center'
-                                            }}>
-                                                Toque para abrir no Google Maps
-                                            </Text>
-                                            <View style={{ 
-                                                flexDirection: 'row', 
-                                                alignItems: 'center', 
-                                                marginTop: 12,
-                                                backgroundColor: '#f0f7ff',
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 6,
-                                                borderRadius: 20
-                                            }}>
-                                                <Ionicons name="navigate" size={16} color="#007AFF" />
+                                                <Ionicons 
+                                                    name="map" 
+                                                    size={32} 
+                                                    color="#fff"
+                                                />
+                                                <Text style={{ 
+                                                    marginTop: 8,
+                                                    fontSize: 16,
+                                                    fontWeight: '600',
+                                                    color: '#fff',
+                                                    textAlign: 'center'
+                                                }}>
+                                                    Ver no Mapa
+                                                </Text>
                                                 <Text style={{ 
                                                     fontSize: 12,
-                                                    color: '#007AFF',
-                                                    fontWeight: '500',
-                                                    marginLeft: 6
+                                                    color: 'rgba(255,255,255,0.9)',
+                                                    marginTop: 4,
+                                                    textAlign: 'center'
                                                 }}>
-                                                    Rotas • Navegação • Horários
+                                                    Toque para navegar
                                                 </Text>
+                                                <View style={{ 
+                                                    flexDirection: 'row', 
+                                                    alignItems: 'center', 
+                                                    marginTop: 12,
+                                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 6,
+                                                    borderRadius: 20
+                                                }}>
+                                                    <Ionicons name="navigate" size={16} color="#fff" />
+                                                    <Text style={{ 
+                                                        fontSize: 12,
+                                                        color: '#fff',
+                                                        fontWeight: '500',
+                                                        marginLeft: 6
+                                                    }}>
+                                                        Rotas • Navegação • Horários
+                                                    </Text>
+                                                </View>
                                             </View>
                                         </View>
                                     </TouchableOpacity>
