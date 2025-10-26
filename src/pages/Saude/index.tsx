@@ -36,6 +36,8 @@ import PetSelectorModal from '../../components/PetSelectorModal';
 // Import dos utilitários
 import { getPetImage, getTypeLabel, formatDate } from '../../utils/petUtils';
 import { HealthRecord } from "../../@types/HealthRecord";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 // 🔹 Interfaces
 interface Pet {
@@ -63,22 +65,56 @@ export default function Saude() {
     const [editingRecord, setEditingRecord] = useState<HealthRecord | null>(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setCurrentUser(user);
-            if (user) {
-                fetchPets(user.uid);
-            } else {
-                setLoading(false);
-            }
-        });
+        let mounted = true;
 
-        return () => unsubscribe();
+        const initializeAuth = () => {
+            // Verifica usuário atual imediatamente
+            const currentUser = auth.currentUser;
+            if (currentUser && mounted) {
+                setCurrentUser(currentUser);
+                fetchPets(currentUser.uid);
+            }
+
+            // Escuta mudanças futuras
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+                if (!mounted) return;
+
+                setCurrentUser(user);
+                if (user) {
+                    fetchPets(user.uid);
+                } else {
+                    setLoading(false);
+                    setPets([]);
+                    setSelectedPet(null);
+                    setHealthRecords([]);
+                }
+            });
+
+            return unsubscribe;
+        };
+
+        const unsubscribe = initializeAuth();
+
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
     }, []);
+
+    // ✅ useFocusEffect mantido para recarregar quando a tela ganhar foco
+    useFocusEffect(
+        useCallback(() => {
+            if (currentUser) {
+                fetchPets(currentUser.uid);
+            }
+        }, [currentUser])
+    );
 
     // Buscar pets do usuário
     // Saude.tsx - ATUALIZE a função fetchPets:
     const fetchPets = async (userId: string) => {
         try {
+            setLoading(true); // ✅ Garante que o loading seja ativado
             const q = query(collection(db, "cadastrarPet"), where("userId", "==", userId));
             const querySnapshot = await getDocs(q);
 
@@ -100,11 +136,13 @@ export default function Saude() {
                 setSelectedPet(petsList[0]);
                 await fetchHealthRecords(petsList[0].id);
             } else {
-                setLoading(false);
+                setSelectedPet(null);
+                setHealthRecords([]);
             }
-        } catch (error: any) { // ✅ CORREÇÃO: Tipar o error
+        } catch (error: any) {
             console.error("Erro ao carregar pets: ", error);
             Alert.alert("Erro", "Não foi possível carregar seus pets.");
+        } finally {
             setLoading(false);
         }
     };
