@@ -1,30 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    ScrollView,
-    Image,
-    ActivityIndicator,
-    Alert,
-    FlatList,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, FlatList, } from "react-native";
 import { style } from "./styles";
 import { MaterialIcons, Fontisto } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
-
 import { db, auth } from "../../lib/firebaseConfig";
-import {
-    collection,
-    query,
-    where,
-    getDocs,
-    QuerySnapshot,
-    DocumentData,
-    doc,
-    deleteDoc,
-} from "firebase/firestore";
+import { collection, query, where, getDocs, QuerySnapshot, DocumentData, doc, deleteDoc, } from "firebase/firestore";
 
 // 🔹 Interface do Pet
 interface Pet {
@@ -171,7 +152,7 @@ export default function Pets({ navigation }: any) {
                         <MaterialIcons
                             name="view-list"
                             size={22}
-                            color={!isGrid ? "#fff" : themes.telaPets.switchButtom }
+                            color={!isGrid ? "#fff" : themes.telaPets.switchButtom}
                         />
                     </TouchableOpacity>
 
@@ -191,7 +172,7 @@ export default function Pets({ navigation }: any) {
                         <Fontisto
                             name="nav-icon-grid"
                             size={15}
-                            color={isGrid ? "#fff" : themes.telaPets.switchButtom }
+                            color={isGrid ? "#fff" : themes.telaPets.switchButtom}
                         />
                     </TouchableOpacity>
                 </View>

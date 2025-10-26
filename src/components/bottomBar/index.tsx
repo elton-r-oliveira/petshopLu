@@ -7,7 +7,7 @@ import { themes } from "../../global/themes";
 import Home from "../../pages/Home";
 import Pets from "../../pages/Pets";
 import Agendar from "../../pages/Agendar";
-import Historico from "../../pages/Saude";
+import Saude from "../../pages/Saude";
 import Perfil from "../../pages/Perfil";
 
 const Tab = createBottomTabNavigator();
@@ -26,6 +26,8 @@ export default function BottomBar() {
                     height: 65,
                     paddingTop: 5,
                 },
+                tabBarActiveTintColor: themes.BottomBar.cor_icones, 
+                tabBarInactiveTintColor: themes.BottomBar.cor_icones,
                 tabBarIcon: ({ size, focused }) => {
                     if (route.name === "Home") {
                         return (
@@ -57,6 +59,7 @@ export default function BottomBar() {
                         //     ) : (
                         //         <Ionicons name="cart-outline" size={size} color={corIcones} />
                         //     );
+
                     } else if (route.name === "Saúde") {
                         return (
                             <Ionicons
@@ -82,7 +85,7 @@ export default function BottomBar() {
             <Tab.Screen name="Pets" component={Pets} />
             <Tab.Screen name="Agendar" component={Agendar} />
             {/* <Tab.Screen name="Shop" component={Historico} /> */}
-            <Tab.Screen name="Saúde" component={Historico} />
+            <Tab.Screen name="Saúde" component={Saude} />
             <Tab.Screen name="Perfil" component={Perfil} />
         </Tab.Navigator>
     );

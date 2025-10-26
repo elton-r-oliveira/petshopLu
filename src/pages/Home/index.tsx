@@ -77,9 +77,9 @@ export default function Home() {
 
         <TouchableOpacity
           style={[style.actionBox, { borderWidth: 3, borderColor: themes.telaHome.texto2 }]}
-          onPress={() => navigation.navigate('Saude')} // Navega para Histórico
+          onPress={() => navigation.navigate('Saúde')} // Navega para saude
         >
-          <Ionicons name="list" size={35} color={themes.colors.iconeQuickAcess1} />
+          <Ionicons name="medical" size={35} color={themes.colors.iconeQuickAcess1} />
           <Text style={style.actionText}>Saude</Text>
         </TouchableOpacity>
 

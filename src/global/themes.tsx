@@ -1,6 +1,9 @@
 export const themes = {
     colors: {
         corTexto: '#c0a8a3',
+        dewormer: '#c0a8a3',
+        vaccine: '#c0a8a3',
+        antiparasitic: '#c0a8a3',
         secundary: '#7A5947',
         lightGray: '#FFFDF2',
         quaseMarrom: '#a8685c',

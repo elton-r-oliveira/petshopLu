@@ -7,6 +7,7 @@ import { RootStackParamList } from "./@types/types";
 import BottomBar from "./components/bottomBar";
 import Pets from "./pages/Pets";
 import CadastrarPet from "./pages/CadastrarPet";
+import Saude from "./pages/Saude";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -45,12 +46,20 @@ export default function Routes() {
           }}
         />
 
+        <Stack.Screen
+          name="Saude"
+          component={Saude}
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+
         {/* 🚀 NOVA TELA: Cadastro de Pet */}
         <Stack.Screen
           name="CadastrarPet" // Nome que será usado para navegação
           component={CadastrarPet}
           options={{
-            animation: "slide_from_right", 
+            animation: "slide_from_right",
           }}
         />
       </Stack.Navigator>

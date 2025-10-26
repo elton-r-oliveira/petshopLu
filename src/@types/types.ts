@@ -6,11 +6,12 @@ export type RootStackParamList = {
   MeusPets: undefined;
   CadastrarPet: undefined;
   Perfil: undefined;
+  Saude: undefined;
 };
 export type BottomTabParamList = {
   Home: undefined;
   Pets: undefined;
   Agendar: undefined;
-  Saude: undefined;
+  Saúde: undefined;
   Perfil: undefined;
 };
