@@ -45,20 +45,47 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
 }) => {
   const [diasDisponiveis, setDiasDisponiveis] = useState<string[]>([]);
 
+  // Dentro do componente CustomCalendar, antes do useEffect, adicione:
+  const feriadosEDiasBloqueados = [
+    '2024-12-25', // Natal
+    '2024-12-31', // Véspera de Ano Novo
+    '2025-01-01', // Ano Novo
+    '2025-04-18', // Sexta-feira Santa (exemplo)
+    '2025-04-21', // Tiradentes
+    '2025-05-01', // Dia do Trabalho
+    '2025-09-07', // Independência do Brasil
+    '2025-10-12', // Nossa Senhora Aparecida
+    '2025-11-02', // Finados
+    '2025-11-15', // Proclamação da República
+    '2025-11-20',
+  ];
+
+  // Você também pode bloquear dias específicos da semana (ex: segundas-feiras)
+  const diasDaSemanaBloqueados = [0]; // 0 = Domingo, 1 = Segunda, etc.
+  // Exemplo para bloquear segundas e domingos: [0, 1]
+
   // Simulação de dias disponíveis
+  // Substitua o useEffect atual por este:
   useEffect(() => {
     const carregarDiasDisponiveis = () => {
       const hoje = new Date();
       const disponiveis: string[] = [];
 
-      // Próximos 60 dias, exceto domingos (exemplo)
+      // Próximos 60 dias
       for (let i = 0; i < 60; i++) {
         const data = new Date(hoje);
         data.setDate(hoje.getDate() + i);
+        const dateStr = data.toISOString().split('T')[0];
+        const diaDaSemana = data.getDay();
 
-        // Não incluir domingos (exemplo de regra de negócio)
-        if (data.getDay() !== 0) {
-          disponiveis.push(data.toISOString().split('T')[0]);
+        // VERIFICAÇÕES PARA BLOQUEAR DIAS:
+        const isDomingo = diaDaSemana === 0;
+        const isDiaDaSemanaBloqueado = diasDaSemanaBloqueados.includes(diaDaSemana);
+        const isFeriado = feriadosEDiasBloqueados.includes(dateStr);
+
+        // Só adiciona como disponível se NÃO for nenhum dos bloqueados
+        if (!isDomingo && !isDiaDaSemanaBloqueado && !isFeriado) {
+          disponiveis.push(dateStr);
         }
       }
 
