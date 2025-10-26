@@ -191,7 +191,7 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       onRequestClose={onClose}
     >
