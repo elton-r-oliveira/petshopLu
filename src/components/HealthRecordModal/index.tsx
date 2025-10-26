@@ -12,25 +12,19 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { themes } from '../../global/themes';
 import { style } from './styles'; // Você pode criar um arquivo de styles específico ou usar o mesmo
-
-interface HealthRecord {
-    id: string;
-    type: 'vaccine' | 'dewormer' | 'antiparasitic';
-    name: string;
-    date: string;
-    nextDate?: string;
-    notes?: string;
-}
+import { HealthRecord } from "../../@types/HealthRecord";
 
 interface HealthRecordModalProps {
-    visible: boolean;
-    mode: 'add' | 'edit';
-    recordType: 'vaccine' | 'dewormer' | 'antiparasitic';
-    record?: HealthRecord | null;
-    onClose: () => void;
-    onSave: (recordData: Omit<HealthRecord, 'id'>) => void;
-    onUpdate?: (recordData: HealthRecord) => void;
+  visible: boolean;
+  mode: 'add' | 'edit';
+  recordType: 'vaccine' | 'dewormer' | 'antiparasitic';
+  record?: HealthRecord | null;
+  onClose: () => void;
+  onSave: (recordData: Omit<HealthRecord, 'id' | 'petId' | 'userId' | 'createdAt' | 'updatedAt'>) => void;
+  onUpdate: (recordData: Omit<HealthRecord, 'userId' | 'petId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  loading: boolean;
 }
+
 
 export default function HealthRecordModal({
     visible,
