@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -10,16 +10,17 @@ import {
 } from 'react-native';
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { style } from "./styles"
+import { CustomCalendar } from "../CustomCalendar";
 
 interface AgendarServicoProps {
     servico: string;
     setServico: (servico: string) => void;
     dataAgendamento: Date;
     setDataAgendamento: (date: Date) => void;
-    showDatePicker: boolean;
-    setShowDatePicker: (show: boolean) => void;
+    // REMOVA estas linhas:
+    // showDatePicker: boolean;
+    // setShowDatePicker: (show: boolean) => void;
     showServiceList: boolean;
     setShowServiceList: (show: boolean) => void;
     pets: any[];
@@ -52,14 +53,13 @@ const isHorarioPassado = (dataAgendamento: Date, horario: string): boolean => {
     const hoje = new Date();
     const dataSelecionada = new Date(dataAgendamento);
 
-    // Verifica se é o mesmo dia (comparando ano, mês e dia)
     const mesmoDia =
         dataSelecionada.getDate() === hoje.getDate() &&
         dataSelecionada.getMonth() === hoje.getMonth() &&
         dataSelecionada.getFullYear() === hoje.getFullYear();
 
     if (!mesmoDia) {
-        return false; // Só bloqueia horários passados se for HOJE
+        return false;
     }
 
     const [horaStr, minutoStr] = horario.split(':');
@@ -77,7 +77,6 @@ const isHorarioPassado = (dataAgendamento: Date, horario: string): boolean => {
     return horarioCompleto < hoje;
 };
 
-// Função para abrir no Google Maps
 const openInGoogleMaps = (lat: number, lng: number, label: string) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${encodeURIComponent(label)}`;
     Linking.openURL(url);
@@ -88,8 +87,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     setServico,
     dataAgendamento,
     setDataAgendamento,
-    showDatePicker,
-    setShowDatePicker,
     showServiceList,
     setShowServiceList,
     pets,
@@ -109,6 +106,13 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     horariosFixos,
     horariosOcupados
 }) => {
+    const [showCustomCalendar, setShowCustomCalendar] = useState(false);
+
+    const handleDateSelect = (date: Date) => {
+        setDataAgendamento(date);
+        setShowCustomCalendar(false);
+    };
+
     return (
         <>
             <Text style={style.sectionTitle}>Agendar Serviço</Text>
@@ -189,12 +193,12 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
 
                 {/* Data e Pet lado a lado */}
                 <View style={style.dateTimeContainer}>
-                    {/* Data */}
+                    {/* Data - AGORA COM CALENDÁRIO CUSTOMIZADO */}
                     <View style={[style.inputGroup, style.halfInput]}>
                         <Text style={style.inputLabel}>Data</Text>
                         <TouchableOpacity
                             style={style.selectInput}
-                            onPress={() => setShowDatePicker(true)}
+                            onPress={() => setShowCustomCalendar(true)}
                         >
                             <MaterialIcons
                                 name="date-range"
@@ -246,16 +250,13 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                     </View>
                 </View>
 
-                {/* Date Picker */}
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={dataAgendamento}
-                        mode="date"
-                        display="default"
-                        onChange={onChangeDate}
-                        minimumDate={new Date()}
-                    />
-                )}
+                {/* Calendário Customizado */}
+                <CustomCalendar
+                    visible={showCustomCalendar}
+                    onClose={() => setShowCustomCalendar(false)}
+                    onDateSelect={handleDateSelect}
+                    selectedDate={dataAgendamento}
+                />
 
                 {/* Horários Disponíveis */}
                 <View style={style.inputGroup}>
@@ -455,9 +456,8 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                         overflow: 'hidden',
                                         position: 'relative'
                                     }}>
-                                        {/* Imagem local de fundo */}
                                         <Image
-                                            source={require('../../assets/map-background.png')} // Sua imagem local
+                                            source={require('../../assets/map-background.png')}
                                             style={{
                                                 width: '100%',
                                                 height: '100%',
@@ -466,7 +466,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                             resizeMode="cover"
                                         />
 
-                                        {/* Overlay colorido baseado na seleção */}
                                         <View style={{
                                             position: 'absolute',
                                             top: 0,
@@ -478,7 +477,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                                 : ''
                                         }} />
 
-                                        {/* Conteúdo */}
                                         <View style={{
                                             alignItems: 'center',
                                             zIndex: 1

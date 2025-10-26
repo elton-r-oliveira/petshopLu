@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Alert, Platform, Dimensions  } from "react-native";
+import { View, ScrollView, Alert, Platform, Dimensions } from "react-native";
 import { style } from "./styles";
 
 import { db, auth } from '../../lib/firebaseConfig';
@@ -127,14 +127,11 @@ export default function Agendar() {
         setShowServiceList(false);
     };
 
+    // Na função Agendar, atualize o onChangeDate para ser mais simples:
     const onChangeDate = (event: any, selectedDate?: Date) => {
+        // Esta função pode ser simplificada agora, mas mantemos para compatibilidade
         const currentDate = selectedDate || dataAgendamento;
-        setShowDatePicker(Platform.OS === 'ios');
         setDataAgendamento(currentDate);
-
-        if (event.type === 'set' && Platform.OS !== 'ios') {
-            setShowTimePicker(true);
-        }
     };
 
     const handleAgendar = async () => {
@@ -334,13 +331,14 @@ export default function Agendar() {
                 <TabSwitch abaAtual={abaAtual} setAbaAtual={setAbaAtual} />
 
                 {abaAtual === 'agendar' ? (
+                    // No retorno do AgendarServico, remova a prop showDatePicker ou ajuste:
                     <AgendarServico
                         servico={servico}
                         setServico={setServico}
                         dataAgendamento={dataAgendamento}
                         setDataAgendamento={setDataAgendamento}
-                        showDatePicker={showDatePicker}
-                        setShowDatePicker={setShowDatePicker}
+                        // showDatePicker={showDatePicker} // Pode remover esta linha
+                        // setShowDatePicker={setShowDatePicker} // Pode remover esta linha
                         showServiceList={showServiceList}
                         setShowServiceList={setShowServiceList}
                         pets={pets}
