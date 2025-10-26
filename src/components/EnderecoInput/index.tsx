@@ -81,7 +81,7 @@ export default function EnderecoInput({
             <TextInput
               style={style.selectInputText}
               placeholder="Digite o CEP"
-              placeholderTextColor="#888"
+              placeholderTextColor={themes.telaPerfil.textos_placeholder}
               keyboardType="numeric"
               maxLength={9}
               value={cep}
@@ -111,7 +111,7 @@ export default function EnderecoInput({
             <TextInput
               style={style.selectInputText}
               placeholder="Número"
-              placeholderTextColor="#888"
+              placeholderTextColor={themes.telaPerfil.textos_placeholder}
               keyboardType="numeric"
               value={numero}
               onChangeText={setNumero}
@@ -122,28 +122,31 @@ export default function EnderecoInput({
       </View>
 
       {/* 🔹 Rua */}
-      <Text style={style.inputLabel}>Rua</Text>
-      <View style={style.selectInput}>
-        <Ionicons
-          name="location-outline"
-          size={20}
-          color={themes.colors.secundary}
-          style={style.inputIcon}
-        />
-        <TextInput
-          style={[style.selectInputText, { color: rua ? "#000" : "#888" }]}
-          value={rua}
-          placeholder="Rua"
-          placeholderTextColor="#888"
-          editable={false}
-        />
+      <View>
+        <Text style={style.inputLabel}>Rua</Text>
+        <View style={[style.selectInput, {backgroundColor: themes.telaPerfil.nao_editavel}]}>
+          <Ionicons
+            name="location-outline"
+            size={20}
+            color={themes.colors.secundary}
+            style={style.inputIcon}
+          />
+          <TextInput
+            style={[style.selectInputText, { color: rua ? themes.telaPerfil.textos_labels : themes.telaPerfil.textos_placeholder }]}
+            placeholder="Rua"
+            placeholderTextColor={themes.telaPerfil.textos_placeholder}
+            value={rua}
+            onChangeText={setRua}
+            editable={false}
+          />
+        </View>
       </View>
 
       {/* 🔹 Cidade e Estado */}
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 2 }}>
           <Text style={style.inputLabel}>Cidade</Text>
-          <View style={style.selectInput}>
+          <View style={[style.selectInput, {backgroundColor: themes.telaPerfil.nao_editavel}]}>
             <Ionicons
               name="business-outline"
               size={20}
@@ -151,10 +154,10 @@ export default function EnderecoInput({
               style={style.inputIcon}
             />
             <TextInput
-              style={[style.selectInputText, { color: cidade ? "#000" : "#888" }]}
+              style={[style.selectInputText, { color: cidade ? themes.telaPerfil.textos_labels : themes.telaPerfil.textos_placeholder }]}
               value={cidade}
               placeholder="Cidade"
-              placeholderTextColor="#888"
+              placeholderTextColor={themes.telaPerfil.textos_placeholder}
               editable={false}
             />
           </View>
@@ -162,7 +165,7 @@ export default function EnderecoInput({
 
         <View style={{ flex: 1 }}>
           <Text style={style.inputLabel}>Estado</Text>
-          <View style={style.selectInput}>
+          <View style={[style.selectInput, {backgroundColor: themes.telaPerfil.nao_editavel}]}>
             <Ionicons
               name="flag-outline"
               size={20}
@@ -170,10 +173,10 @@ export default function EnderecoInput({
               style={style.inputIcon}
             />
             <TextInput
-              style={[style.selectInputText, { color: estado ? "#000" : "#888" }]}
+              style={[style.selectInputText, { color: estado ? themes.telaPerfil.textos_labels : themes.telaPerfil.textos_placeholder }]}
               value={estado}
               placeholder="UF"
-              placeholderTextColor="#888"
+              placeholderTextColor={themes.telaPerfil.textos_placeholder}
               editable={false}
             />
           </View>

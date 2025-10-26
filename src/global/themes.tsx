@@ -47,5 +47,12 @@ export const themes = {
         editButtom: '#7A5947',
         deleteButtom: '#901812',
         switchButtom: '#7A5947'
+    },
+    telaPerfil: {
+        titulos_labels: '#7A5947',
+        textos_labels: '#c0a8a3',
+        textos_placeholder: '#c0a8a3',
+        fundo_inputs: '#fff',
+        nao_editavel: '#eeeeeeff',
     }
 }

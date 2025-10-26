@@ -197,31 +197,29 @@ export const style = StyleSheet.create({
     },
 
     inputLabel: {
+        color: themes.telaPerfil.titulos_labels,
         fontSize: 14,
         fontWeight: "600",
-        color: themes.colors.secundary,
-        // marginBottom: 6,
+        marginBottom: 4,
     },
 
     selectInput: {
         flexDirection: "row",
         alignItems: "center",
-        borderWidth: 1.5,
-        borderColor: "#ddd",
+        height: 45,
         borderRadius: 12,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
+        paddingHorizontal: 10,
         backgroundColor: "#fff",
     },
 
     inputIcon: {
-        marginRight: 10,
+        marginRight: 8,
     },
 
     selectInputText: {
         flex: 1,
-        fontSize: 15,
-        color: themes.colors.secundary,
+        fontSize: 14,
+        color: themes.telaPerfil.textos_labels,
     },
 
 });

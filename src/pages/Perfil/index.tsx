@@ -9,7 +9,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigation, CommonActions, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../@types/types";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons, Fontisto } from "@expo/vector-icons";
 import EnderecoInput from "../../components/EnderecoInput";
 
 type PerfilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Perfil">;
@@ -197,7 +197,7 @@ export default function Perfil() {
                 const nomeFirestore = data.nome || "";
                 const telefoneFirestore = data.telefone || "";
                 const enderecoFirestore = data.endereco || "";
-                
+
                 // ✅ CARREGA OS DADOS DO ENDEREÇO DO FIREBASE
                 const cepFirestore = data.cep || "";
                 const ruaFirestore = data.rua || "";
@@ -208,7 +208,7 @@ export default function Perfil() {
                 setNome(nomeFirestore || displayName || "");
                 setTelefone(telefoneFirestore);
                 setEndereco(enderecoFirestore);
-                
+
                 // ✅ ATUALIZA OS ESTADOS DO ENDEREÇO
                 setCep(cepFirestore);
                 setRua(ruaFirestore);
@@ -238,7 +238,7 @@ export default function Perfil() {
                 setCidade("");
                 setEstado("");
                 setNumero("");
-                
+
                 setTopBarNome(displayName || "");
                 setTopBarEndereco("");
                 setOriginalData({
@@ -271,7 +271,7 @@ export default function Perfil() {
             await updateProfile(currentUser, { displayName: nome });
 
             const enderecoFormatado = `${rua}, ${numero} - ${cidade}/${estado}`;
-            
+
             const docRef = doc(db, "usuarios", currentUser.uid);
             await setDoc(
                 docRef,
@@ -389,10 +389,10 @@ export default function Perfil() {
     return (
         <View style={{ flex: 1 }}>
             <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
-                <TopBar
+                {/* <TopBar
                     userName={topBarNome || "Usuário"}
                     location={topBarEndereco || "Endereço não informado"}
-                />
+                /> */}
 
                 <Text style={style.sectionTitle}>Informações do Perfil</Text>
 
@@ -411,7 +411,7 @@ export default function Perfil() {
                                 value={nome}
                                 onChangeText={setNome}
                                 placeholder="Seu nome completo"
-                                placeholderTextColor="#888"
+                                placeholderTextColor={themes.telaPerfil.textos_placeholder}
                                 editable={editing}
                             />
                         </View>
@@ -419,15 +419,15 @@ export default function Perfil() {
 
                     <View style={style.inputGroup}>
                         <Text style={style.inputLabel}>E-mail</Text>
-                        <View style={style.selectInput}>
-                            <MaterialIcons
+                        <View style={[style.selectInput, , { backgroundColor: themes.telaPerfil.nao_editavel }]}>
+                            <Fontisto
                                 name="email"
                                 size={20}
                                 color={themes.colors.secundary}
                                 style={style.inputIcon}
                             />
                             <TextInput
-                                style={[style.selectInputText, { color: "#888" }]}
+                                style={[style.selectInputText, { color: themes.telaPerfil.textos_labels }]}
                                 value={email}
                                 editable={false}
                             />
@@ -448,7 +448,7 @@ export default function Perfil() {
                                 value={telefone}
                                 onChangeText={setTelefone}
                                 placeholder="(11) 99999-9999"
-                                placeholderTextColor="#888"
+                                placeholderTextColor={themes.telaPerfil.textos_placeholder}
                                 keyboardType="phone-pad"
                                 editable={editing}
                             />
@@ -456,7 +456,7 @@ export default function Perfil() {
                     </View>
 
                     <View style={style.inputGroup}>
-                        <Text style={style.inputLabel}>Endereço</Text>
+                        {/* <Text style={style.inputLabel}>Endereço</Text> */}
                         <View style={style.inputGroup}>
                             <EnderecoInput
                                 cep={cep}
