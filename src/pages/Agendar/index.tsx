@@ -10,6 +10,9 @@ import { AgendarServico } from "../../components/AgendarServico";
 import { MeusAgendamentos } from "../../components/MeusAgendamentos";
 import { ModalDetalhesAgendamento } from "../../components/ModalDetalhesAgendamento"
 
+// Import do utilitário
+import { getPetImage } from "../../utils/petUtils";
+
 const formatDate = (date: Date) => date.toLocaleDateString('pt-BR');
 const formatTime = (date: Date) => date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
@@ -194,25 +197,6 @@ export default function Agendar() {
         }
     };
 
-    const getPetImage = (type?: string) => {
-        // Se type for falsy ou não for string, retorna imagem padrão
-        if (!type || typeof type !== 'string') {
-            return require("../../assets/pets/pet.png");
-        }
-
-        const t = type.toLowerCase();
-
-        switch (t) {
-            case "dog": return require("../../assets/pets/dog.png");
-            case "cat": return require("../../assets/pets/cat.png");
-            case "roedores": return require("../../assets/pets/hamster.png");
-            case "turtle": return require("../../assets/pets/turtle.png");
-            case "bird": return require("../../assets/pets/bird.png");
-            case "rabbit": return require("../../assets/pets/rabbit.png");
-            default: return require("../../assets/pets/pet.png");
-        }
-    };
-
     const abrirDetalhesAgendamento = (agendamento: any) => {
         // Converte a data do Firestore para local antes de exibir
         const agendamentoComDataLocal = {
@@ -354,7 +338,7 @@ export default function Agendar() {
                         handleSelectService={handleSelectService}
                         onChangeDate={onChangeDate}
                         handleAgendar={handleAgendar}
-                        getPetImage={getPetImage}
+                        getPetImage={getPetImage} 
                         formatDate={formatDate}
                         formatTime={formatTime}
                         horariosFixos={horariosFixos}
@@ -374,7 +358,7 @@ export default function Agendar() {
                     setModalDetalhesVisible={setModalDetalhesVisible}
                     agendamentoSelecionado={agendamentoSelecionado}
                     unidades={unidades}
-                    getPetImage={getPetImage}
+                    getPetImage={getPetImage} 
                     onCancelarAgendamento={cancelarAgendamento}
                 />
             )}

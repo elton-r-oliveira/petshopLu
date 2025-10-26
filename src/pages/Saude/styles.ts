@@ -8,7 +8,7 @@ export const style = StyleSheet.create({
         paddingHorizontal: 15,
     },
     sectionTitle: {
-        fontSize: 22, 
+        fontSize: 22,
         fontFamily: 'Inter_700Bold',
         marginTop: 50,
         marginBottom: 20,
@@ -207,7 +207,7 @@ export const style = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Baloo2_600SemiBold',
     },
-        recordHeader: {
+    recordHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
@@ -295,7 +295,7 @@ export const style = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Baloo2_600SemiBold',
     },
-        inputGroup: {
+    inputGroup: {
         marginBottom: 20,
     },
     inputLabel: {
@@ -304,5 +304,10 @@ export const style = StyleSheet.create({
         marginBottom: 8,
         fontFamily: 'Baloo2_600SemiBold'
     },
-
+    emptyStateContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+    },
 });

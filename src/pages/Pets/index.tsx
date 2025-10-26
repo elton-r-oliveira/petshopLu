@@ -7,6 +7,9 @@ import { themes } from "../../global/themes";
 import { db, auth } from "../../lib/firebaseConfig";
 import { collection, query, where, getDocs, QuerySnapshot, DocumentData, doc, deleteDoc, } from "firebase/firestore";
 
+// Import do utilitário
+import { getPetImage } from "../../utils/petUtils";
+
 // 🔹 Interface do Pet
 interface Pet {
     id: string;
@@ -98,26 +101,6 @@ export default function Pets({ navigation }: any) {
         });
         return unsubscribe;
     }, [navigation]);
-
-    // Retorna imagem conforme o tipo
-    const getPetImage = (type: string) => {
-        switch (type.toLowerCase()) {
-            case "dog":
-                return require("../../assets/pets/dog.png");
-            case "cat":
-                return require("../../assets/pets/cat.png");
-            case "roedores":
-                return require("../../assets/pets/hamster.png");
-            case "turtle":
-                return require("../../assets/pets/turtle.png");
-            case "bird":
-                return require("../../assets/pets/bird.png");
-            case "rabbit":
-                return require("../../assets/pets/rabbit.png");
-            default:
-                return require("../../assets/pets/pet.png");
-        }
-    };
 
     return (
         <View style={style.container}>
@@ -256,7 +239,7 @@ export default function Pets({ navigation }: any) {
                         <View key={pet.id} style={style.petCard}>
                             <View style={style.petLeft}>
                                 <Image
-                                    source={getPetImage(pet.animalType)}
+                                    source={getPetImage(pet.animalType)} 
                                     style={style.petImage}
                                 />
                                 <View style={style.petInfo}>

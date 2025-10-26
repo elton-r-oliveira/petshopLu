@@ -10,7 +10,7 @@ import {
     FlatList,
 } from "react-native";
 import { style } from "./styles";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
 import { auth, db } from "../../lib/firebaseConfig";
@@ -238,68 +238,6 @@ export default function Saude() {
         return healthRecords.filter(record => record.type === type);
     };
 
-    // Renderização dos cards de saúde
-    const renderHealthCard = (type: 'vaccine' | 'dewormer' | 'antiparasitic', title: string, icon: string) => (
-        <View style={style.healthCard}>
-            <View style={style.healthCardHeader}>
-                <View style={[style.healthIcon, { backgroundColor: themes.colors[type] }]}>
-                    <Ionicons name={icon as any} size={24} color="#fff" />
-                </View>
-                <Text style={style.healthCardTitle}>{title}</Text>
-                <TouchableOpacity
-                    style={style.addButton}
-                    onPress={() => openAddModal(type)}
-                >
-                    <MaterialIcons name="add" size={20} color="#fff" />
-                </TouchableOpacity>
-            </View>
-
-            {getRecordsByType(type).length > 0 ? (
-                <FlatList
-                    data={getRecordsByType(type)}
-                    scrollEnabled={false}
-                    renderItem={({ item }) => (
-                        <View style={style.recordItem}>
-                            <View style={style.recordHeader}>
-                                <Text style={style.recordName}>{item.name}</Text>
-                                <View style={style.recordActions}>
-                                    <TouchableOpacity 
-                                        style={style.editButton}
-                                        onPress={() => openEditModal(item)}
-                                    >
-                                        <MaterialIcons name="edit" size={16} color="#fff" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity 
-                                        style={style.deleteButton}
-                                        onPress={() => handleDeleteRecord(item)}
-                                    >
-                                        <MaterialIcons name="delete" size={16} color="#fff" />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                            <View style={style.recordDetails}>
-                                <Text style={style.recordDate}>
-                                    Aplicada: {formatDate(item.date)}
-                                </Text>
-                                {item.nextDate && (
-                                    <Text style={style.recordNextDate}>
-                                        Próxima: {formatDate(item.nextDate)}
-                                    </Text>
-                                )}
-                            </View>
-                            {item.notes && (
-                                <Text style={style.recordNotes}>{item.notes}</Text>
-                            )}
-                        </View>
-                    )}
-                    keyExtractor={(item) => item.id}
-                />
-            ) : (
-                <Text style={style.emptyText}>Nenhum registro</Text>
-            )}
-        </View>
-    );
-
     return (
         <View style={{ flex: 1 }}>
             <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
@@ -338,18 +276,191 @@ export default function Saude() {
                 </TouchableOpacity>
 
                 {/* Cards de Saúde */}
-                {selectedPet && (
+                {selectedPet ? (
                     <View style={style.healthCardsContainer}>
-                        {renderHealthCard('vaccine', 'Vacinas', 'medical')}
-                        {renderHealthCard('dewormer', 'Vermífugos', 'bug')}
-                        {renderHealthCard('antiparasitic', 'Antiparasitários', 'shield')}
-                    </View>
-                )}
+                        
+                        {/* Card de Vacinas */}
+                        <View style={style.healthCard}>
+                            <View style={style.healthCardHeader}>
+                                <View style={[style.healthIcon, { backgroundColor: themes.colors.vaccine }]}>
+                                    <MaterialIcons name="vaccines" size={24} color="#fff" />
+                                </View>
+                                <Text style={style.healthCardTitle}>Vacinas</Text>
+                                <TouchableOpacity
+                                    style={style.addButton}
+                                    onPress={() => openAddModal('vaccine')}
+                                >
+                                    <MaterialIcons name="add" size={20} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
 
-                {!selectedPet && pets.length === 0 && (
-                    <Text style={style.emptyStateText}>
-                        Cadastre um pet primeiro para gerenciar a saúde.
-                    </Text>
+                            {getRecordsByType('vaccine').length > 0 ? (
+                                <FlatList
+                                    data={getRecordsByType('vaccine')}
+                                    scrollEnabled={false}
+                                    renderItem={({ item }) => (
+                                        <View style={style.recordItem}>
+                                            <View style={style.recordHeader}>
+                                                <Text style={style.recordName}>{item.name}</Text>
+                                                <View style={style.recordActions}>
+                                                    <TouchableOpacity 
+                                                        style={style.editButton}
+                                                        onPress={() => openEditModal(item)}
+                                                    >
+                                                        <MaterialIcons name="edit" size={16} color="#fff" />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity 
+                                                        style={style.deleteButton}
+                                                        onPress={() => handleDeleteRecord(item)}
+                                                    >
+                                                        <MaterialIcons name="delete" size={16} color="#fff" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                            <View style={style.recordDetails}>
+                                                <Text style={style.recordDate}>
+                                                    Aplicada: {formatDate(item.date)}
+                                                </Text>
+                                                {item.nextDate && (
+                                                    <Text style={style.recordNextDate}>
+                                                        Próxima: {formatDate(item.nextDate)}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                            {item.notes && (
+                                                <Text style={style.recordNotes}>{item.notes}</Text>
+                                            )}
+                                        </View>
+                                    )}
+                                    keyExtractor={(item) => item.id}
+                                />
+                            ) : (
+                                <Text style={style.emptyText}>Nenhuma vacina registrada</Text>
+                            )}
+                        </View>
+
+                        {/* Card de Vermífugos */}
+                        <View style={style.healthCard}>
+                            <View style={style.healthCardHeader}>
+                                <View style={[style.healthIcon, { backgroundColor: themes.colors.dewormer }]}>
+                                    <MaterialIcons name="medication" size={24} color="#fff" />
+                                </View>
+                                <Text style={style.healthCardTitle}>Vermífugos</Text>
+                                <TouchableOpacity
+                                    style={style.addButton}
+                                    onPress={() => openAddModal('dewormer')}
+                                >
+                                    <MaterialIcons name="add" size={20} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {getRecordsByType('dewormer').length > 0 ? (
+                                <FlatList
+                                    data={getRecordsByType('dewormer')}
+                                    scrollEnabled={false}
+                                    renderItem={({ item }) => (
+                                        <View style={style.recordItem}>
+                                            <View style={style.recordHeader}>
+                                                <Text style={style.recordName}>{item.name}</Text>
+                                                <View style={style.recordActions}>
+                                                    <TouchableOpacity 
+                                                        style={style.editButton}
+                                                        onPress={() => openEditModal(item)}
+                                                    >
+                                                        <MaterialIcons name="edit" size={16} color="#fff" />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity 
+                                                        style={style.deleteButton}
+                                                        onPress={() => handleDeleteRecord(item)}
+                                                    >
+                                                        <MaterialIcons name="delete" size={16} color="#fff" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                            <View style={style.recordDetails}>
+                                                <Text style={style.recordDate}>
+                                                    Aplicado: {formatDate(item.date)}
+                                                </Text>
+                                                {item.nextDate && (
+                                                    <Text style={style.recordNextDate}>
+                                                        Próximo: {formatDate(item.nextDate)}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                        </View>
+                                    )}
+                                    keyExtractor={(item) => item.id}
+                                />
+                            ) : (
+                                <Text style={style.emptyText}>Nenhum vermífugo registrado</Text>
+                            )}
+                        </View>
+
+                        {/* Card de Antiparasitários */}
+                        <View style={style.healthCard}>
+                            <View style={style.healthCardHeader}>
+                                <View style={[style.healthIcon, { backgroundColor: themes.colors.antiparasitic }]}>
+                                    <MaterialIcons name="pest-control" size={24} color="#fff" />
+                                </View>
+                                <Text style={style.healthCardTitle}>Antiparasitários</Text>
+                                <TouchableOpacity
+                                    style={style.addButton}
+                                    onPress={() => openAddModal('antiparasitic')}
+                                >
+                                    <MaterialIcons name="add" size={20} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {getRecordsByType('antiparasitic').length > 0 ? (
+                                <FlatList
+                                    data={getRecordsByType('antiparasitic')}
+                                    scrollEnabled={false}
+                                    renderItem={({ item }) => (
+                                        <View style={style.recordItem}>
+                                            <View style={style.recordHeader}>
+                                                <Text style={style.recordName}>{item.name}</Text>
+                                                <View style={style.recordActions}>
+                                                    <TouchableOpacity 
+                                                        style={style.editButton}
+                                                        onPress={() => openEditModal(item)}
+                                                    >
+                                                        <MaterialIcons name="edit" size={16} color="#fff" />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity 
+                                                        style={style.deleteButton}
+                                                        onPress={() => handleDeleteRecord(item)}
+                                                    >
+                                                        <MaterialIcons name="delete" size={16} color="#fff" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                            <View style={style.recordDetails}>
+                                                <Text style={style.recordDate}>
+                                                    Aplicado: {formatDate(item.date)}
+                                                </Text>
+                                                {item.nextDate && (
+                                                    <Text style={style.recordNextDate}>
+                                                        Próximo: {formatDate(item.nextDate)}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                        </View>
+                                    )}
+                                    keyExtractor={(item) => item.id}
+                                />
+                            ) : (
+                                <Text style={style.emptyText}>Nenhum antiparasitário registrado</Text>
+                            )}
+                        </View>
+                    </View>
+                ) : (
+                    <View style={style.emptyStateContainer}>
+                        {pets.length === 0 ? (
+                            <Text style={style.emptyStateText}>
+                                Cadastre um pet primeiro para gerenciar a saúde.
+                            </Text>
+                        ) : null}
+                    </View>
                 )}
             </ScrollView>
 
