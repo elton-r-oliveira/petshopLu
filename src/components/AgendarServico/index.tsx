@@ -49,17 +49,49 @@ const SERVICOS = [
     'Consulta Veterinária',
 ];
 
+// Adicione esta função para verificar se o dia está bloqueado
+const isDiaBloqueado = (data: Date): boolean => {
+    const diaDaSemana = data.getDay();
+    const dateStr = data.toISOString().split('T')[0];
+
+    // Lista de feriados (deve ser a mesma do CustomCalendar)
+    const feriadosEDiasBloqueados = [
+        '2024-12-25', // Natal
+        '2024-12-31', // Véspera de Ano Novo
+        '2025-01-01', // Ano Novo
+        '2025-04-18', // Sexta-feira Santa
+        '2025-04-21', // Tiradentes
+        '2025-05-01', // Dia do Trabalho
+        '2025-09-07', // Independência do Brasil
+        '2025-10-12', // Nossa Senhora Aparecida
+        '2025-11-02', // Finados
+        '2025-11-15', // Proclamação da República
+        '2025-11-20',
+    ];
+
+    const isDomingo = diaDaSemana === 0;
+    const isFeriado = feriadosEDiasBloqueados.includes(dateStr);
+
+    return isDomingo || isFeriado;
+};
+
 const isHorarioPassado = (dataAgendamento: Date, horario: string): boolean => {
     const hoje = new Date();
     const dataSelecionada = new Date(dataAgendamento);
 
+    // VERIFICAÇÃO 1: É domingo ou feriado?
+    if (isDiaBloqueado(dataSelecionada)) {
+        return true; // Bloqueia completamente
+    }
+
+    // VERIFICAÇÃO 2: Horário já passou (apenas se for hoje)
     const mesmoDia =
         dataSelecionada.getDate() === hoje.getDate() &&
         dataSelecionada.getMonth() === hoje.getMonth() &&
         dataSelecionada.getFullYear() === hoje.getFullYear();
 
     if (!mesmoDia) {
-        return false;
+        return false; // Só bloqueia horários passados se for HOJE
     }
 
     const [horaStr, minutoStr] = horario.split(':');
