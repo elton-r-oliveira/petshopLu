@@ -1,29 +1,23 @@
-import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    ScrollView,
-    Modal,
-    Image,
-    Linking
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Modal, Image, Linking } from 'react-native';
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { style } from "./styles"
 import { CustomCalendar } from "../CustomCalendar";
+import PetSelectorModal from "../PetSelectorModal";
+import { useFocusEffect } from '@react-navigation/native';
+import { auth, db } from '../../lib/firebaseConfig';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { User } from 'firebase/auth';
 
 interface AgendarServicoProps {
     servico: string;
     setServico: (servico: string) => void;
     dataAgendamento: Date;
     setDataAgendamento: (date: Date) => void;
-    // REMOVA estas linhas:
-    // showDatePicker: boolean;
-    // setShowDatePicker: (show: boolean) => void;
     showServiceList: boolean;
     setShowServiceList: (show: boolean) => void;
-    pets: any[];
+    // pets: any[];
     petSelecionado: any;
     setPetSelecionado: (pet: any) => void;
     showPetModal: boolean;
@@ -39,6 +33,15 @@ interface AgendarServicoProps {
     formatTime: (date: Date) => string;
     horariosFixos: string[];
     horariosOcupados: string[];
+}
+
+interface Pet {
+    id: string;
+    name: string;
+    breed: string;
+    age: number;
+    weight: number;
+    animalType: string;
 }
 
 const SERVICOS = [
@@ -121,7 +124,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     setDataAgendamento,
     showServiceList,
     setShowServiceList,
-    pets,
+    // pets,
     petSelecionado,
     setPetSelecionado,
     showPetModal,
@@ -139,6 +142,56 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     horariosOcupados
 }) => {
     const [showCustomCalendar, setShowCustomCalendar] = useState(false);
+    const [localPets, setLocalPets] = useState<Pet[]>([]); // ✅ Estado local
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+    // ✅ Função para buscar pets atualizada
+    const fetchPets = async (userId: string) => {
+        try {
+            const q = query(collection(db, "cadastrarPet"), where("userId", "==", userId));
+            const querySnapshot = await getDocs(q);
+
+            const petsList: Pet[] = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                petsList.push({
+                    id: doc.id,
+                    name: data.name || "",
+                    breed: data.breed || "",
+                    age: data.age || 0,
+                    weight: data.weight || 0,
+                    animalType: data.animalType || "dog",
+                });
+            });
+
+            setLocalPets(petsList);
+
+            // ✅ Se o pet selecionado foi excluído, limpe a seleção
+            if (petSelecionado && !petsList.find(pet => pet.id === petSelecionado.id)) {
+                setPetSelecionado(null);
+            }
+        } catch (error: any) {
+            console.error("Erro ao carregar pets: ", error);
+        }
+    };
+
+    // ✅ Verifica autenticação e carrega pets
+    useEffect(() => {
+        const user = auth.currentUser;
+        if (user) {
+            setCurrentUser(user);
+            fetchPets(user.uid);
+        }
+    }, []);
+
+    // ✅ Recarrega quando a tela ganha foco
+    useFocusEffect(
+        useCallback(() => {
+            if (currentUser) {
+                fetchPets(currentUser.uid);
+            }
+        }, [currentUser])
+    );
 
     const handleDateSelect = (date: Date) => {
         setDataAgendamento(date);
@@ -352,69 +405,15 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                 </View>
 
                 {/* Modal de Pets */}
-                <Modal
+                <PetSelectorModal
                     visible={showPetModal}
-                    animationType="fade"
-                    transparent={true}
-                    onRequestClose={() => setShowPetModal(false)}
-                >
-                    <View style={{
-                        flex: 1,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                        <View style={{
-                            width: '90%',
-                            maxHeight: '70%',
-                            backgroundColor: '#fff',
-                            borderRadius: 10,
-                            padding: 10
-                        }}>
-                            <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 10 }}>Selecione o Pet</Text>
-                            <ScrollView
-                                showsVerticalScrollIndicator={true}
-                                contentContainerStyle={{
-                                    flexDirection: 'row',
-                                    flexWrap: 'wrap',
-                                    justifyContent: 'space-between',
-                                    paddingBottom: 10
-                                }}
-                            >
-                                {pets.map((pet) => (
-                                    <TouchableOpacity
-                                        key={pet.id}
-                                        style={{
-                                            width: '30%',
-                                            marginBottom: 15,
-                                            alignItems: 'center'
-                                        }}
-                                        onPress={() => {
-                                            setPetSelecionado(pet);
-                                            setShowPetModal(false);
-                                        }}
-                                    >
-                                        <Image
-                                            source={getPetImage(pet.animalType || "dog")}
-                                            style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 5 }}
-                                        />
-                                        <Text style={{ textAlign: 'center' }}>{pet.name}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                            <TouchableOpacity
-                                style={{
-                                    marginTop: 10,
-                                    alignSelf: 'flex-end',
-                                    padding: 8
-                                }}
-                                onPress={() => setShowPetModal(false)}
-                            >
-                                <Text style={{ color: 'red', fontWeight: '600' }}>Fechar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>
+                    pets={localPets} // ✅ Use localPets em vez de pets
+                    onSelectPet={(pet) => {
+                        setPetSelecionado(pet);
+                        setShowPetModal(false);
+                    }}
+                    onClose={() => setShowPetModal(false)}
+                />
 
                 {/* Unidades */}
                 <View style={style.inputGroup}>
