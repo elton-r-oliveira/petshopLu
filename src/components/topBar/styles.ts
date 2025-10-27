@@ -10,8 +10,9 @@ export const style = StyleSheet.create({
     paddingBottom: 30,
     paddingHorizontal: 20,
     backgroundColor: themes.colors.lightGray,
-    marginBottom: 20,
+    // marginBottom: 20,
     borderRadius: 25,
+    // top: -40,
 
     // sombra Android
     elevation: 15,
@@ -50,7 +51,7 @@ export const style = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: themes.colors.lightGray,
     padding: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,

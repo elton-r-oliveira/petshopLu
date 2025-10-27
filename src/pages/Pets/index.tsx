@@ -189,6 +189,7 @@ export default function Pets({ navigation }: any) {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{
                         padding: 10,
+                        paddingBottom: 120,
                     }}
                     renderItem={({ item }) => (
                         <View
@@ -234,12 +235,12 @@ export default function Pets({ navigation }: any) {
                 />
             ) : (
                 //  Visualização em Lista
-                <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
+                <ScrollView style={style.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }} >
                     {pets.map((pet) => (
                         <View key={pet.id} style={style.petCard}>
                             <View style={style.petLeft}>
                                 <Image
-                                    source={getPetImage(pet.animalType)} 
+                                    source={getPetImage(pet.animalType)}
                                     style={style.petImage}
                                 />
                                 <View style={style.petInfo}>

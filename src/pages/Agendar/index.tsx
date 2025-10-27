@@ -316,7 +316,7 @@ export default function Agendar() {
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={style.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+            <ScrollView style={style.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 100 }}>
                 <TabSwitch abaAtual={abaAtual} setAbaAtual={setAbaAtual} />
 
                 {abaAtual === 'agendar' ? (

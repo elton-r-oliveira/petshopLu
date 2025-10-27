@@ -368,7 +368,7 @@ export default function Saude() {
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={style.container} showsVerticalScrollIndicator={false}>
+            <ScrollView style={style.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
                 <Text style={style.sectionTitle}>Saúde do Pet</Text>
 
                 {/* Seletor de Pet */}
