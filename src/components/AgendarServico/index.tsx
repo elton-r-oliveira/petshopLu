@@ -9,15 +9,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import { auth, db } from '../../lib/firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { User } from 'firebase/auth';
+import ServiceSelectorModal, { Service } from "../ServiceSelectorModal";
 
-interface AgendarServicoProps {
+// No arquivo AgendarServico.tsx
+export interface AgendarServicoProps {
     servico: string;
     setServico: (servico: string) => void;
     dataAgendamento: Date;
     setDataAgendamento: (date: Date) => void;
     showServiceList: boolean;
     setShowServiceList: (show: boolean) => void;
-    // pets: any[];
+    pets: any[]; // ← ADICIONE ESTA LINHA
     petSelecionado: any;
     setPetSelecionado: (pet: any) => void;
     showPetModal: boolean;
@@ -28,7 +30,7 @@ interface AgendarServicoProps {
     handleSelectService: (service: string) => void;
     onChangeDate: (event: any, selectedDate?: Date) => void;
     handleAgendar: () => void;
-    getPetImage: (type: string) => any;
+    getPetImage: (animalType: string) => any;
     formatDate: (date: Date) => string;
     formatTime: (date: Date) => string;
     horariosFixos: string[];
@@ -44,12 +46,63 @@ interface Pet {
     animalType: string;
 }
 
-const SERVICOS = [
-    'Banho e Tosa',
-    'Somente Tosa',
-    'Corte de Unha',
-    'Hidratação',
-    'Consulta Veterinária',
+const SERVICOS: Service[] = [
+    {
+        id: '1',
+        name: 'Banho e Tosa',
+        price: '80,00',
+        duration: '2-3 horas',
+        icon: 'cut-outline', // ✅ Já está bom
+        description: 'Banho completo + tosa higiênica ou tosa completa'
+    },
+    {
+        id: '2',
+        name: 'Somente Tosa',
+        price: '60,00',
+        duration: '1-2 horas',
+        icon: 'create-outline', // ✅ Já está bom
+        description: 'Apenas tosa higiênica ou completa'
+    },
+    {
+        id: '3',
+        name: 'Corte de Unha',
+        price: '25,00',
+        duration: '30 min',
+        icon: 'hand-right-outline', // ✅ Já está bom
+        description: 'Corte e lixamento das unhas'
+    },
+    {
+        id: '4',
+        name: 'Hidratação',
+        price: '45,00',
+        duration: '1 hora',
+        icon: 'water-outline', // ✅ Já está bom
+        description: 'Hidratação profunda para pelos'
+    },
+    {
+        id: '5',
+        name: 'Consulta Veterinária',
+        price: '120,00',
+        duration: '45 min',
+        icon: 'medical-outline', // ✅ Já está bom
+        description: 'Consulta com veterinário especializado'
+    },
+    {
+        id: '6',
+        name: 'Limpeza de Ouvidos',
+        price: '35,00',
+        duration: '20 min',
+        icon: 'ear-outline', // 🎯 MELHOR para ouvidos
+        description: 'Limpeza e higienização dos ouvidos'
+    },
+    {
+        id: '7',
+        name: 'Escovação Dental',
+        price: '40,00',
+        duration: '25 min',
+        icon: 'happy-outline', // 🎯 Para dental/dentes
+        description: 'Escovação e limpeza dental'
+    },
 ];
 
 // Adicione esta função para verificar se o dia está bloqueado
@@ -124,7 +177,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     setDataAgendamento,
     showServiceList,
     setShowServiceList,
-    // pets,
     petSelecionado,
     setPetSelecionado,
     showPetModal,
@@ -142,8 +194,29 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     horariosOcupados
 }) => {
     const [showCustomCalendar, setShowCustomCalendar] = useState(false);
-    const [localPets, setLocalPets] = useState<Pet[]>([]); // ✅ Estado local
+    const [localPets, setLocalPets] = useState<Pet[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [selectedService, setSelectedService] = useState<Service | null>(null);
+
+    // ✅ Função para selecionar serviço
+    const handleSelectServiceCard = (service: Service) => {
+        setSelectedService(service);
+    };
+
+    // ✅ Função para abrir o modal de serviços
+    const handleOpenServiceModal = () => {
+        setShowServiceList(true);
+    };
+
+    // ✅ Encontre o serviço selecionado baseado no nome
+    useEffect(() => {
+        if (servico) {
+            const service = SERVICOS.find(s => s.name === servico);
+            setSelectedService(service || null);
+        } else {
+            setSelectedService(null);
+        }
+    }, [servico]);
 
     // ✅ Função para buscar pets atualizada
     const fetchPets = async (userId: string) => {
@@ -204,77 +277,81 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
             <Text style={style.sectionSubtitle}>Selecione o tipo de serviço, a data e o horário desejados para o seu pet.</Text>
 
             <View style={style.formContainer}>
-                {/* Serviço */}
+                {/* Serviço - AGORA COM CARDS */}
                 <View style={[style.inputGroup, style.serviceDropdownContainer]}>
                     <Text style={style.inputLabel}>Tipo de Serviço</Text>
                     <TouchableOpacity
                         style={style.selectInput}
-                        onPress={() => setShowServiceList(!showServiceList)}
+                        onPress={handleOpenServiceModal}
                     >
                         <Ionicons
-                            name="cut-outline"
+                            name={(selectedService?.icon ?? "cut-outline") as React.ComponentProps<typeof Ionicons>['name']}
                             size={20}
                             color={themes.colors.secundary}
                             style={style.inputIcon}
                         />
-                        <Text style={[
-                            style.selectInputText,
-                            {
-                                color: servico ? themes.colors.secundary : '#888',
-                                fontWeight: servico ? '600' : '400',
-                            }
-                        ]}>
-                            {servico || "Escolha o Serviço..."}
-                        </Text>
-                    </TouchableOpacity>
 
-                    <Modal
-                        visible={showServiceList}
-                        transparent={true}
-                        animationType="fade"
-                        onRequestClose={() => setShowServiceList(false)}
-                    >
-                        <TouchableOpacity
-                            style={{
-                                flex: 1,
-                                backgroundColor: 'rgba(0,0,0,0.2)',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                paddingHorizontal: 20,
-                            }}
-                            activeOpacity={1}
-                            onPressOut={() => setShowServiceList(false)}
-                        >
-                            <View
-                                style={{
-                                    width: '100%',
-                                    maxHeight: '50%',
-                                    backgroundColor: '#fff',
-                                    borderRadius: 12,
-                                    paddingVertical: 10,
-                                }}
-                            >
-                                <ScrollView showsVerticalScrollIndicator={true}>
-                                    {SERVICOS.map((s) => (
-                                        <TouchableOpacity
-                                            key={s}
-                                            style={{
-                                                paddingVertical: 15,
-                                                paddingHorizontal: 20,
-                                            }}
-                                            onPress={() => {
-                                                handleSelectService(s);
-                                                setShowServiceList(false);
-                                            }}
-                                        >
-                                            <Text style={{ fontSize: 16 }}>{s}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </ScrollView>
-                            </View>
-                        </TouchableOpacity>
-                    </Modal>
+                        <View style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            minHeight: 40,
+                        }}>
+                            {selectedService ? (
+                                // TUDO NA MESMA LINHA E ALINHADO VERTICALMENTE
+                                <Text
+                                    style={[
+                                        style.selectInputText,
+                                        {
+                                            color: themes.colors.secundary,
+                                            fontWeight: '600',
+                                            textAlignVertical: 'center', // Adiciona alinhamento vertical
+                                            includeFontPadding: false,   // Remove padding extra
+                                            lineHeight: 20,              // Altura de linha consistente
+                                        },
+                                    ]}
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                >
+                                    {selectedService.name} • R$ {selectedService.price} • {selectedService.duration}
+                                </Text>
+                            ) : (
+                                // Texto centralizado quando não tem serviço
+                                <Text
+                                    style={[
+                                        style.selectInputText,
+                                        {
+                                            color: '#888',
+                                            fontWeight: '400',
+                                            textAlignVertical: 'center',
+                                            includeFontPadding: false,
+                                            lineHeight: 20, // Mesma altura de linha
+                                        }
+                                    ]}
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                >
+                                    Escolha o Serviço...
+                                </Text>
+                            )}
+                        </View>
+                    </TouchableOpacity>
                 </View>
+
+                {/* Modal de Seleção de Serviços */}
+                <ServiceSelectorModal
+                    visible={showServiceList}
+                    services={SERVICOS}
+                    selectedService={selectedService}
+                    onSelectService={handleSelectServiceCard} // só atualiza selectedService
+                    onConfirm={(service) => {
+                        if (service) {
+                            setSelectedService(service);   // garante que o state esteja atualizado
+                            setServico(service.name);      // preenche o input com o nome do serviço
+                        }
+                        setShowServiceList(false);       // fecha o modal só aqui
+                    }}
+                    onClose={() => setShowServiceList(false)}
+                />
 
                 {/* Data e Pet lado a lado */}
                 <View style={style.dateTimeContainer}>
@@ -407,7 +484,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                 {/* Modal de Pets */}
                 <PetSelectorModal
                     visible={showPetModal}
-                    pets={localPets} // ✅ Use localPets em vez de pets
+                    pets={localPets}
                     onSelectPet={(pet) => {
                         setPetSelecionado(pet);
                         setShowPetModal(false);
@@ -543,7 +620,16 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                 </View>
 
                 {/* Botão de Agendar */}
-                <TouchableOpacity style={style.button} onPress={handleAgendar}>
+                <TouchableOpacity
+                    style={[
+                        style.button,
+                        {
+                            opacity: (!selectedService || !petSelecionado || !unidadeSelecionada) ? 0.6 : 1
+                        }
+                    ]}
+                    onPress={handleAgendar}
+                    disabled={!selectedService || !petSelecionado || !unidadeSelecionada}
+                >
                     <Text style={style.buttonText}>Confirmar Agendamento</Text>
                     <MaterialIcons name="done-all" size={24} color="#fff" style={{ marginLeft: 10 }} />
                 </TouchableOpacity>
