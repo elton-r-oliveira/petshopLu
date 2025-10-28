@@ -5,6 +5,7 @@ import { style } from "./styles";
 import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import TopBar from "../../components/topBar";
+import { CarrosselNovidades, NovidadeCard } from "../../components/CarrosselNovidades";
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { BottomTabParamList } from '../../@types/types';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -33,6 +34,42 @@ export default function Home() {
   const [topBarNome, setTopBarNome] = useState("");
   const [topBarEndereco, setTopBarEndereco] = useState("");
 
+  // Dados dos cards de novidades
+  const novidadesCards: NovidadeCard[] = [
+    {
+      id: '1',
+      titulo: 'Banho Completo + Tosa Grátis',
+      descricao: 'Na primeira visita ganhe uma tosa higiênica gratuita!',
+      imagem: require('../../assets/novidade1.png'),
+      corFundo: themes.colors.inputText,
+      acao: () => navigation.navigate("Agendar")
+    },
+    {
+      id: '2',
+      titulo: 'Day Care Especial',
+      descricao: 'Deixe seu pet conosco durante o dia com atividades recreativas',
+      imagem: require('../../assets/novidade2.png'),
+      corFundo: '#FF6B35',
+      acao: () => navigation.navigate("Agendar")
+    },
+    {
+      id: '3',
+      titulo: 'Vacinação em Dia',
+      descricao: 'Agende a vacinação do seu pet com 10% de desconto',
+      imagem: require('../../assets/novidade3.png'),
+      corFundo: '#4ECDC4',
+      acao: () => navigation.navigate("Saúde")
+    },
+    {
+      id: '4',
+      titulo: 'Produtos Naturais',
+      descricao: 'Nova linha de produtos naturais e orgânicos chegou!',
+      imagem: require('../../assets/novidade4.png'),
+      corFundo: '#45B7D1',
+      acao: () => navigation.navigate("Pets")
+    }
+  ];
+
   // Função para calcular dias restantes
   const calcularDiasRestantes = (dataAgendamento: Date): number => {
     const hoje = new Date();
@@ -52,7 +89,6 @@ export default function Home() {
     try {
       setLoadingAgendamentos(true);
       
-      // Buscar agendamentos futuros e pendentes do usuário
       const agora = Timestamp.now();
       const q = query(
         collection(db, "agendamentos"),
@@ -60,7 +96,7 @@ export default function Home() {
         where("dataHoraAgendamento", ">=", agora),
         where("status", "in", ["Pendente", "Confirmado"]),
         orderBy("dataHoraAgendamento", "asc"),
-        limit(5) // Limita a 5 agendamentos mais recentes
+        limit(5)
       );
 
       const querySnapshot = await getDocs(q);
@@ -69,7 +105,6 @@ export default function Home() {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         
-        // Converter Timestamp para Date
         let dataHoraAgendamento: Date;
         if (data.dataHoraAgendamento && data.dataHoraAgendamento.toDate) {
           dataHoraAgendamento = data.dataHoraAgendamento.toDate();
@@ -79,7 +114,6 @@ export default function Home() {
 
         const diasRestantes = calcularDiasRestantes(dataHoraAgendamento);
 
-        // Só mostra agendamentos futuros
         if (diasRestantes >= 0) {
           agendamentos.push({
             id: doc.id,
@@ -120,10 +154,10 @@ export default function Home() {
 
   // Função para obter cor baseada nos dias restantes
   const getCorDiasRestantes = (dias: number): string => {
-    if (dias === 0) return "#FF6B35"; // Laranja para hoje
-    if (dias === 1) return "#FFA726"; // Laranja claro para amanhã
-    if (dias <= 3) return "#42A5F5"; // Azul para até 3 dias
-    return "#4CAF50"; // Verde para mais de 3 dias
+    if (dias === 0) return "#FF6B35";
+    if (dias === 1) return "#FFA726";
+    if (dias <= 3) return "#42A5F5";
+    return "#4CAF50";
   };
 
   useEffect(() => {
@@ -132,7 +166,6 @@ export default function Home() {
         setCurrentUser(user);
         setTopBarNome(user.displayName || "");
         
-        // Carregar agendamentos do usuário
         carregarAgendamentosRecentes(user.uid);
 
         try {
@@ -197,6 +230,13 @@ export default function Home() {
       >
         <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>
 
+        {/* COMPONENTE CARROSSEL */}
+        <CarrosselNovidades 
+          cards={novidadesCards}
+          // titulo="Novidades e Promoções"
+        />
+
+        {/* Quick Actions */}
         <View style={style.quickActions}>
           <TouchableOpacity
             style={[style.actionBox, { backgroundColor: themes.telaHome.texto1 }]}
@@ -231,7 +271,7 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        {/* Atividades recentes - AGENDAMENTOS FUTUROS */}
+        {/* Próximos Agendamentos */}
         <Text style={style.sectionTitle}>Próximos Agendamentos</Text>
 
         {loadingAgendamentos ? (

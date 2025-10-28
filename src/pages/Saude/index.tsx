@@ -1,45 +1,21 @@
-// Saude.tsx
 import React, { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-    ScrollView,
-    Alert,
-    FlatList,
-    ActivityIndicator,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, Alert, FlatList, ActivityIndicator, } from "react-native";
 import { style } from "./styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 
 import { auth, db } from "../../lib/firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
-import {
-    collection,
-    query,
-    where,
-    getDocs,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    doc,
-    serverTimestamp,
-    orderBy
-} from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
 
-// Import dos componentes
 import HealthRecordModal from '../../components/HealthRecordModal';
 import PetSelectorModal from '../../components/PetSelectorModal';
 
-// Import dos utilitários
 import { getPetImage, getTypeLabel, formatDate } from '../../utils/petUtils';
 import { HealthRecord } from "../../@types/HealthRecord";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-// 🔹 Interfaces
 interface Pet {
     id: string;
     name: string;
@@ -57,7 +33,6 @@ export default function Saude() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    // Estados para controle dos modais
     const [showPetSelector, setShowPetSelector] = useState(false);
     const [showHealthRecordModal, setShowHealthRecordModal] = useState(false);
     const [healthRecordModalMode, setHealthRecordModalMode] = useState<'add' | 'edit'>('add');
@@ -68,14 +43,12 @@ export default function Saude() {
         let mounted = true;
 
         const initializeAuth = () => {
-            // Verifica usuário atual imediatamente
             const currentUser = auth.currentUser;
             if (currentUser && mounted) {
                 setCurrentUser(currentUser);
                 fetchPets(currentUser.uid);
             }
 
-            // Escuta mudanças futuras
             const unsubscribe = onAuthStateChanged(auth, (user) => {
                 if (!mounted) return;
 
@@ -101,7 +74,6 @@ export default function Saude() {
         };
     }, []);
 
-    // ✅ useFocusEffect mantido para recarregar quando a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
             if (currentUser) {
@@ -110,11 +82,9 @@ export default function Saude() {
         }, [currentUser])
     );
 
-    // Buscar pets do usuário
-    // Saude.tsx - ATUALIZE a função fetchPets:
     const fetchPets = async (userId: string) => {
         try {
-            setLoading(true); // ✅ Garante que o loading seja ativado
+            setLoading(true);
             const q = query(collection(db, "cadastrarPet"), where("userId", "==", userId));
             const querySnapshot = await getDocs(q);
 
@@ -147,7 +117,6 @@ export default function Saude() {
         }
     };
 
-    // Buscar registros de saúde do pet selecionado
     const fetchHealthRecords = async (petId: string) => {
         if (!currentUser) return;
 
@@ -180,7 +149,7 @@ export default function Saude() {
             });
 
             setHealthRecords(records);
-        } catch (error: any) { // ✅ CORREÇÃO: Tipar o error
+        } catch (error: any) {
             console.error("Erro ao carregar registros de saúde: ", error);
 
             if (error.code === 'failed-precondition') {
@@ -218,7 +187,7 @@ export default function Saude() {
 
                     setHealthRecords(records);
                     return;
-                } catch (fallbackError: any) { // ✅ CORREÇÃO: Tipar o error
+                } catch (fallbackError: any) {
                     console.error("Erro no fallback:", fallbackError);
                 }
             }
@@ -229,7 +198,6 @@ export default function Saude() {
         }
     };
 
-    // Handlers para os modais
     const openAddModal = (type: 'vaccine' | 'dewormer' | 'antiparasitic') => {
         setCurrentRecordType(type);
         setHealthRecordModalMode('add');
@@ -250,8 +218,6 @@ export default function Saude() {
         await fetchHealthRecords(pet.id);
     };
 
-    // Saude.tsx - ATUALIZE a função handleAddRecord:
-    // Saude.tsx - ATUALIZE a função handleAddRecord:
     const handleAddRecord = async (recordData: Omit<HealthRecord, 'id' | 'petId' | 'userId' | 'createdAt' | 'updatedAt'>) => {
         if (!selectedPet || !currentUser) {
             Alert.alert('Erro', 'Nenhum pet selecionado ou usuário não autenticado.');
@@ -274,14 +240,13 @@ export default function Saude() {
 
             const docRef = await addDoc(collection(db, "healthRecords"), newRecordData);
 
-            // ✅ CORREÇÃO: Converter null para undefined no objeto final
             const newRecord: HealthRecord = {
                 id: docRef.id,
                 type: newRecordData.type,
                 name: newRecordData.name,
                 date: newRecordData.date,
-                nextDate: newRecordData.nextDate || undefined, // Converter null para undefined
-                notes: newRecordData.notes || undefined,       // Converter null para undefined
+                nextDate: newRecordData.nextDate || undefined,
+                notes: newRecordData.notes || undefined,
                 petId: newRecordData.petId,
                 userId: newRecordData.userId,
                 createdAt: newRecordData.createdAt,
@@ -291,7 +256,7 @@ export default function Saude() {
             setHealthRecords(prev => [newRecord, ...prev]);
             Alert.alert('Sucesso', `${getTypeLabel(recordData.type)} adicionado com sucesso!`);
             setShowHealthRecordModal(false);
-        } catch (error: any) { // ✅ CORREÇÃO: Tipar o error
+        } catch (error: any) {
             console.error("Erro ao adicionar registro:", error);
             Alert.alert('Erro', 'Não foi possível adicionar o registro.');
         } finally {
@@ -299,9 +264,6 @@ export default function Saude() {
         }
     };
 
-    // 🔥 ATUALIZAR registro de saúde
-    // Saude.tsx - ATUALIZE a função handleUpdateRecord:
-    // Saude.tsx - ATUALIZE a função handleUpdateRecord:
     const handleUpdateRecord = async (recordData: Omit<HealthRecord, 'userId' | 'petId' | 'createdAt' | 'updatedAt'>) => {
         if (!editingRecord) return;
         setSaving(true);
@@ -334,9 +296,6 @@ export default function Saude() {
         }
     };
 
-
-    // 🔥 EXCLUIR registro de saúde
-    // Saude.tsx - ATUALIZE a função handleDeleteRecord:
     const handleDeleteRecord = (record: HealthRecord) => {
         Alert.alert(
             'Excluir Registro',
@@ -351,7 +310,7 @@ export default function Saude() {
                             await deleteDoc(doc(db, "healthRecords", record.id));
                             setHealthRecords(prev => prev.filter(r => r.id !== record.id));
                             Alert.alert('Sucesso', 'Registro excluído com sucesso!');
-                        } catch (error: any) { // ✅ CORREÇÃO: Tipar o error
+                        } catch (error: any) {
                             console.error("Erro ao excluir registro:", error);
                             Alert.alert('Erro', 'Não foi possível excluir o registro.');
                         }
@@ -361,14 +320,23 @@ export default function Saude() {
         );
     };
 
-    // Função auxiliar
     const getRecordsByType = (type: 'vaccine' | 'dewormer' | 'antiparasitic') => {
         return healthRecords.filter(record => record.type === type);
     };
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={style.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+            {/* Cabeçalho FIXO no topo */}
+            <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 100,
+                backgroundColor: themes.telaHome.fundo,
+                paddingHorizontal: 15,
+                // paddingBottom: 15,
+            }}>
                 <Text style={style.sectionTitle}>Saúde do Pet</Text>
 
                 {/* Seletor de Pet */}
@@ -402,7 +370,17 @@ export default function Saude() {
                         />
                     </View>
                 </TouchableOpacity>
+            </View>
 
+            {/* ScrollView com margem superior para não ficar atrás do cabeçalho fixo */}
+            <ScrollView 
+                style={style.container} 
+                showsVerticalScrollIndicator={false} 
+                contentContainerStyle={{ 
+                    paddingBottom: 300,
+                    marginTop: 210, // Ajuste conforme a altura do seu cabeçalho fixo
+                }}
+            >
                 {/* Loading */}
                 {loading && (
                     <View style={style.emptyStateContainer}>

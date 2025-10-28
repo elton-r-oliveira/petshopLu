@@ -16,11 +16,10 @@ export const style = StyleSheet.create({
         textAlign: 'left',
     },
 
-    // Seletor de Pet
     petSelector: {
         backgroundColor: '#fff',
         borderRadius: 12,
-        padding: 15,
+        padding: 10,
         marginBottom: 20,
         elevation: 3,
         shadowColor: '#000',

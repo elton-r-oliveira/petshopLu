@@ -12,6 +12,7 @@ import { ModalDetalhesAgendamento } from "../../components/ModalDetalhesAgendame
 
 // Import do utilitário
 import { getPetImage } from "../../utils/petUtils";
+import { themes } from "../../global/themes";
 
 const formatDate = (date: Date) => date.toLocaleDateString('pt-BR');
 const formatTime = (date: Date) => date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -316,9 +317,26 @@ export default function Agendar() {
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={style.container} showsVerticalScrollIndicator={false} nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 100 }}>
+            <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                backgroundColor: themes.telaHome.fundo, 
+            }}>
                 <TabSwitch abaAtual={abaAtual} setAbaAtual={setAbaAtual} />
+            </View>
 
+            <ScrollView 
+                style={style.container} 
+                showsVerticalScrollIndicator={false} 
+                nestedScrollEnabled={true} 
+                contentContainerStyle={{ 
+                    paddingBottom: 180,
+                    marginTop: 100,
+                }}
+            >
                 {abaAtual === 'agendar' ? (
                     <AgendarServico
                         servico={servico}

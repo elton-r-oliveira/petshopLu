@@ -84,23 +84,23 @@ export const style = StyleSheet.create({
         borderColor: themes.telaPets.borderCard,
         color: themes.telaPets.editButtom
     },
-    headerWithButton: { // NOVO ESTILO
+    headerWithButton: { 
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginRight: 15,
-        marginBottom: 20, // Ajuste para o espaçamento
+        marginBottom: 5,
     },
-    addButton: { // NOVO ESTILO para o botão "+"
+    addButton: { 
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: themes.colors.secundary, // Cor de destaque
+        backgroundColor: themes.colors.secundary, 
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 30, // Alinhado com o Título
+        marginTop: 30, 
     },
-    emptyStateText: { // NOVO ESTILO
+    emptyStateText: { 
         textAlign: 'center',
         marginHorizontal: 40,
         marginTop: 50,

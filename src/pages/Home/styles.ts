@@ -31,7 +31,7 @@ export const style = StyleSheet.create({
         flex: 1,
         // alignItems: "center",
         marginLeft: 10,
-        alignItems: 'flex-start' 
+        alignItems: 'flex-start'
     },
     hello: {
         fontSize: 14,
@@ -147,5 +147,97 @@ export const style = StyleSheet.create({
         color: "#333",
         marginTop: 2,
     },
+    carrosselContainer: {
+        marginBottom: 25,
+    },
 
+    carrosselContent: {
+        paddingHorizontal: 20,
+    },
+
+    novidadeCard: {
+        width:  40,
+        height: 160,
+        borderRadius: 16,
+        marginHorizontal: 5,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+
+    novidadeContent: {
+        flex: 1,
+        flexDirection: 'row',
+        padding: 16,
+    },
+
+    novidadeTextContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingRight: 10,
+    },
+
+    novidadeTitulo: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#fff',
+        marginBottom: 8,
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 3,
+    },
+
+    novidadeDescricao: {
+        fontSize: 14,
+        color: 'rgba(255, 255, 255, 0.9)',
+        marginBottom: 12,
+        lineHeight: 18,
+    },
+
+    novidadeBotao: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+    },
+
+    novidadeBotaoTexto: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
+        marginRight: 4,
+    },
+
+    novidadeImagemContainer: {
+        width: 100,
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    novidadeImagem: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+    },
+
+    indicadoresContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12,
+        gap: 6,
+    },
+
+    indicador: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+    },
 });
