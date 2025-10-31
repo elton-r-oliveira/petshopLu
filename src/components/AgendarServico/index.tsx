@@ -7,7 +7,7 @@ import { CustomCalendar } from "../CustomCalendar";
 import PetSelectorModal from "../PetSelectorModal";
 import { useFocusEffect } from '@react-navigation/native';
 import { auth, db } from '../../lib/firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore';
 import { User } from 'firebase/auth';
 import ServiceSelectorModal, { Service } from "../ServiceSelectorModal";
 
@@ -18,7 +18,7 @@ export interface AgendarServicoProps {
     setDataAgendamento: (date: Date) => void;
     showServiceList: boolean;
     setShowServiceList: (show: boolean) => void;
-    pets: any[]; 
+    pets: any[];
     petSelecionado: any;
     setPetSelecionado: (pet: any) => void;
     showPetModal: boolean;
@@ -51,7 +51,7 @@ const SERVICOS: Service[] = [
         name: 'Banho e Tosa',
         price: '80,00',
         duration: '2-3 horas',
-        icon: 'cut-outline', 
+        icon: 'cut-outline',
         description: 'Banho completo + tosa higiênica ou tosa completa'
     },
     {
@@ -59,7 +59,7 @@ const SERVICOS: Service[] = [
         name: 'Somente Tosa',
         price: '60,00',
         duration: '1-2 horas',
-        icon: 'create-outline', 
+        icon: 'create-outline',
         description: 'Apenas tosa higiênica ou completa'
     },
     {
@@ -67,7 +67,7 @@ const SERVICOS: Service[] = [
         name: 'Corte de Unha',
         price: '25,00',
         duration: '30 min',
-        icon: 'hand-right-outline', 
+        icon: 'hand-right-outline',
         description: 'Corte e lixamento das unhas'
     },
     {
@@ -75,7 +75,7 @@ const SERVICOS: Service[] = [
         name: 'Hidratação',
         price: '45,00',
         duration: '1 hora',
-        icon: 'water-outline', 
+        icon: 'water-outline',
         description: 'Hidratação profunda para pelos'
     },
     {
@@ -83,7 +83,7 @@ const SERVICOS: Service[] = [
         name: 'Consulta Veterinária',
         price: '120,00',
         duration: '45 min',
-        icon: 'medical-outline', 
+        icon: 'medical-outline',
         description: 'Consulta com veterinário especializado'
     },
     {
@@ -91,7 +91,7 @@ const SERVICOS: Service[] = [
         name: 'Limpeza de Ouvidos',
         price: '35,00',
         duration: '20 min',
-        icon: 'ear-outline', 
+        icon: 'ear-outline',
         description: 'Limpeza e higienização dos ouvidos'
     },
     {
@@ -99,7 +99,7 @@ const SERVICOS: Service[] = [
         name: 'Escovação Dental',
         price: '40,00',
         duration: '25 min',
-        icon: 'happy-outline', 
+        icon: 'happy-outline',
         description: 'Escovação e limpeza dental'
     },
 ];
@@ -196,6 +196,45 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     const [localPets, setLocalPets] = useState<Pet[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
+    const [servicosDisponiveis, setServicosDisponiveis] = useState<Service[]>([]);
+    const [loadingServicos, setLoadingServicos] = useState(true);
+
+    // ✅ Buscar serviços do Firebase em tempo real
+    useEffect(() => {
+        const unsubscribe = onSnapshot(
+            query(collection(db, 'services'), where('active', '==', true)),
+            (snapshot) => {
+                const servicos: Service[] = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    servicos.push({
+                        id: doc.id,
+                        name: data.name,
+                        price: data.priceDisplay,
+                        duration: data.duration,
+                        icon: data.icon,
+                        description: data.description
+                    });
+                });
+
+                // Ordenar por ordem definida no admin
+                servicos.sort((a, b) => {
+                    const dataA = snapshot.docs.find(doc => doc.id === a.id)?.data();
+                    const dataB = snapshot.docs.find(doc => doc.id === b.id)?.data();
+                    return (dataA?.order || 0) - (dataB?.order || 0);
+                });
+
+                setServicosDisponiveis(servicos);
+                setLoadingServicos(false);
+            },
+            (error) => {
+                console.error("Erro ao carregar serviços:", error);
+                setLoadingServicos(false);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
 
     // ✅ Função para selecionar serviço
     const handleSelectServiceCard = (service: Service) => {
@@ -210,12 +249,12 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     // ✅ Encontre o serviço selecionado baseado no nome
     useEffect(() => {
         if (servico) {
-            const service = SERVICOS.find(s => s.name === servico);
+            const service = servicosDisponiveis.find(s => s.name === servico);
             setSelectedService(service || null);
         } else {
             setSelectedService(null);
         }
-    }, [servico]);
+    }, [servico, servicosDisponiveis]);
 
     // ✅ Função para buscar pets atualizada
     const fetchPets = async (userId: string) => {
@@ -276,12 +315,13 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
             <Text style={style.sectionSubtitle}>Selecione o tipo de serviço, a data e o horário desejados para o seu pet.</Text>
 
             <View style={style.formContainer}>
-                {/* Serviço - AGORA COM CARDS */}
+                {/* Serviço - AGORA DINÂMICO */}
                 <View style={[style.inputGroup, style.serviceDropdownContainer]}>
                     <Text style={style.inputLabel}>Tipo de Serviço</Text>
                     <TouchableOpacity
                         style={style.selectInput}
                         onPress={handleOpenServiceModal}
+                        disabled={loadingServicos}
                     >
                         <Ionicons
                             name={(selectedService?.icon ?? "cut-outline") as React.ComponentProps<typeof Ionicons>['name']}
@@ -295,17 +335,20 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                             justifyContent: 'center',
                             minHeight: 40,
                         }}>
-                            {selectedService ? (
-                                // TUDO NA MESMA LINHA E ALINHADO VERTICALMENTE
+                            {loadingServicos ? (
+                                <Text style={[style.selectInputText, { color: '#888' }]}>
+                                    Carregando serviços...
+                                </Text>
+                            ) : selectedService ? (
                                 <Text
                                     style={[
                                         style.selectInputText,
                                         {
                                             color: themes.colors.secundary,
                                             fontWeight: '600',
-                                            textAlignVertical: 'center', // Adiciona alinhamento vertical
-                                            includeFontPadding: false,   // Remove padding extra
-                                            lineHeight: 20,              // Altura de linha consistente
+                                            textAlignVertical: 'center',
+                                            includeFontPadding: false,
+                                            lineHeight: 20,
                                         },
                                     ]}
                                     numberOfLines={1}
@@ -314,7 +357,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                     {selectedService.name} • R$ {selectedService.price} • {selectedService.duration}
                                 </Text>
                             ) : (
-                                // Texto centralizado quando não tem serviço
                                 <Text
                                     style={[
                                         style.selectInputText,
@@ -323,7 +365,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                                             fontWeight: '400',
                                             textAlignVertical: 'center',
                                             includeFontPadding: false,
-                                            lineHeight: 20, // Mesma altura de linha
+                                            lineHeight: 20,
                                         }
                                     ]}
                                     numberOfLines={1}
@@ -336,18 +378,18 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                     </TouchableOpacity>
                 </View>
 
-                {/* Modal de Seleção de Serviços */}
+                {/* Modal de Seleção de Serviços - AGORA COM DADOS DINÂMICOS */}
                 <ServiceSelectorModal
                     visible={showServiceList}
-                    services={SERVICOS}
+                    services={servicosDisponiveis}
                     selectedService={selectedService}
-                    onSelectService={handleSelectServiceCard} // só atualiza selectedService
+                    onSelectService={handleSelectServiceCard}
                     onConfirm={(service) => {
                         if (service) {
-                            setSelectedService(service);   // garante que o state esteja atualizado
-                            setServico(service.name);      // preenche o input com o nome do serviço
+                            setSelectedService(service);
+                            setServico(service.name);
                         }
-                        setShowServiceList(false);       // fecha o modal só aqui
+                        setShowServiceList(false);
                     }}
                     onClose={() => setShowServiceList(false)}
                 />
