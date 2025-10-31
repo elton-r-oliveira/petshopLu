@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
   // Logo 3D POSICIONADA FORA do calendário
   logo3DContainer: {
     position: 'absolute',
-    top: 90, // Posiciona acima do calendário
+    top: 70, // Posiciona acima do calendário
     left: 20, // Ajuste para alinhar com a borda
     zIndex: 1000, // Z-index muito alto para ficar acima de tudo
     // shadowColor: '#000',
@@ -149,4 +149,26 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginRight: 8,
   },
+  // No styles do CustomCalendar, adicione:
+legendContainer: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginVertical: 15,
+  gap: 20,
+},
+legendItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+},
+legendDot: {
+  width: 12,
+  height: 12,
+  borderRadius: 6,
+},
+legendText: {
+  fontSize: 12,
+  color: '#666',
+},
 });

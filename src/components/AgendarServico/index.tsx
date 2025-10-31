@@ -45,6 +45,7 @@ interface Pet {
     animalType: string;
 }
 
+// Serviços mockados como fallback
 const SERVICOS: Service[] = [
     {
         id: '1',
@@ -105,37 +106,23 @@ const SERVICOS: Service[] = [
 ];
 
 // Adicione esta função para verificar se o dia está bloqueado
-const isDiaBloqueado = (data: Date): boolean => {
+const isDiaBloqueado = (data: Date, diasBloqueados: string[], feriados: string[]): boolean => {
     const diaDaSemana = data.getDay();
     const dateStr = data.toISOString().split('T')[0];
 
-    // Lista de feriados (deve ser a mesma do CustomCalendar)
-    const feriadosEDiasBloqueados = [
-        '2024-12-25', // Natal
-        '2024-12-31', // Véspera de Ano Novo
-        '2025-01-01', // Ano Novo
-        '2025-04-18', // Sexta-feira Santa
-        '2025-04-21', // Tiradentes
-        '2025-05-01', // Dia do Trabalho
-        '2025-09-07', // Independência do Brasil
-        '2025-10-12', // Nossa Senhora Aparecida
-        '2025-11-02', // Finados
-        '2025-11-15', // Proclamação da República
-        '2025-11-20',
-    ];
-
     const isDomingo = diaDaSemana === 0;
-    const isFeriado = feriadosEDiasBloqueados.includes(dateStr);
+    const isFeriado = feriados.includes(dateStr);
+    const isDiaBloqueado = diasBloqueados.includes(dateStr);
 
-    return isDomingo || isFeriado;
+    return isDomingo || isFeriado || isDiaBloqueado;
 };
 
-const isHorarioPassado = (dataAgendamento: Date, horario: string): boolean => {
+const isHorarioPassado = (dataAgendamento: Date, horario: string, diasBloqueados: string[], feriados: string[]): boolean => {
     const hoje = new Date();
     const dataSelecionada = new Date(dataAgendamento);
 
-    // VERIFICAÇÃO 1: É domingo ou feriado?
-    if (isDiaBloqueado(dataSelecionada)) {
+    // VERIFICAÇÃO 1: É domingo, feriado ou dia bloqueado?
+    if (isDiaBloqueado(dataSelecionada, diasBloqueados, feriados)) {
         return true; // Bloqueia completamente
     }
 
@@ -199,7 +186,60 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     const [servicosDisponiveis, setServicosDisponiveis] = useState<Service[]>([]);
     const [loadingServicos, setLoadingServicos] = useState(true);
 
-    // ✅ Buscar serviços do Firebase em tempo real
+    // ✅ NOVOS ESTADOS PARA CONFIGURAÇÕES DE DATA
+    const [diasBloqueados, setDiasBloqueados] = useState<string[]>([]);
+    const [feriados, setFeriados] = useState<string[]>([]);
+    const [loadingConfiguracoes, setLoadingConfiguracoes] = useState(true);
+    // ✅ NOVO ESTADO para horários dinâmicos
+    const [horariosDinamicos, setHorariosDinamicos] = useState<string[]>([]);
+    const [configuracoesHorario, setConfiguracoesHorario] = useState<any[]>([]);
+
+    // ✅ Buscar configurações de horário do Firebase
+    useEffect(() => {
+        const unsubscribe = onSnapshot(
+            query(collection(db, 'configuracoes_horario')),
+            (snapshot) => {
+                const horariosConfig: any[] = [];
+                snapshot.forEach((doc) => {
+                    horariosConfig.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                setConfiguracoesHorario(horariosConfig);
+
+                // Atualizar horários dinâmicos baseado no dia selecionado
+                atualizarHorariosDinamicos(dataAgendamento, horariosConfig);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
+
+    // ✅ Função para atualizar horários baseado no dia selecionado
+    // No AgendarServico.tsx - ATUALIZE A FUNÇÃO DE HORÁRIOS DINÂMICOS
+    const atualizarHorariosDinamicos = (data: Date, configs: any[]) => {
+        const diaDaSemana = data.getDay();
+        const configDia = configs.find(h => h.diaSemana === diaDaSemana);
+
+        if (configDia && configDia.aberto) {
+            // Usar horários configurados para este dia
+            setHorariosDinamicos(configDia.horariosDisponiveis || []);
+        } else if (!configDia) {
+            // Dia não configurado - considerar FECHADO
+            setHorariosDinamicos([]);
+        } else {
+            // Dia configurado mas FECHADO
+            setHorariosDinamicos([]);
+        }
+    };
+
+    // ✅ Atualizar horários quando mudar a data
+    useEffect(() => {
+        atualizarHorariosDinamicos(dataAgendamento, configuracoesHorario);
+    }, [dataAgendamento, configuracoesHorario]);
+
+    // ✅ BUSCAR SERVIÇOS DO FIREBASE - ESTE É O QUE ESTAVA FALTANDO!
     useEffect(() => {
         const unsubscribe = onSnapshot(
             query(collection(db, 'services'), where('active', '==', true)),
@@ -226,10 +266,44 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
 
                 setServicosDisponiveis(servicos);
                 setLoadingServicos(false);
+
+                console.log('Serviços carregados:', servicos.length);
             },
             (error) => {
                 console.error("Erro ao carregar serviços:", error);
                 setLoadingServicos(false);
+                // Fallback para serviços mockados em caso de erro
+                setServicosDisponiveis(SERVICOS);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
+
+    // ✅ Buscar configurações de datas do Firebase
+    useEffect(() => {
+        const unsubscribe = onSnapshot(
+            query(collection(db, 'configuracoes_data'), where('ativo', '==', true)),
+            (snapshot) => {
+                const bloqueados: string[] = [];
+                const feriadosList: string[] = [];
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.tipo === 'diaBloqueado') {
+                        bloqueados.push(data.data);
+                    } else if (data.tipo === 'feriado') {
+                        feriadosList.push(data.data);
+                    }
+                });
+
+                setDiasBloqueados(bloqueados);
+                setFeriados(feriadosList);
+                setLoadingConfiguracoes(false);
+            },
+            (error) => {
+                console.error("Erro ao carregar configurações de data:", error);
+                setLoadingConfiguracoes(false);
             }
         );
 
@@ -469,9 +543,9 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}
                     >
-                        {horariosFixos.map((hora) => {
+                        {horariosDinamicos.map((hora) => {
                             const isOcupado = horariosOcupados.includes(hora);
-                            const isPassado = isHorarioPassado(dataAgendamento, hora);
+                            const isPassado = isHorarioPassado(dataAgendamento, hora, diasBloqueados, feriados);
                             const isDesabilitado = isOcupado || isPassado;
                             const isSelecionado = formatTime(dataAgendamento) === hora;
 

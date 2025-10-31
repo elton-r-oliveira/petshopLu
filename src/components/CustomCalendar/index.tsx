@@ -1,3 +1,4 @@
+// CustomCalendar.tsx - ATUALIZADO
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -12,7 +13,10 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { themes } from "../../global/themes";
 import { MaterialIcons } from "@expo/vector-icons";
 import { styles } from "./styles"
-// Configurar português
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { db } from '../../lib/firebaseConfig';
+
+// Configurar português (mantenha igual)
 LocaleConfig.locales['pt-br'] = {
   monthNames: [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -44,28 +48,57 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   selectedDate
 }) => {
   const [diasDisponiveis, setDiasDisponiveis] = useState<string[]>([]);
+  const [diasBloqueados, setDiasBloqueados] = useState<string[]>([]);
+  const [feriados, setFeriados] = useState<string[]>([]);
+  const [configuracoesHorario, setConfiguracoesHorario] = useState<any[]>([]);
 
-  // Dentro do componente CustomCalendar, antes do useEffect, adicione:
-  const feriadosEDiasBloqueados = [
-    '2024-12-25', // Natal
-    '2024-12-31', // Véspera de Ano Novo
-    '2025-01-01', // Ano Novo
-    '2025-04-18', // Sexta-feira Santa (exemplo)
-    '2025-04-21', // Tiradentes
-    '2025-05-01', // Dia do Trabalho
-    '2025-09-07', // Independência do Brasil
-    '2025-10-12', // Nossa Senhora Aparecida
-    '2025-11-02', // Finados
-    '2025-11-15', // Proclamação da República
-    '2025-11-20',
-  ];
+  // Buscar configurações do Firebase
+  useEffect(() => {
+    // Buscar configurações de datas
+    const unsubscribeDatas = onSnapshot(
+      query(collection(db, 'configuracoes_data'), where('ativo', '==', true)),
+      (snapshot) => {
+        const bloqueados: string[] = [];
+        const feriadosList: string[] = [];
 
-  // Você também pode bloquear dias específicos da semana (ex: segundas-feiras)
-  const diasDaSemanaBloqueados = [0]; // 0 = Domingo, 1 = Segunda, etc.
-  // Exemplo para bloquear segundas e domingos: [0, 1]
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.tipo === 'diaBloqueado') {
+            bloqueados.push(data.data);
+          } else if (data.tipo === 'feriado') {
+            feriadosList.push(data.data);
+          }
+        });
 
-  // Simulação de dias disponíveis
-  // Substitua o useEffect atual por este:
+        setDiasBloqueados(bloqueados);
+        setFeriados(feriadosList);
+      }
+    );
+
+    // Buscar configurações de horário
+    const unsubscribeHorarios = onSnapshot(
+      query(collection(db, 'configuracoes_horario')),
+      (snapshot) => {
+        const horarios: any[] = [];
+        snapshot.forEach((doc) => {
+          horarios.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+        setConfiguracoesHorario(horarios);
+      }
+    );
+
+    return () => {
+      unsubscribeDatas();
+      unsubscribeHorarios();
+    };
+  }, []);
+
+  // ✅ CORREÇÃO: Agora usa os dados do Firebase para calcular dias disponíveis
+  // CustomCalendar.tsx - ATUALIZE O USEEFFECT DE DIAS DISPONÍVEIS
+  // CustomCalendar.tsx - ATUALIZE O USEEFFECT DE DIAS DISPONÍVEIS
   useEffect(() => {
     const carregarDiasDisponiveis = () => {
       const hoje = new Date();
@@ -78,31 +111,38 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
         const dateStr = data.toISOString().split('T')[0];
         const diaDaSemana = data.getDay();
 
-        // VERIFICAÇÕES PARA BLOQUEAR DIAS:
-        const isDomingo = diaDaSemana === 0;
-        const isDiaDaSemanaBloqueado = diasDaSemanaBloqueados.includes(diaDaSemana);
-        const isFeriado = feriadosEDiasBloqueados.includes(dateStr);
+        // VERIFICAÇÕES
+        const isFeriado = feriados.includes(dateStr);
+        const isDiaBloqueado = diasBloqueados.includes(dateStr);
 
-        // Só adiciona como disponível se NÃO for nenhum dos bloqueados
-        if (!isDomingo && !isDiaDaSemanaBloqueado && !isFeriado) {
+        // ✅ NOVA LÓGICA: Verificar configuração do dia
+        const configDia = configuracoesHorario.find(h => h.diaSemana === diaDaSemana);
+
+        // Dia está disponível se:
+        // 1. NÃO for feriado
+        // 2. NÃO for dia bloqueado  
+        // 3. E (não tem configuração OU está configurado como ABERTO)
+        const isDiaDisponivel = !isFeriado && !isDiaBloqueado &&
+          (!configDia || configDia.aberto === true);
+
+        if (isDiaDisponivel) {
           disponiveis.push(dateStr);
         }
       }
 
       setDiasDisponiveis(disponiveis);
+      console.log('Dias disponíveis:', disponiveis.length);
     };
 
     carregarDiasDisponiveis();
-  }, []);
+  }, [diasBloqueados, feriados, configuracoesHorario]);
 
-  // CORREÇÃO: Função para criar data no fuso horário local
   const createLocalDate = (dateString: string): Date => {
     const [year, month, day] = dateString.split('-').map(Number);
-    // Criar data no fuso horário local
-    return new Date(year, month - 1, day, 12, 0, 0); // Usar meio-dia para evitar problemas de fuso
+    return new Date(year, month - 1, day, 12, 0, 0);
   };
 
-  // Preparar os dias marcados
+  // ✅ CORREÇÃO: Preparar os dias marcados considerando Firebase
   const prepareMarkedDates = () => {
     const marked: any = {};
     const selectedDateStr = selectedDate.toISOString().split('T')[0];
@@ -124,43 +164,55 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
       }
     };
 
-    // Marcar dias disponíveis com ponto verde
-    diasDisponiveis.forEach(dateStr => {
-      if (!marked[dateStr]) {
-        marked[dateStr] = {
-          disabled: false,
-          dotColor: '#4CAF50', // Ponto verde para disponível
-          activeOpacity: 0.7,
-          customStyles: {
-            text: {
-              color: '#2d4150',
-              fontWeight: '500',
-            }
-          }
-        };
-      }
-    });
-
-    // Marcar dias indisponíveis (que não estão no array de disponíveis)
+    // Marcar todos os dias nos próximos 60 dias
     const hoje = new Date();
     for (let i = 0; i < 60; i++) {
       const data = new Date(hoje);
       data.setDate(hoje.getDate() + i);
       const dateStr = data.toISOString().split('T')[0];
+      const diaDaSemana = data.getDay();
 
-      if (!diasDisponiveis.includes(dateStr) && !marked[dateStr]) {
-        marked[dateStr] = {
-          disabled: true,
-          dotColor: '#F44336', // Ponto vermelho para indisponível
-          customStyles: {
-            container: {
-              backgroundColor: '#f5f5f5',
-            },
-            text: {
-              color: '#d9e1e8',
+      if (!marked[dateStr]) {
+        const isDisponivel = diasDisponiveis.includes(dateStr);
+        const isFeriado = feriados.includes(dateStr);
+        const isDiaBloqueado = diasBloqueados.includes(dateStr);
+        const isDomingo = diaDaSemana === 0;
+
+        // Configurar cores baseadas no status
+        if (isDisponivel) {
+          // Dia disponível - ponto verde
+          marked[dateStr] = {
+            disabled: false,
+            dotColor: '#4CAF50',
+            activeOpacity: 0.7,
+            customStyles: {
+              text: {
+                color: '#2d4150',
+                fontWeight: '500',
+              }
             }
-          }
-        };
+          };
+        } else {
+          // Dia indisponível - ponto vermelho
+          let motivo = '';
+          if (isFeriado) motivo = ' (Feriado)';
+          else if (isDiaBloqueado) motivo = ' (Bloqueado)';
+          else if (isDomingo) motivo = ' (Domingo)';
+          else motivo = ' (Fechado)';
+
+          marked[dateStr] = {
+            disabled: true,
+            dotColor: '#F44336',
+            customStyles: {
+              container: {
+                backgroundColor: '#f5f5f5',
+              },
+              text: {
+                color: '#d9e1e8',
+              }
+            }
+          };
+        }
       }
     }
 
@@ -168,22 +220,19 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
   };
 
   const onDayPress = (day: any) => {
-    // CORREÇÃO: Usar a função createLocalDate para evitar problemas de fuso
     const selectedDateLocal = createLocalDate(day.dateString);
+
+    // Verificar se o dia está disponível
+    const isDisponivel = diasDisponiveis.includes(day.dateString);
+    if (!isDisponivel) {
+      // Não permitir selecionar dias indisponíveis
+      return;
+    }
 
     // Manter o horário atual se já tiver um selecionado
     const horaAtual = selectedDate.getHours();
     const minutoAtual = selectedDate.getMinutes();
-
     selectedDateLocal.setHours(horaAtual, minutoAtual, 0, 0);
-
-    console.log('Data selecionada no calendário:', {
-      dateString: day.dateString,
-      localDate: selectedDateLocal,
-      formatted: selectedDateLocal.toLocaleDateString('pt-BR'),
-      hours: selectedDateLocal.getHours(),
-      minutes: selectedDateLocal.getMinutes()
-    });
 
     onDateSelect(selectedDateLocal);
   };
@@ -196,7 +245,6 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-
         {/* Logo 3D FORA do container do calendário */}
         <View style={styles.logo3DContainer}>
           <Image
@@ -207,7 +255,6 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
         </View>
 
         <View style={styles.calendarContainer}>
-
           {/* Header Personalizado */}
           <View style={styles.calendarHeader}>
             <View style={styles.headerContent}>
@@ -215,7 +262,6 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                 <Text style={styles.headerTitle}>Selecione a Data</Text>
               </View>
             </View>
-
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <MaterialIcons name="close" size={24} color="#FFFFFF" />
             </TouchableOpacity>
@@ -229,11 +275,9 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
               markedDates={prepareMarkedDates()}
               minDate={new Date().toISOString().split('T')[0]}
               hideExtraDays={true}
-              firstDay={1} // Começa na segunda-feira
+              firstDay={1}
 
-              // Customização do tema
               theme={{
-                // Cores principais
                 backgroundColor: '#FFFFFF',
                 calendarBackground: '#FFFFFF',
                 selectedDayBackgroundColor: themes.colors.secundary,
@@ -242,31 +286,23 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                 dayTextColor: '#2d4150',
                 textDisabledColor: '#d9e1e8',
                 dotColor: themes.colors.secundary,
-
-                // Header do mês
                 monthTextColor: themes.colors.secundary,
                 textMonthFontSize: 18,
                 textMonthFontWeight: 'bold',
-
-                // Dias da semana
                 textSectionTitleColor: themes.colors.secundary,
                 textDayHeaderFontSize: 14,
                 textDayHeaderFontWeight: '600',
-
-                // Setas de navegação
                 arrowColor: themes.colors.secundary,
-                arrowStyle: {
-                  padding: 10,
-                },
+                arrowStyle: { padding: 10 },
               }}
 
-              // Day component customizado para melhor controle
               dayComponent={({ date, state, marking }: any) => {
                 const dateStr = date.dateString;
                 const isSelected = marking?.selected;
                 const isAvailable = marking?.dotColor === '#4CAF50';
                 const isUnavailable = marking?.dotColor === '#F44336';
                 const isToday = dateStr === new Date().toISOString().split('T')[0];
+                const isDisabled = marking?.disabled || state === 'disabled';
 
                 return (
                   <TouchableOpacity
@@ -274,17 +310,16 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                       styles.dayContainer,
                       isSelected && styles.selectedDay,
                       isToday && !isSelected && styles.todayDay,
-                      state === 'disabled' && styles.disabledDay,
+                      isDisabled && styles.disabledDay,
                     ]}
-                    onPress={() => !state && onDayPress(date)}
-                    disabled={state === 'disabled' || isUnavailable}
+                    onPress={() => !isDisabled && onDayPress(date)}
+                    disabled={isDisabled}
                   >
                     <Text style={[
                       styles.dayText,
                       isSelected && styles.selectedDayText,
-                      state === 'disabled' && styles.disabledDayText,
+                      isDisabled && styles.disabledDayText,
                       isToday && !isSelected && styles.todayDayText,
-                      isUnavailable && styles.unavailableDayText
                     ]}>
                       {date.day}
                     </Text>
@@ -300,6 +335,18 @@ export const CustomCalendar: React.FC<CustomCalendarProps> = ({
                 );
               }}
             />
+
+            {/* Legenda */}
+            <View style={styles.legendContainer}>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
+                <Text style={styles.legendText}>Disponível</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#F44336' }]} />
+                <Text style={styles.legendText}>Indisponível</Text>
+              </View>
+            </View>
 
             {/* Botão de Confirmar */}
             <TouchableOpacity style={styles.confirmButton} onPress={onClose}>
