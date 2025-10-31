@@ -11,7 +11,6 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { User } from 'firebase/auth';
 import ServiceSelectorModal, { Service } from "../ServiceSelectorModal";
 
-// No arquivo AgendarServico.tsx
 export interface AgendarServicoProps {
     servico: string;
     setServico: (servico: string) => void;
@@ -19,7 +18,7 @@ export interface AgendarServicoProps {
     setDataAgendamento: (date: Date) => void;
     showServiceList: boolean;
     setShowServiceList: (show: boolean) => void;
-    pets: any[]; // ← ADICIONE ESTA LINHA
+    pets: any[]; 
     petSelecionado: any;
     setPetSelecionado: (pet: any) => void;
     showPetModal: boolean;
@@ -52,7 +51,7 @@ const SERVICOS: Service[] = [
         name: 'Banho e Tosa',
         price: '80,00',
         duration: '2-3 horas',
-        icon: 'cut-outline', // ✅ Já está bom
+        icon: 'cut-outline', 
         description: 'Banho completo + tosa higiênica ou tosa completa'
     },
     {
@@ -60,7 +59,7 @@ const SERVICOS: Service[] = [
         name: 'Somente Tosa',
         price: '60,00',
         duration: '1-2 horas',
-        icon: 'create-outline', // ✅ Já está bom
+        icon: 'create-outline', 
         description: 'Apenas tosa higiênica ou completa'
     },
     {
@@ -68,7 +67,7 @@ const SERVICOS: Service[] = [
         name: 'Corte de Unha',
         price: '25,00',
         duration: '30 min',
-        icon: 'hand-right-outline', // ✅ Já está bom
+        icon: 'hand-right-outline', 
         description: 'Corte e lixamento das unhas'
     },
     {
@@ -76,7 +75,7 @@ const SERVICOS: Service[] = [
         name: 'Hidratação',
         price: '45,00',
         duration: '1 hora',
-        icon: 'water-outline', // ✅ Já está bom
+        icon: 'water-outline', 
         description: 'Hidratação profunda para pelos'
     },
     {
@@ -84,7 +83,7 @@ const SERVICOS: Service[] = [
         name: 'Consulta Veterinária',
         price: '120,00',
         duration: '45 min',
-        icon: 'medical-outline', // ✅ Já está bom
+        icon: 'medical-outline', 
         description: 'Consulta com veterinário especializado'
     },
     {
@@ -92,7 +91,7 @@ const SERVICOS: Service[] = [
         name: 'Limpeza de Ouvidos',
         price: '35,00',
         duration: '20 min',
-        icon: 'ear-outline', // 🎯 MELHOR para ouvidos
+        icon: 'ear-outline', 
         description: 'Limpeza e higienização dos ouvidos'
     },
     {
@@ -100,7 +99,7 @@ const SERVICOS: Service[] = [
         name: 'Escovação Dental',
         price: '40,00',
         duration: '25 min',
-        icon: 'happy-outline', // 🎯 Para dental/dentes
+        icon: 'happy-outline', 
         description: 'Escovação e limpeza dental'
     },
 ];
