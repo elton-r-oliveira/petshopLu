@@ -55,7 +55,13 @@ export default function Agendar() {
     useEffect(() => {
         const carregarHorariosOcupados = async () => {
             try {
-                // CORREÇÃO: Usar Timestamp para consulta
+                // Só carrega se tiver unidade selecionada
+                if (!unidadeSelecionada) {
+                    setHorariosOcupados([]);
+                    return;
+                }
+
+                // CORREÇÃO: Usar Timestamp para consulta + filtro por unidade
                 const inicioDoDia = new Date(dataAgendamento);
                 inicioDoDia.setHours(0, 0, 0, 0);
 
@@ -65,7 +71,8 @@ export default function Agendar() {
                 const q = query(
                     collection(db, "agendamentos"),
                     where("dataHoraAgendamento", ">=", Timestamp.fromDate(inicioDoDia)),
-                    where("dataHoraAgendamento", "<=", Timestamp.fromDate(fimDoDia))
+                    where("dataHoraAgendamento", "<=", Timestamp.fromDate(fimDoDia)),
+                    where("unidade", "==", unidadeSelecionada.nome) // ✅ NOVO FILTRO POR UNIDADE
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -92,10 +99,12 @@ export default function Agendar() {
             }
         };
 
-        if (abaAtual === 'agendar') {
+        if (abaAtual === 'agendar' && unidadeSelecionada) {
             carregarHorariosOcupados();
+        } else {
+            setHorariosOcupados([]);
         }
-    }, [dataAgendamento, abaAtual]);
+    }, [dataAgendamento, abaAtual, unidadeSelecionada]); // ✅ ADICIONE unidadeSelecionada nas dependências
 
     const unidades = [
         {
@@ -323,16 +332,16 @@ export default function Agendar() {
                 left: 0,
                 right: 0,
                 zIndex: 1000,
-                backgroundColor: themes.telaHome.fundo, 
+                backgroundColor: themes.telaHome.fundo,
             }}>
                 <TabSwitch abaAtual={abaAtual} setAbaAtual={setAbaAtual} />
             </View>
 
-            <ScrollView 
-                style={style.container} 
-                showsVerticalScrollIndicator={false} 
-                nestedScrollEnabled={true} 
-                contentContainerStyle={{ 
+            <ScrollView
+                style={style.container}
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
+                contentContainerStyle={{
                     paddingBottom: 180,
                     marginTop: 100,
                 }}
@@ -356,7 +365,7 @@ export default function Agendar() {
                         handleSelectService={handleSelectService}
                         onChangeDate={onChangeDate}
                         handleAgendar={handleAgendar}
-                        getPetImage={getPetImage} 
+                        getPetImage={getPetImage}
                         formatDate={formatDate}
                         formatTime={formatTime}
                         horariosFixos={horariosFixos}
@@ -376,7 +385,7 @@ export default function Agendar() {
                     setModalDetalhesVisible={setModalDetalhesVisible}
                     agendamentoSelecionado={agendamentoSelecionado}
                     unidades={unidades}
-                    getPetImage={getPetImage} 
+                    getPetImage={getPetImage}
                     onCancelarAgendamento={cancelarAgendamento}
                 />
             )}

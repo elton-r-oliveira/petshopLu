@@ -4,7 +4,6 @@ import {
     Text,
     TouchableOpacity,
     ActivityIndicator,
-    StyleSheet, // Importa StyleSheet para estilos mais limpos
 } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -25,11 +24,27 @@ const getStatusColor = (status: string) => {
         case 'confirmado':
             return themes.colors.success || '#4CAF50'; // Verde
         case 'concluído':
-            return themes.colors.bgScreen || '#3F51B5'; // Azul
+            return themes.colors.info || '#2196F3'; // Azul para concluído
         case 'cancelado':
             return themes.colors.cancelado || '#F44336'; // Vermelho
         default:
             return '#666';
+    }
+};
+
+// Adicione ícones específicos para cada status
+const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+        case 'pendente':
+            return 'clock-outline';
+        case 'confirmado':
+            return 'check-circle-outline';
+        case 'concluído':
+            return 'star-check-outline';
+        case 'cancelado':
+            return 'close-circle-outline';
+        default:
+            return 'information-outline';
     }
 };
 
@@ -74,6 +89,7 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                     })
                     .map((item) => {
                         const statusColor = getStatusColor(item.status);
+                        const statusIcon = getStatusIcon(item.status);
                         const serviceIcon = getServiceIcon(item.service);
 
                         const date = item.dataHoraAgendamento instanceof Date ? item.dataHoraAgendamento : null;
@@ -99,8 +115,17 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                                         </Text>
                                     </View>
 
-                                    {/* Status com bolinha colorida */}
-                                    <View style={style.statusPill}>
+                                    {/* Status com ícone e texto - COMPATÍVEL COM SEU STYLE */}
+                                    <View style={[style.statusPill, { 
+                                        backgroundColor: statusColor + '20',
+                                        borderColor: statusColor 
+                                    }]}>
+                                        <MaterialCommunityIcons
+                                            name={statusIcon}
+                                            size={14}
+                                            color={statusColor}
+                                            style={{ marginRight: 4 }}
+                                        />
                                         <View
                                             style={[style.statusDot, { backgroundColor: statusColor }]}
                                         />
@@ -142,4 +167,3 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
         </View>
     );
 };
-

@@ -16,6 +16,7 @@ export const themes = {
         warning: '',
         success: '',
         cancelado: '',
+        info: ''
     },
     login_cadastro: {
         fundo: '#FFF5E5',

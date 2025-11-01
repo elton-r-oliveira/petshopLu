@@ -234,6 +234,14 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
         }
     };
 
+    // Adicione este useEffect no AgendarServico.tsx
+    useEffect(() => {
+        // Quando trocar de unidade, limpa a seleção de horário
+        const novaData = new Date(dataAgendamento);
+        novaData.setHours(0, 0, 0, 0); // Reseta para início do dia
+        setDataAgendamento(novaData);
+    }, [unidadeSelecionada]);
+
     // ✅ Atualizar horários quando mudar a data
     useEffect(() => {
         atualizarHorariosDinamicos(dataAgendamento, configuracoesHorario);
@@ -537,63 +545,77 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
 
                 {/* Horários Disponíveis */}
                 <View style={style.inputGroup}>
-                    <Text style={style.inputLabel}>Horários Disponíveis</Text>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}
-                    >
-                        {horariosDinamicos.map((hora) => {
-                            const isOcupado = horariosOcupados.includes(hora);
-                            const isPassado = isHorarioPassado(dataAgendamento, hora, diasBloqueados, feriados);
-                            const isDesabilitado = isOcupado || isPassado;
-                            const isSelecionado = formatTime(dataAgendamento) === hora;
+                    <Text style={style.inputLabel}>
+                        Horários Disponíveis {unidadeSelecionada ? `- ${unidadeSelecionada.nome}` : ''}
+                    </Text>
 
-                            return (
-                                <TouchableOpacity
-                                    key={hora}
-                                    disabled={isDesabilitado}
-                                    onPress={() => {
-                                        if (!isDesabilitado) {
-                                            const [h, m] = hora.split(':');
-                                            const novaData = new Date(dataAgendamento);
-                                            novaData.setHours(Number(h));
-                                            novaData.setMinutes(Number(m));
-                                            setDataAgendamento(novaData);
-                                        }
-                                    }}
-                                    style={{
-                                        paddingVertical: 10,
-                                        paddingHorizontal: 18,
-                                        borderRadius: 8,
-                                        backgroundColor: isSelecionado
-                                            ? themes.colors.secundary
-                                            : isDesabilitado
-                                                ? '#ccc'
-                                                : '#fff',
-                                        borderWidth: 1,
-                                        borderColor: isSelecionado
-                                            ? themes.colors.secundary
-                                            : '#ddd',
-                                        opacity: isDesabilitado ? 0.6 : 1,
-                                    }}
-                                >
-                                    <Text
+                    {!unidadeSelecionada ? (
+                        <Text style={{ color: '#888', textAlign: 'center', marginVertical: 20 }}>
+                            Selecione uma unidade para ver os horários disponíveis
+                        </Text>
+                    ) : horariosDinamicos.length === 0 ? (
+                        <Text style={{ color: '#888', textAlign: 'center', marginVertical: 20 }}>
+                            Nenhum horário disponível para este dia
+                        </Text>
+                    ) : (
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}
+                        >
+                            {horariosDinamicos.map((hora) => {
+                                const isOcupado = horariosOcupados.includes(hora);
+                                const isPassado = isHorarioPassado(dataAgendamento, hora, diasBloqueados, feriados);
+                                const isDesabilitado = isOcupado || isPassado;
+                                const isSelecionado = formatTime(dataAgendamento) === hora;
+
+                                return (
+                                    <TouchableOpacity
+                                        key={hora}
+                                        disabled={isDesabilitado}
+                                        onPress={() => {
+                                            if (!isDesabilitado) {
+                                                const [h, m] = hora.split(':');
+                                                const novaData = new Date(dataAgendamento);
+                                                novaData.setHours(Number(h));
+                                                novaData.setMinutes(Number(m));
+                                                setDataAgendamento(novaData);
+                                            }
+                                        }}
                                         style={{
-                                            color: isDesabilitado
-                                                ? '#999'
-                                                : isSelecionado
-                                                    ? '#fff'
-                                                    : themes.colors.corTexto,
-                                            fontWeight: isSelecionado ? '700' : '500',
+                                            paddingVertical: 10,
+                                            paddingHorizontal: 18,
+                                            borderRadius: 8,
+                                            backgroundColor: isSelecionado
+                                                ? themes.colors.secundary
+                                                : isDesabilitado
+                                                    ? '#ccc'
+                                                    : '#fff',
+                                            borderWidth: 1,
+                                            borderColor: isSelecionado
+                                                ? themes.colors.secundary
+                                                : '#ddd',
+                                            opacity: isDesabilitado ? 0.6 : 1,
                                         }}
                                     >
-                                        {hora}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </ScrollView>
+                                        <Text
+                                            style={{
+                                                color: isDesabilitado
+                                                    ? '#999'
+                                                    : isSelecionado
+                                                        ? '#fff'
+                                                        : themes.colors.corTexto,
+                                                fontWeight: isSelecionado ? '700' : '500',
+                                            }}
+                                        >
+                                            {hora}
+                                            {isOcupado && " 🔒"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+                    )}
                 </View>
 
                 {/* Modal de Pets */}
@@ -739,13 +761,18 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                     style={[
                         style.button,
                         {
-                            opacity: (!selectedService || !petSelecionado || !unidadeSelecionada) ? 0.6 : 1
+                            opacity: (!selectedService || !petSelecionado || !unidadeSelecionada || horariosOcupados.includes(formatTime(dataAgendamento))) ? 0.6 : 1
                         }
                     ]}
                     onPress={handleAgendar}
-                    disabled={!selectedService || !petSelecionado || !unidadeSelecionada}
+                    disabled={!selectedService || !petSelecionado || !unidadeSelecionada || horariosOcupados.includes(formatTime(dataAgendamento))}
                 >
-                    <Text style={style.buttonText}>Confirmar Agendamento</Text>
+                    <Text style={style.buttonText}>
+                        {horariosOcupados.includes(formatTime(dataAgendamento))
+                            ? "Horário Indisponível"
+                            : "Confirmar Agendamento"
+                        }
+                    </Text>
                     <MaterialIcons name="done-all" size={24} color="#fff" style={{ marginLeft: 10 }} />
                 </TouchableOpacity>
             </View>
