@@ -10,7 +10,6 @@ import {
     Linking,
     Alert
 } from 'react-native';
-// Usaremos Ionicons e MaterialCommunityIcons para o mix de ícones
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
 import { style } from "./styles"
@@ -28,13 +27,13 @@ interface ModalDetalhesAgendamentoProps {
 const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
         case 'pendente':
-            return themes.colors.warning || '#FFC300'; // Amarelo
+            return themes.colors.warning || '#FFC300';
         case 'confirmado':
-            return themes.colors.success || '#4CAF50'; // Verde
+            return themes.colors.success || '#4CAF50';
         case 'concluído':
-            return themes.colors.bgScreen || '#3F51B5'; // Azul
+            return themes.colors.bgScreen || '#3F51B5';
         case 'cancelado':
-            return themes.colors.cancelado || '#F44336'; // Vermelho
+            return themes.colors.cancelado || '#F44336';
         default:
             return '#666';
     }
@@ -43,20 +42,18 @@ const getStatusColor = (status: string) => {
 const getServiceIcon = (service: string) => {
     const lowerService = service.toLowerCase();
     if (lowerService.includes('tosa') || lowerService.includes('banho')) {
-        return 'content-cut'; // Tesoura para Tosa/Banho
+        return 'content-cut';
     }
     if (lowerService.includes('vacina') || lowerService.includes('consulta')) {
-        return 'needle'; // Agulha para Saúde/Vacina
+        return 'needle';
     }
-    return 'star-four-points-outline'; // Ícone padrão
+    return 'star-four-points-outline';
 };
 
 // Função para formatar telefone
 const formatPhoneNumber = (phone: string) => {
     if (!phone) return '';
-    // Remove caracteres não numéricos
     const cleaned = phone.replace(/\D/g, '');
-
     if (cleaned.length === 11) {
         return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
     } else if (cleaned.length === 10) {
@@ -94,11 +91,6 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
 }) => {
     if (!agendamentoSelecionado) return null;
 
-    // DEBUG: Verifique o que está chegando
-    console.log('Agendamento selecionado:', agendamentoSelecionado);
-    console.log('DataHoraAgendamento:', agendamentoSelecionado.dataHoraAgendamento);
-    console.log('Tipo:', typeof agendamentoSelecionado.dataHoraAgendamento);
-
     const unidade = unidades.find(u => u.nome === agendamentoSelecionado.unidade);
     const statusColor = getStatusColor(agendamentoSelecionado.status);
     const serviceIconName = getServiceIcon(agendamentoSelecionado.service);
@@ -110,15 +102,10 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
         date = agendamentoSelecionado.dataHoraAgendamento;
     } else if (agendamentoSelecionado.dataHoraAgendamento &&
         agendamentoSelecionado.dataHoraAgendamento.toDate) {
-        // Se for um Timestamp do Firestore
         date = agendamentoSelecionado.dataHoraAgendamento.toDate();
     } else if (agendamentoSelecionado.dataHoraAgendamento) {
-        // Se for string ou outro formato
         date = new Date(agendamentoSelecionado.dataHoraAgendamento);
     }
-
-    console.log('Date após conversão:', date);
-    console.log('Horas:', date?.getHours(), 'Minutos:', date?.getMinutes());
 
     const formattedDate = date
         ? date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
@@ -132,7 +119,6 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
         })
         : '';
 
-    console.log('Horário formatado:', formattedTime);
     // Use os telefones salvos diretamente do agendamento
     const telefoneUnidade = agendamentoSelecionado.unidadeTelefone;
     const whatsappUnidade = agendamentoSelecionado.unidadeWhatsapp;
@@ -193,7 +179,6 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
                         {/* Status e Serviço Destacados */}
                         <View style={style.highlightSection}>
-                            {/* Serviço */}
                             <View style={style.serviceHighlight}>
                                 <MaterialCommunityIcons name={serviceIconName} size={24} color={themes.colors.secundary} />
                                 <Text style={style.serviceHighlightText}>
@@ -201,7 +186,6 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                 </Text>
                             </View>
 
-                            {/* Status Pill */}
                             <View style={[style.statusPill, { backgroundColor: statusColor }]}>
                                 <Text style={style.statusPillText}>
                                     {agendamentoSelecionado.status}
@@ -211,7 +195,7 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
 
                         <View style={style.sectionDivider} />
 
-                        {/* Pet com Foto */}
+                        {/* Pet com Foto - PRIMEIRA SEÇÃO */}
                         <View style={style.section}>
                             <Text style={style.sectionTitle}>Pet Agendado</Text>
                             <View style={style.petCard}>
@@ -225,28 +209,98 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                             </View>
                         </View>
 
+                        {/* VALOR E TEMPO - EM UMA LINHA SÓ */}
+                        {(agendamentoSelecionado.preco || agendamentoSelecionado.tempoServico) && (
+                            <View style={style.section}>
+                                <Text style={style.sectionTitle}>Informações do Serviço</Text>
+                                <View style={style.priceTimeRow}>
+                                    {/* Valor */}
+                                    {agendamentoSelecionado.preco && (
+                                        <View style={style.priceTimeItem}>
+                                            <MaterialCommunityIcons
+                                                name="cash"
+                                                size={20}
+                                                color={themes.colors.success || '#4CAF50'}
+                                                style={style.priceTimeIcon}
+                                            />
+                                            <View style={style.priceTimeContent}>
+                                                <Text style={style.priceTimeLabel}>Valor</Text>
+                                                <Text style={[style.priceTimeValue, { color: themes.colors.success || '#4CAF50' }]}>
+                                                    R$ {agendamentoSelecionado.preco}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {/* Separador */}
+                                    {agendamentoSelecionado.preco && agendamentoSelecionado.tempoServico && (
+                                        <View style={style.separator} />
+                                    )}
+
+                                    {/* Tempo do Serviço */}
+                                    {agendamentoSelecionado.tempoServico && (
+                                        <View style={style.priceTimeItem}>
+                                            <MaterialCommunityIcons
+                                                name="clock-outline"
+                                                size={20}
+                                                color={themes.colors.info || '#2196F3'}
+                                                style={style.priceTimeIcon}
+                                            />
+                                            <View style={style.priceTimeContent}>
+                                                <Text style={style.priceTimeLabel}>Tempo</Text>
+                                                <Text style={[style.priceTimeValue, { color: themes.colors.info || '#2196F3' }]}>
+                                                    {agendamentoSelecionado.tempoServico}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+
                         {/* Detalhes de Data e Horário */}
                         <View style={style.section}>
                             <Text style={style.sectionTitle}>Data e Horário</Text>
-                            <View style={style.detailsBlock}>
-                                <View style={style.detailItemContainer}>
-                                    <MaterialCommunityIcons name="calendar-month" size={22} color={themes.colors.secundary || '#B8860B'} style={style.detailIcon} />
-                                    <View style={style.detailTextContent}>
-                                        <Text style={style.detailLabel}>Data</Text>
-                                        <Text style={style.detailValue}>{formattedDate}</Text>
+                            <View style={style.priceTimeRow}>
+                                {/* Data */}
+                                <View style={style.priceTimeItem}>
+                                    <MaterialCommunityIcons
+                                        name="calendar-month"
+                                        size={20}
+                                        color={themes.colors.secundary || '#B8860B'}
+                                        style={style.priceTimeIcon}
+                                    />
+                                    <View style={style.priceTimeContent}>
+                                        <Text style={style.priceTimeLabel}>Data</Text>
+                                        <Text style={[style.priceTimeValue, { color: themes.colors.secundary || '#B8860B' }]}>
+                                            {formattedDate}
+                                        </Text>
                                     </View>
                                 </View>
-                                <View style={style.detailItemContainer}>
-                                    <Ionicons name="time" size={22} color={themes.colors.secundary || '#B8860B'} style={style.detailIcon} />
-                                    <View style={style.detailTextContent}>
-                                        <Text style={style.detailLabel}>Horário</Text>
-                                        <Text style={style.detailValue}>{formattedTime}</Text>
+
+                                {/* Separador */}
+                                <View style={style.separator} />
+
+                                {/* Horário */}
+                                <View style={style.priceTimeItem}>
+                                    <Ionicons
+                                        name="time"
+                                        size={20}
+                                        color={themes.colors.secundary || '#B8860B'}
+                                        style={style.priceTimeIcon}
+                                    />
+                                    <View style={style.priceTimeContent}>
+                                        <Text style={style.priceTimeLabel}>Horário</Text>
+                                        <Text style={[style.priceTimeValue, { color: themes.colors.secundary || '#B8860B' }]}>
+                                            {formattedTime}
+                                        </Text>
                                     </View>
                                 </View>
                             </View>
                         </View>
 
-                        {/* Local - SUBSTITUIÇÃO DO MAPVIEW POR DEEP LINK */}
+
+                        {/* Local */}
                         {unidade?.lat && unidade?.lng ? (
                             <View style={style.section}>
                                 <Text style={style.sectionTitle}>Local da Unidade</Text>
@@ -256,14 +310,13 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                         <Text style={style.locationAddress}>{unidade.endereco}</Text>
                                     </View>
 
-                                    {/* SUBSTITUIÇÃO DO MAPVIEW POR BOTÃO DO GOOGLE MAPS COM FUNDO DE IMAGEM */}
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         style={style.mapContainer}
                                         onPress={() => openInGoogleMaps(unidade.lat, unidade.lng, unidade.nome)}
                                     >
-                                        <View style={{ 
-                                            flex: 1, 
-                                            justifyContent: 'center', 
+                                        <View style={{
+                                            flex: 1,
+                                            justifyContent: 'center',
                                             alignItems: 'center',
                                             borderRadius: 8,
                                             borderWidth: 2,
@@ -272,7 +325,6 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                             position: 'relative',
                                             height: 140
                                         }}>
-                                            {/* IMAGEM DE FUNDO DO MAPA - MESMA DO AGENDARSERVICO */}
                                             <Image
                                                 source={require('../../assets/map-background.png')}
                                                 style={{
@@ -283,7 +335,6 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                                 resizeMode="cover"
                                             />
 
-                                            {/* Overlay para melhor contraste */}
                                             <View style={{
                                                 position: 'absolute',
                                                 top: 0,
@@ -293,17 +344,16 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                                 backgroundColor: 'rgba(0, 0, 0, 0.4)'
                                             }} />
 
-                                            {/* Conteúdo sobre a imagem */}
                                             <View style={{
                                                 alignItems: 'center',
                                                 zIndex: 1
                                             }}>
-                                                <Ionicons 
-                                                    name="map" 
-                                                    size={32} 
+                                                <Ionicons
+                                                    name="map"
+                                                    size={32}
                                                     color="#fff"
                                                 />
-                                                <Text style={{ 
+                                                <Text style={{
                                                     marginTop: 8,
                                                     fontSize: 16,
                                                     fontWeight: '600',
@@ -312,7 +362,7 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                                 }}>
                                                     Ver no Mapa
                                                 </Text>
-                                                <Text style={{ 
+                                                <Text style={{
                                                     fontSize: 12,
                                                     color: 'rgba(255,255,255,0.9)',
                                                     marginTop: 4,
@@ -320,9 +370,9 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                                 }}>
                                                     Toque para navegar
                                                 </Text>
-                                                <View style={{ 
-                                                    flexDirection: 'row', 
-                                                    alignItems: 'center', 
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
                                                     marginTop: 12,
                                                     backgroundColor: 'rgba(255,255,255,0.2)',
                                                     paddingHorizontal: 12,
@@ -330,7 +380,7 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                                     borderRadius: 20
                                                 }}>
                                                     <Ionicons name="navigate" size={16} color="#fff" />
-                                                    <Text style={{ 
+                                                    <Text style={{
                                                         fontSize: 12,
                                                         color: '#fff',
                                                         fontWeight: '500',
@@ -352,11 +402,10 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                             </View>
                         )}
 
-                        {/* Contato da Unidade - SEMPRE MOSTRAR, mesmo que não tenha telefone */}
+                        {/* Contato da Unidade */}
                         <View style={style.section}>
                             <Text style={style.sectionTitle}>Contato</Text>
                             <View style={style.detailsBlock}>
-                                {/* Telefone */}
                                 <TouchableOpacity
                                     style={style.detailItemContainer}
                                     onPress={() => hasTelefone && makePhoneCall(telefoneUnidade)}
@@ -379,7 +428,6 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                     </View>
                                 </TouchableOpacity>
 
-                                {/* WhatsApp */}
                                 <TouchableOpacity
                                     style={style.detailItemContainer}
                                     onPress={() => hasWhatsapp && openWhatsApp(whatsappUnidade)}
@@ -403,7 +451,8 @@ export const ModalDetalhesAgendamento: React.FC<ModalDetalhesAgendamentoProps> =
                                 </TouchableOpacity>
                             </View>
                         </View>
-                        {/* Botão Cancelar Agendamento - Só aparece se pode cancelar */}
+
+                        {/* Botão Cancelar Agendamento */}
                         {podeCancelar && (
                             <TouchableOpacity
                                 style={style.cancelButton}

@@ -67,16 +67,15 @@ export const style = StyleSheet.create({
     statusPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
         borderRadius: 15,
-        backgroundColor: '#F0F0F0', // Fundo claro igual ao MeusAgendamentos
-        borderWidth: 1,
         flexShrink: 0,
     },
-    statusText: {
-        fontSize: 12, // Mesmo tamanho do MeusAgendamentos
-        fontWeight: '600',
+    statusPillText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#fff',
     },
     sectionDivider: {
         height: 1,
@@ -115,6 +114,48 @@ export const style = StyleSheet.create({
         flex: 1,
         flexShrink: 1,
     },
+    
+    // --- NOVOS ESTILOS PARA VALOR E TEMPO EM LINHA ---
+    priceTimeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f8f8f8',
+        borderRadius: 12,
+        padding: 15,
+        justifyContent: 'space-between',
+    },
+    priceTimeItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    priceTimeIcon: {
+        marginRight: 10,
+        flexShrink: 0,
+    },
+    priceTimeContent: {
+        flexDirection: 'column',
+        flex: 1,
+    },
+    priceTimeLabel: {
+        fontSize: 12,
+        color: '#777',
+        fontWeight: '500',
+        marginBottom: 2,
+    },
+    priceTimeValue: {
+        fontSize: 16,
+        fontWeight: '600',
+        flex: 1,
+        flexShrink: 1,
+    },
+    separator: {
+        width: 1,
+        height: 30,
+        backgroundColor: '#ddd',
+        marginHorizontal: 15,
+    },
+    
     // --- Linha de Detalhes (Data/Contato) ---
     detailsBlock: {
         backgroundColor: '#f8f8f8',
@@ -220,10 +261,5 @@ export const style = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         flexShrink: 1,
-    },
-        statusPillText: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#fff',
     },
 });

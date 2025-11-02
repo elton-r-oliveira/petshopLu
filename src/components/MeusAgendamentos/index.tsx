@@ -136,8 +136,7 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                                 </View>
 
                                 <View style={style.divider} />
-
-                                {/* LINHA 2 e 3: Pet, Data e Local (Conteúdo Principal) */}
+{/* LINHA: Pet */}
                                 {item.petNome && (
                                     <View style={style.detailRow}>
                                         <MaterialCommunityIcons name="paw" size={18} color="#777" />
@@ -145,7 +144,33 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                                         <Text style={style.detailValue}>{item.petNome}</Text>
                                     </View>
                                 )}
+                                {/* NOVA LINHA: Valor e Tempo do Serviço */}
+                                {(item.preco || item.tempoServico) && (
+                                    <View style={style.detailRow}>
+                                        <MaterialCommunityIcons name="cash" size={18} color="#777" />
+                                        {item.preco && (
+                                            <Text style={style.detailLabel}>Valor:</Text>
+                                        )}
+                                        {item.preco && (
+                                            <Text style={[style.detailValue, { color: themes.colors.success }]}>
+                                                R$ {item.preco}
+                                            </Text>
+                                        )}
+                                        {item.preco && item.tempoServico && (
+                                            <Text style={[style.detailLabel, { marginLeft: 15 }]}>•</Text>
+                                        )}
+                                        {item.tempoServico && (
+                                            <Text style={style.detailLabel}>Duração:</Text>
+                                        )}
+                                        {item.tempoServico && (
+                                            <Text style={style.detailValue}>
+                                                {item.tempoServico}
+                                            </Text>
+                                        )}
+                                    </View>
+                                )}
 
+                                {/* LINHA: Data e Hora */}
                                 {date && (
                                     <View style={style.detailRow}>
                                         <MaterialCommunityIcons name="calendar-clock" size={18} color="#777" />
@@ -153,6 +178,7 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                                     </View>
                                 )}
 
+                                {/* LINHA: Unidade */}
                                 {item.unidade && (
                                     <View style={style.detailRow}>
                                         <MaterialCommunityIcons name="map-marker" size={18} color="#777" />
