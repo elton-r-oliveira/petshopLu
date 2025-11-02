@@ -9,11 +9,10 @@ export const style = StyleSheet.create({
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#333', // Cor escura para contraste
+        color: '#333',
         marginLeft: 10,
         marginTop: 15,
         marginBottom: 5,
-        // Você pode ajustar a cor para o marrom que está usando
     },
     emptyText: {
         textAlign: 'center',
@@ -32,22 +31,27 @@ export const style = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
     },
-    // --- Header (Serviço e Status) ---
+    // --- Header (Serviço e Status) - CORRIGIDO ---
     headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         marginBottom: 8,
     },
     serviceInfo: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
+        marginRight: 8,
+        minWidth: 0, // IMPORTANTE: Permite que o flex shrink funcione
     },
     serviceText: {
         fontSize: 18,
         fontWeight: '700',
-        color: themes.colors.secundary || '#B8860B', // Cor de destaque para o serviço
+        color: themes.colors.secundary || '#B8860B',
         marginLeft: 8,
+        flex: 1, // Ocupa o espaço restante
+        flexShrink: 1, // Permite encolher se necessário
     },
     statusPill: {
         flexDirection: 'row',
@@ -55,7 +59,9 @@ export const style = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 15,
-        backgroundColor: '#F0F0F0', // Fundo leve para o status
+        backgroundColor: '#F0F0F0',
+        borderWidth: 1,
+        flexShrink: 0, // IMPEDE que o status encolha
     },
     statusDot: {
         width: 8,
@@ -64,7 +70,7 @@ export const style = StyleSheet.create({
         marginRight: 5,
     },
     statusText: {
-        fontSize: 14,
+        fontSize: 12, // Reduzido para caber melhor
         fontWeight: '600',
     },
     divider: {
@@ -88,7 +94,7 @@ export const style = StyleSheet.create({
         fontSize: 15,
         fontWeight: '500',
         color: '#333',
-        flex: 1, // Permite que o texto ocupe o espaço restante
+        flex: 1,
     },
     arrow: {
         marginLeft: 'auto',

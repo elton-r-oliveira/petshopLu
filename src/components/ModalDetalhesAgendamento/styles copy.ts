@@ -220,10 +220,5 @@ export const style = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         flexShrink: 1,
-    },
-        statusPillText: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#fff',
-    },
+    }
 });

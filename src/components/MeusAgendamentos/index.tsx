@@ -102,7 +102,6 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                                 style={style.card}
                                 onPress={() => abrirDetalhesAgendamento(item)}
                             >
-                                {/* LINHA 1: Serviço e Status (Topo do Card) */}
                                 <View style={style.headerRow}>
                                     <View style={style.serviceInfo}>
                                         <MaterialCommunityIcons
@@ -110,24 +109,25 @@ export const MeusAgendamentos: React.FC<MeusAgendamentosProps> = ({
                                             size={20}
                                             color={themes.colors.secundary || '#B8860B'}
                                         />
-                                        <Text style={style.serviceText}>
+                                        <Text
+                                            style={style.serviceText}
+                                            numberOfLines={1}
+                                            ellipsizeMode="tail"
+                                        >
                                             {item.service}
                                         </Text>
                                     </View>
 
-                                    {/* Status com ícone e texto - COMPATÍVEL COM SEU STYLE */}
-                                    <View style={[style.statusPill, { 
+                                    {/* Status fixo à direita */}
+                                    <View style={[style.statusPill, {
                                         backgroundColor: statusColor + '20',
-                                        borderColor: statusColor 
+                                        borderColor: statusColor
                                     }]}>
                                         <MaterialCommunityIcons
                                             name={statusIcon}
                                             size={14}
                                             color={statusColor}
                                             style={{ marginRight: 4 }}
-                                        />
-                                        <View
-                                            style={[style.statusDot, { backgroundColor: statusColor }]}
                                         />
                                         <Text style={[style.statusText, { color: statusColor }]}>
                                             {item.status}

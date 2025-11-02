@@ -115,7 +115,7 @@ export default function Pets({ navigation }: any) {
                         borderRadius: 45,
                         overflow: "hidden",
                         alignSelf: "flex-start",
-                        marginTop: 45,
+                        marginTop: 47,
                         marginLeft: 80
                     }}
                 >
