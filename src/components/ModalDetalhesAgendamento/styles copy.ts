@@ -34,54 +34,52 @@ export const style = StyleSheet.create({
         fontSize: 22,
         fontWeight: '700',
         color: themes.colors.secundary || '#B8860B',
-        flex: 1,
-        marginRight: 10,
+        flex: 1, // Permite que o título ocupe espaço
+        marginRight: 10, // Espaço entre título e botão fechar
     },
     closeButton: {
         padding: 5,
-        flexShrink: 0,
+        flexShrink: 0, // Impede que o botão encolha
     },
-    // --- Destaque Status/Serviço - AGORA IGUAL AO MEUSAGENDAMENTOS ---
+    // --- Destaque Status/Serviço - CORRIGIDO ---
     highlightSection: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 8,
+        alignItems: 'flex-start', // Alinha ao topo para evitar desalinhamento
+        paddingVertical: 10,
+        marginBottom: 10,
     },
     serviceHighlight: {
         flexDirection: 'row',
         alignItems: 'center',
-        flex: 1,
-        marginRight: 8,
-        minWidth: 0,
+        flex: 1, // Ocupa espaço disponível
+        marginRight: 8, // Espaço entre serviço e status
+        minWidth: 0, // IMPORTANTE: Permite que o flex shrink funcione
     },
     serviceHighlightText: {
-        fontSize: 18, // Mesmo tamanho do MeusAgendamentos
+        fontSize: 20,
         fontWeight: '700',
         color: themes.colors.secundary || '#B8860B',
         marginLeft: 10,
-        flex: 1,
-        flexShrink: 1,
+        flex: 1, // Ocupa espaço restante
+        flexShrink: 1, // Permite encolher se necessário
     },
-    // STATUS PILL IDÊNTICO AO MEUSAGENDAMENTOS
     statusPill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 15,
-        backgroundColor: '#F0F0F0', // Fundo claro igual ao MeusAgendamentos
-        borderWidth: 1,
-        flexShrink: 0,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        flexShrink: 0, // IMPEDE que o status encolha
+        minWidth: 0, // Importante para funcionar com flex
     },
-    statusText: {
-        fontSize: 12, // Mesmo tamanho do MeusAgendamentos
-        fontWeight: '600',
+    statusPillText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#fff',
     },
     sectionDivider: {
         height: 1,
-        backgroundColor: '#eee', // Mesma cor do MeusAgendamentos
-        marginBottom: 10,
+        backgroundColor: '#f0f0f0',
+        marginVertical: 10,
     },
     // --- Seção Geral ---
     section: {
@@ -106,14 +104,14 @@ export const style = StyleSheet.create({
         height: 50,
         borderRadius: 25,
         marginRight: 15,
-        flexShrink: 0,
+        flexShrink: 0, // Impede que a imagem encolha
     },
     petName: {
         fontSize: 18,
         fontWeight: '600',
         color: themes.colors.corTexto || '#333',
-        flex: 1,
-        flexShrink: 1,
+        flex: 1, // Ocupa espaço restante
+        flexShrink: 1, // Permite encolher se necessário
     },
     // --- Linha de Detalhes (Data/Contato) ---
     detailsBlock: {
@@ -127,16 +125,16 @@ export const style = StyleSheet.create({
         paddingVertical: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
-        minWidth: 0,
+        minWidth: 0, // Importante para flexbox
     },
     detailIcon: {
         marginRight: 15,
-        flexShrink: 0,
+        flexShrink: 0, // Impede que ícone encolha
     },
     detailTextContent: {
         flexDirection: 'column',
-        flex: 1,
-        minWidth: 0,
+        flex: 1, // Ocupa espaço disponível
+        minWidth: 0, // Importante para flexbox
     },
     detailLabel: {
         fontSize: 12,
@@ -147,8 +145,8 @@ export const style = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#333',
-        flex: 1,
-        flexShrink: 1,
+        flex: 1, // Ocupa espaço restante
+        flexShrink: 1, // Permite encolher se necessário
     },
     disabledText: {
         color: '#999',
@@ -174,19 +172,19 @@ export const style = StyleSheet.create({
         fontWeight: "700",
         fontSize: 18,
         color: themes.colors.secundary || '#B8860B',
-        flex: 1,
-        flexShrink: 1,
+        flex: 1, // Ocupa espaço disponível
+        flexShrink: 1, // Permite encolher se necessário
     },
     locationAddress: {
         fontSize: 14,
         color: "#777",
         marginTop: 5,
-        flex: 1,
-        flexShrink: 1,
+        flex: 1, // Ocupa espaço disponível
+        flexShrink: 1, // Permite encolher se necessário
     },
     mapContainer: {
         height: 150,
-        minWidth: 0,
+        minWidth: 0, // Importante para flexbox
     },
     map: {
         flex: 1
@@ -198,13 +196,13 @@ export const style = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
         marginTop: 10,
-        minWidth: 0,
+        minWidth: 0, // Importante para flexbox
     },
     cancelButtonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: '700',
-        flexShrink: 1,
+        flexShrink: 1, // Permite encolher se necessário
     },
     // --- Botão Principal ---
     closeButtonPrimary: {
@@ -213,12 +211,12 @@ export const style = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
         marginTop: 10,
-        minWidth: 0,
+        minWidth: 0, // Importante para flexbox
     },
     closeButtonText: {
         color: '#fff',
         fontSize: 18,
         fontWeight: '700',
-        flexShrink: 1,
+        flexShrink: 1, // Permite encolher se necessário
     }
 });

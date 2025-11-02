@@ -14,6 +14,8 @@ import ServiceSelectorModal, { Service } from "../ServiceSelectorModal";
 export interface AgendarServicoProps {
     servico: string;
     setServico: (servico: string) => void;
+    servicoSelecionado: any;
+    setServicoSelecionado: (servico: any) => void; // ✅ NOVO
     dataAgendamento: Date;
     setDataAgendamento: (date: Date) => void;
     showServiceList: boolean;
@@ -26,7 +28,7 @@ export interface AgendarServicoProps {
     unidadeSelecionada: any;
     setUnidadeSelecionada: (unidade: any) => void;
     unidades: any[];
-    handleSelectService: (service: string) => void;
+    handleSelectService: (service: any) => void; // ✅ AGORA RECEBE OBJETO COMPLETO
     onChangeDate: (event: any, selectedDate?: Date) => void;
     handleAgendar: () => void;
     getPetImage: (animalType: string) => any;
@@ -161,6 +163,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     setServico,
     dataAgendamento,
     setDataAgendamento,
+    setServicoSelecionado,
     showServiceList,
     setShowServiceList,
     petSelecionado,
@@ -470,6 +473,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                         if (service) {
                             setSelectedService(service);
                             setServico(service.name);
+                            setServicoSelecionado(service); // ✅ AGORA ESTÁ DISPONÍVEL
                         }
                         setShowServiceList(false);
                     }}

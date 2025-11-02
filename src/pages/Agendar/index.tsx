@@ -51,6 +51,7 @@ export default function Agendar() {
     const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<any>(null);
     const [horariosOcupados, setHorariosOcupados] = useState<string[]>([]);
     const horariosFixos = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+    const [servicoSelecionado, setServicoSelecionado] = useState<any>(null);
 
     useEffect(() => {
         const carregarHorariosOcupados = async () => {
@@ -134,8 +135,9 @@ export default function Agendar() {
     ];
 
     // Funções
-    const handleSelectService = (selectedService: string) => {
-        setServico(selectedService);
+    const handleSelectService = (service: any) => {
+        setServico(service.name);
+        setServicoSelecionado(service); // ✅ Armazena o serviço COMPLETO com preço e tempo
         setShowServiceList(false);
     };
 
@@ -145,8 +147,10 @@ export default function Agendar() {
         setDataAgendamento(currentDate);
     };
 
+    // SUBSTITUA a função handleAgendar completa POR ESTA:
+
     const handleAgendar = async () => {
-        if (!servico) {
+        if (!servicoSelecionado) { // ✅ Agora valida pelo serviço completo
             Alert.alert('Atenção', 'Por favor, selecione o serviço.');
             return;
         }
@@ -172,18 +176,18 @@ export default function Agendar() {
         }
 
         try {
-            // SOLUÇÃO DEFINITIVA PARA FUSO HORÁRIO: Usar Timestamp do Firebase
             const timestampAgendamento = Timestamp.fromDate(dataAgendamento);
 
-            console.log('Data local selecionada:', dataAgendamento);
-            console.log('Data formatada:', formatDate(dataAgendamento));
-            console.log('Hora formatada:', formatTime(dataAgendamento));
-            console.log('Timestamp para Firebase:', timestampAgendamento.toDate());
+            console.log('Serviço selecionado:', servicoSelecionado);
+            console.log('Preço:', servicoSelecionado.price);
+            console.log('Duração:', servicoSelecionado.duration);
 
             await addDoc(collection(db, 'agendamentos'), {
                 userId: userId,
-                service: servico,
-                dataHoraAgendamento: timestampAgendamento, // Usa Timestamp diretamente
+                service: servicoSelecionado.name,
+                preco: servicoSelecionado.price, // ✅ AGORA SALVA O PREÇO
+                tempoServico: servicoSelecionado.duration, // ✅ AGORA SALVA O TEMPO
+                dataHoraAgendamento: timestampAgendamento,
                 unidade: unidadeSelecionada?.nome || null,
                 enderecoUnidade: unidadeSelecionada?.endereco || null,
                 unidadeTelefone: unidadeSelecionada?.telefone || null,
@@ -196,7 +200,10 @@ export default function Agendar() {
             });
 
             Alert.alert('Sucesso', 'Seu agendamento foi realizado com sucesso!');
+
+            // Limpa todos os campos
             setServico('');
+            setServicoSelecionado(null); // ✅ LIMPA O SERVIÇO SELECIONADO
             setDataAgendamento(new Date());
             setPetSelecionado(null);
             setUnidadeSelecionada(null);
@@ -347,9 +354,12 @@ export default function Agendar() {
                 }}
             >
                 {abaAtual === 'agendar' ? (
+                    // No return do componente Agendar, onde você renderiza o AgendarServico:
                     <AgendarServico
                         servico={servico}
                         setServico={setServico}
+                        servicoSelecionado={servicoSelecionado}
+                        setServicoSelecionado={setServicoSelecionado} // ✅ ADICIONE ESTA LINHA
                         dataAgendamento={dataAgendamento}
                         setDataAgendamento={setDataAgendamento}
                         showServiceList={showServiceList}
