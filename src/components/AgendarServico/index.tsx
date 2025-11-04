@@ -7,7 +7,7 @@ import { CustomCalendar } from "../CustomCalendar";
 import PetSelectorModal from "../PetSelectorModal";
 import { useFocusEffect } from '@react-navigation/native';
 import { auth, db } from '../../lib/firebaseConfig';
-import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, query, where, onSnapshot, orderBy } from 'firebase/firestore'; // ✅ ADICIONE orderBy
 import { User } from 'firebase/auth';
 import ServiceSelectorModal, { Service } from "../ServiceSelectorModal";
 
@@ -15,7 +15,7 @@ export interface AgendarServicoProps {
     servico: string;
     setServico: (servico: string) => void;
     servicoSelecionado: any;
-    setServicoSelecionado: (servico: any) => void; // ✅ NOVO
+    setServicoSelecionado: (servico: any) => void;
     dataAgendamento: Date;
     setDataAgendamento: (date: Date) => void;
     showServiceList: boolean;
@@ -27,8 +27,8 @@ export interface AgendarServicoProps {
     setShowPetModal: (show: boolean) => void;
     unidadeSelecionada: any;
     setUnidadeSelecionada: (unidade: any) => void;
-    unidades: any[];
-    handleSelectService: (service: any) => void; // ✅ AGORA RECEBE OBJETO COMPLETO
+    unidades: any[]; // ✅ ESTÁ NAS PROPS, MAS VAMOS SOBRESCREVER
+    handleSelectService: (service: any) => void;
     onChangeDate: (event: any, selectedDate?: Date) => void;
     handleAgendar: () => void;
     getPetImage: (animalType: string) => any;
@@ -57,54 +57,19 @@ const SERVICOS: Service[] = [
         icon: 'cut-outline',
         description: 'Banho completo + tosa higiênica ou tosa completa'
     },
+    // ... outros serviços
+];
+
+// Unidades mockadas como fallback
+const UNIDADES_FALLBACK = [
     {
-        id: '2',
-        name: 'Somente Tosa',
-        price: '60,00',
-        duration: '1-2 horas',
-        icon: 'create-outline',
-        description: 'Apenas tosa higiênica ou completa'
-    },
-    {
-        id: '3',
-        name: 'Corte de Unha',
-        price: '25,00',
-        duration: '30 min',
-        icon: 'hand-right-outline',
-        description: 'Corte e lixamento das unhas'
-    },
-    {
-        id: '4',
-        name: 'Hidratação',
-        price: '45,00',
-        duration: '1 hora',
-        icon: 'water-outline',
-        description: 'Hidratação profunda para pelos'
-    },
-    {
-        id: '5',
-        name: 'Consulta Veterinária',
-        price: '120,00',
-        duration: '45 min',
-        icon: 'medical-outline',
-        description: 'Consulta com veterinário especializado'
-    },
-    {
-        id: '6',
-        name: 'Limpeza de Ouvidos',
-        price: '35,00',
-        duration: '20 min',
-        icon: 'ear-outline',
-        description: 'Limpeza e higienização dos ouvidos'
-    },
-    {
-        id: '7',
-        name: 'Escovação Dental',
-        price: '40,00',
-        duration: '25 min',
-        icon: 'happy-outline',
-        description: 'Escovação e limpeza dental'
-    },
+        nome: "Petshop Lu - Santo André",
+        endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
+        lat: -23.706598,
+        lng: -46.500752,
+        telefone: "(11) 95075-2980",
+        whatsapp: "(11) 97591-1800"
+    }
 ];
 
 // Adicione esta função para verificar se o dia está bloqueado
@@ -172,7 +137,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     setShowPetModal,
     unidadeSelecionada,
     setUnidadeSelecionada,
-    unidades,
+    unidades: unidadesProp, // ✅ RENOMEIE PARA EVITAR CONFLITO
     handleSelectService,
     onChangeDate,
     handleAgendar,
@@ -193,9 +158,46 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     const [diasBloqueados, setDiasBloqueados] = useState<string[]>([]);
     const [feriados, setFeriados] = useState<string[]>([]);
     const [loadingConfiguracoes, setLoadingConfiguracoes] = useState(true);
+    
     // ✅ NOVO ESTADO para horários dinâmicos
     const [horariosDinamicos, setHorariosDinamicos] = useState<string[]>([]);
     const [configuracoesHorario, setConfiguracoesHorario] = useState<any[]>([]);
+    
+    // ✅ NOVO ESTADO para unidades (substitui o das props)
+    const [unidades, setUnidades] = useState<any[]>([]);
+    const [loadingUnidades, setLoadingUnidades] = useState(true);
+
+    // ✅ BUSCAR UNIDADES DO FIREBASE
+    useEffect(() => {
+        const unsubscribe = onSnapshot(
+            query(
+                collection(db, 'unidades'), 
+                where('ativo', '==', true), 
+                orderBy('ordem', 'asc')
+            ),
+            (snapshot) => {
+                const unidadesList: any[] = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    unidadesList.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+                setUnidades(unidadesList);
+                setLoadingUnidades(false);
+                console.log('Unidades carregadas:', unidadesList.length);
+            },
+            (error) => {
+                console.error("Erro ao carregar unidades:", error);
+                setLoadingUnidades(false);
+                // Fallback para unidades mockadas em caso de erro
+                setUnidades(UNIDADES_FALLBACK);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
 
     // ✅ Buscar configurações de horário do Firebase
     useEffect(() => {
@@ -220,7 +222,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     }, []);
 
     // ✅ Função para atualizar horários baseado no dia selecionado
-    // No AgendarServico.tsx - ATUALIZE A FUNÇÃO DE HORÁRIOS DINÂMICOS
     const atualizarHorariosDinamicos = (data: Date, configs: any[]) => {
         const diaDaSemana = data.getDay();
         const configDia = configs.find(h => h.diaSemana === diaDaSemana);
@@ -237,9 +238,8 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
         }
     };
 
-    // Adicione este useEffect no AgendarServico.tsx
+    // ✅ Quando trocar de unidade, limpa a seleção de horário
     useEffect(() => {
-        // Quando trocar de unidade, limpa a seleção de horário
         const novaData = new Date(dataAgendamento);
         novaData.setHours(0, 0, 0, 0); // Reseta para início do dia
         setDataAgendamento(novaData);
@@ -250,7 +250,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
         atualizarHorariosDinamicos(dataAgendamento, configuracoesHorario);
     }, [dataAgendamento, configuracoesHorario]);
 
-    // ✅ BUSCAR SERVIÇOS DO FIREBASE - ESTE É O QUE ESTAVA FALTANDO!
+    // ✅ BUSCAR SERVIÇOS DO FIREBASE
     useEffect(() => {
         const unsubscribe = onSnapshot(
             query(collection(db, 'services'), where('active', '==', true)),
@@ -277,8 +277,6 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
 
                 setServicosDisponiveis(servicos);
                 setLoadingServicos(false);
-
-                console.log('Serviços carregados:', servicos.length);
             },
             (error) => {
                 console.error("Erro ao carregar serviços:", error);
@@ -473,7 +471,7 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                         if (service) {
                             setSelectedService(service);
                             setServico(service.name);
-                            setServicoSelecionado(service); // ✅ AGORA ESTÁ DISPONÍVEL
+                            setServicoSelecionado(service);
                         }
                         setShowServiceList(false);
                     }}
@@ -633,131 +631,142 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                     onClose={() => setShowPetModal(false)}
                 />
 
-                {/* Unidades */}
+                {/* Unidades - AGORA DINÂMICO */}
                 <View style={style.inputGroup}>
                     <Text style={style.inputLabel}>Selecione a Unidade</Text>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ flexDirection: "row", gap: 16, paddingVertical: 10 }}
-                    >
-                        {unidades.map((unidade, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                activeOpacity={0.9}
-                                onPress={() => setUnidadeSelecionada(unidade)}
-                                style={{
-                                    width: 250,
-                                    backgroundColor:
-                                        unidadeSelecionada?.nome === unidade.nome
-                                            ? themes.colors.secundary
-                                            : "#fff",
-                                    borderRadius: 16,
-                                    overflow: "hidden",
-                                    borderWidth: 2,
-                                    borderColor:
-                                        unidadeSelecionada?.nome === unidade.nome
-                                            ? themes.colors.corTexto
-                                            : "#ddd",
-                                    shadowColor: "#000",
-                                    shadowOpacity: 0.15,
-                                    shadowRadius: 4,
-                                    elevation: 3,
-                                }}
-                            >
-                                <View style={{ padding: 10 }}>
-                                    <Text
-                                        style={{
-                                            fontWeight: "700",
-                                            fontSize: 16,
-                                            color:
-                                                unidadeSelecionada?.nome === unidade.nome
-                                                    ? "#fff"
-                                                    : "#333",
-                                        }}
-                                    >
-                                        {unidade.nome}
-                                    </Text>
-                                    <Text
-                                        style={{
-                                            fontSize: 13,
-                                            color:
-                                                unidadeSelecionada?.nome === unidade.nome
-                                                    ? "#f1f1f1"
-                                                    : "#777",
-                                        }}
-                                    >
-                                        {unidade.endereco}
-                                    </Text>
-                                </View>
-
-                                {/* DEEP LINK (MAPS) */}
+                    
+                    {loadingUnidades ? (
+                        <Text style={{ color: '#888', textAlign: 'center', marginVertical: 20 }}>
+                            Carregando unidades...
+                        </Text>
+                    ) : unidades.length === 0 ? (
+                        <Text style={{ color: '#888', textAlign: 'center', marginVertical: 20 }}>
+                            Nenhuma unidade disponível no momento
+                        </Text>
+                    ) : (
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ flexDirection: "row", gap: 16, paddingVertical: 10 }}
+                        >
+                            {unidades.map((unidade, index) => (
                                 <TouchableOpacity
-                                    style={{ height: 140 }}
-                                    onPress={() => openInGoogleMaps(unidade.lat, unidade.lng, unidade.nome)}
+                                    key={unidade.id || index} // ✅ USA id DO FIREBASE
+                                    activeOpacity={0.9}
+                                    onPress={() => setUnidadeSelecionada(unidade)}
+                                    style={{
+                                        width: 250,
+                                        backgroundColor:
+                                            unidadeSelecionada?.id === unidade.id // ✅ COMPARA POR id
+                                                ? themes.colors.secundary
+                                                : "#fff",
+                                        borderRadius: 16,
+                                        overflow: "hidden",
+                                        borderWidth: 2,
+                                        borderColor:
+                                            unidadeSelecionada?.id === unidade.id // ✅ COMPARA POR id
+                                                ? themes.colors.corTexto
+                                                : "#ddd",
+                                        shadowColor: "#000",
+                                        shadowOpacity: 0.15,
+                                        shadowRadius: 4,
+                                        elevation: 3,
+                                    }}
                                 >
-                                    <View style={{
-                                        flex: 1,
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        borderTopWidth: 1,
-                                        borderTopColor: unidadeSelecionada?.nome === unidade.nome ? '#d1e7ff' : '#e9ecef',
-                                        overflow: 'hidden',
-                                        position: 'relative'
-                                    }}>
-                                        <Image
-                                            source={require('../../assets/map-background.png')}
+                                    <View style={{ padding: 10 }}>
+                                        <Text
                                             style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                position: 'absolute'
+                                                fontWeight: "700",
+                                                fontSize: 16,
+                                                color:
+                                                    unidadeSelecionada?.id === unidade.id
+                                                        ? "#fff"
+                                                        : "#333",
                                             }}
-                                            resizeMode="cover"
-                                        />
-
-                                        <View style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            backgroundColor: unidadeSelecionada?.nome === unidade.nome
-                                                ? 'rgba(0, 0, 0, 0.7)'
-                                                : ''
-                                        }} />
-
-                                        <View style={{
-                                            alignItems: 'center',
-                                            zIndex: 1
-                                        }}>
-                                            <Ionicons
-                                                name="map"
-                                                size={32}
-                                                color="#fff"
-                                            />
-                                            <Text style={{
-                                                marginTop: 8,
-                                                fontSize: 14,
-                                                fontWeight: '600',
-                                                color: '#fff',
-                                                textAlign: 'center'
-                                            }}>
-                                                Ver no Mapa
-                                            </Text>
-                                            <Text style={{
-                                                fontSize: 12,
-                                                color: 'rgba(255,255,255,0.9)',
-                                                marginTop: 4,
-                                                textAlign: 'center'
-                                            }}>
-                                                Toque para navegar
-                                            </Text>
-                                        </View>
+                                        >
+                                            {unidade.nome}
+                                        </Text>
+                                        <Text
+                                            style={{
+                                                fontSize: 13,
+                                                color:
+                                                    unidadeSelecionada?.id === unidade.id
+                                                        ? "#f1f1f1"
+                                                        : "#777",
+                                            }}
+                                        >
+                                            {unidade.endereco}
+                                        </Text>
                                     </View>
+
+                                    {/* DEEP LINK (MAPS) */}
+                                    <TouchableOpacity
+                                        style={{ height: 140 }}
+                                        onPress={() => openInGoogleMaps(unidade.lat, unidade.lng, unidade.nome)}
+                                    >
+                                        <View style={{
+                                            flex: 1,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            borderTopWidth: 1,
+                                            borderTopColor: unidadeSelecionada?.id === unidade.id ? '#d1e7ff' : '#e9ecef',
+                                            overflow: 'hidden',
+                                            position: 'relative'
+                                        }}>
+                                            <Image
+                                                source={require('../../assets/map-background.png')}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    position: 'absolute'
+                                                }}
+                                                resizeMode="cover"
+                                            />
+
+                                            <View style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                right: 0,
+                                                bottom: 0,
+                                                backgroundColor: unidadeSelecionada?.id === unidade.id
+                                                    ? 'rgba(0, 0, 0, 0.7)'
+                                                    : ''
+                                            }} />
+
+                                            <View style={{
+                                                alignItems: 'center',
+                                                zIndex: 1
+                                            }}>
+                                                <Ionicons
+                                                    name="map"
+                                                    size={32}
+                                                    color="#fff"
+                                                />
+                                                <Text style={{
+                                                    marginTop: 8,
+                                                    fontSize: 14,
+                                                    fontWeight: '600',
+                                                    color: '#fff',
+                                                    textAlign: 'center'
+                                                }}>
+                                                    Ver no Mapa
+                                                </Text>
+                                                <Text style={{
+                                                    fontSize: 12,
+                                                    color: 'rgba(255,255,255,0.9)',
+                                                    marginTop: 4,
+                                                    textAlign: 'center'
+                                                }}>
+                                                    Toque para navegar
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </TouchableOpacity>
                                 </TouchableOpacity>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+                            ))}
+                        </ScrollView>
+                    )}
                 </View>
 
                 {/* Botão de Agendar */}

@@ -3,7 +3,7 @@ import { View, ScrollView, Alert } from "react-native";
 import { style } from "./styles";
 
 import { db, auth } from '../../lib/firebaseConfig';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, Timestamp, onSnapshot, orderBy } from 'firebase/firestore';
 
 import { TabSwitch } from "../../components/TabSwitch";
 import { AgendarServico } from "../../components/AgendarServico";
@@ -53,11 +53,62 @@ export default function Agendar() {
     const horariosFixos = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     const [servicoSelecionado, setServicoSelecionado] = useState<any>(null);
 
+    // ✅ ADICIONE ESTE ESTADO
+    const [unidades, setUnidades] = useState<any[]>([]);
+    const [loadingUnidades, setLoadingUnidades] = useState(true);
+
+    // ✅ BUSCAR UNIDADES DO FIREBASE - VERSÃO CORRIGIDA
+    useEffect(() => {
+        const unsubscribe = onSnapshot(
+            query(
+                collection(db, 'unidades'), 
+                where('ativo', '==', true), 
+                orderBy('ordem', 'asc')
+            ),
+            (snapshot) => {
+                const unidadesList: any[] = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    unidadesList.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+                setUnidades(unidadesList);
+                setLoadingUnidades(false);
+                
+                // ✅ SE HOUVER MUDANÇAS NAS UNIDADES, VERIFIQUE SE A UNIDADE SELECIONADA AINDA EXISTE
+                if (unidadeSelecionada && !unidadesList.find(u => u.id === unidadeSelecionada.id)) {
+                    setUnidadeSelecionada(null);
+                }
+            },
+            (error) => {
+                console.error("Erro ao carregar unidades:", error);
+                setLoadingUnidades(false);
+                // Fallback para unidades mockadas em caso de erro
+                setUnidades([
+                    {
+                        id: 'fallback-1',
+                        nome: "Petshop Lu - Santo André",
+                        endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
+                        lat: -23.706598,
+                        lng: -46.500752,
+                        telefone: "(11) 95075-2980",
+                        whatsapp: "(11) 97591-1800"
+                    }
+                ]);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
+
+    // ✅ CORREÇÃO NO carregarHorariosOcupados - VERIFICA SE UNIDADE AINDA É VÁLIDA
     useEffect(() => {
         const carregarHorariosOcupados = async () => {
             try {
-                // Só carrega se tiver unidade selecionada
-                if (!unidadeSelecionada) {
+                // Só carrega se tiver unidade selecionada E se ela ainda existir na lista
+                if (!unidadeSelecionada || !unidades.find(u => u.id === unidadeSelecionada.id)) {
                     setHorariosOcupados([]);
                     return;
                 }
@@ -73,7 +124,7 @@ export default function Agendar() {
                     collection(db, "agendamentos"),
                     where("dataHoraAgendamento", ">=", Timestamp.fromDate(inicioDoDia)),
                     where("dataHoraAgendamento", "<=", Timestamp.fromDate(fimDoDia)),
-                    where("unidade", "==", unidadeSelecionada.nome) // ✅ NOVO FILTRO POR UNIDADE
+                    where("unidade", "==", unidadeSelecionada.nome) // ✅ USA nome PARA COMPATIBILIDADE
                 );
 
                 const querySnapshot = await getDocs(q);
@@ -97,6 +148,7 @@ export default function Agendar() {
 
             } catch (error) {
                 console.error("Erro ao carregar horários ocupados:", error);
+                setHorariosOcupados([]);
             }
         };
 
@@ -105,34 +157,7 @@ export default function Agendar() {
         } else {
             setHorariosOcupados([]);
         }
-    }, [dataAgendamento, abaAtual, unidadeSelecionada]); // ✅ ADICIONE unidadeSelecionada nas dependências
-
-    const unidades = [
-        {
-            nome: "Petshop Lu - Santo André",
-            endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
-            lat: -23.706598,
-            lng: -46.500752,
-            telefone: "(11) 95075-2980",
-            whatsapp: " (11) 97591-1800"
-        },
-        {
-            nome: "Petshop Lu - São Bernardo",
-            endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
-            lat: -23.601231,
-            lng: -46.661432,
-            telefone: "(11) 9999-9999",
-            whatsapp: " (11) 97591-1800"
-        },
-        {
-            nome: "Petshop Lu - São Caetano",
-            endereco: "Av. Loreto, 238 - Jardim Santo André, Santo André - SP, 09132-410",
-            lat: -23.589432,
-            lng: -46.636232,
-            telefone: "(11) 9999-9999",
-            whatsapp: " (11) 97591-1800"
-        },
-    ];
+    }, [dataAgendamento, abaAtual, unidadeSelecionada, unidades]); // ✅ ADICIONE unidades NAS DEPENDÊNCIAS
 
     // Funções
     const handleSelectService = (service: any) => {
@@ -147,10 +172,9 @@ export default function Agendar() {
         setDataAgendamento(currentDate);
     };
 
-    // SUBSTITUA a função handleAgendar completa POR ESTA:
-
+    // ✅ CORREÇÃO NA FUNÇÃO handleAgendar - VALIDAÇÕES MELHORADAS
     const handleAgendar = async () => {
-        if (!servicoSelecionado) { // ✅ Agora valida pelo serviço completo
+        if (!servicoSelecionado) {
             Alert.alert('Atenção', 'Por favor, selecione o serviço.');
             return;
         }
@@ -158,6 +182,12 @@ export default function Agendar() {
         const userId = auth.currentUser?.uid;
         if (!userId) {
             Alert.alert('Erro', 'Você precisa estar logado para agendar.');
+            return;
+        }
+
+        // ✅ VALIDAÇÃO MELHORADA: verifica se unidade ainda existe
+        if (!unidadeSelecionada || !unidades.find(u => u.id === unidadeSelecionada.id)) {
+            Alert.alert('Atenção', 'Por favor, selecione uma unidade válida.');
             return;
         }
 
@@ -179,19 +209,19 @@ export default function Agendar() {
             const timestampAgendamento = Timestamp.fromDate(dataAgendamento);
 
             console.log('Serviço selecionado:', servicoSelecionado);
-            console.log('Preço:', servicoSelecionado.price);
-            console.log('Duração:', servicoSelecionado.duration);
+            console.log('Unidade selecionada:', unidadeSelecionada);
 
             await addDoc(collection(db, 'agendamentos'), {
                 userId: userId,
                 service: servicoSelecionado.name,
-                preco: servicoSelecionado.price, // ✅ AGORA SALVA O PREÇO
-                tempoServico: servicoSelecionado.duration, // ✅ AGORA SALVA O TEMPO
+                preco: servicoSelecionado.price,
+                tempoServico: servicoSelecionado.duration,
                 dataHoraAgendamento: timestampAgendamento,
-                unidade: unidadeSelecionada?.nome || null,
-                enderecoUnidade: unidadeSelecionada?.endereco || null,
-                unidadeTelefone: unidadeSelecionada?.telefone || null,
-                unidadeWhatsapp: unidadeSelecionada?.whatsapp || null,
+                unidade: unidadeSelecionada.nome, // ✅ SALVA O NOME DA UNIDADE
+                enderecoUnidade: unidadeSelecionada.endereco,
+                unidadeTelefone: unidadeSelecionada.telefone,
+                unidadeWhatsapp: unidadeSelecionada.whatsapp,
+                unidadeId: unidadeSelecionada.id, // ✅ SALVA TAMBÉM O ID PARA REFERÊNCIA
                 petId: petSelecionado?.id || null,
                 petNome: petSelecionado?.name || null,
                 petAnimalType: petSelecionado?.animalType || null,
@@ -203,7 +233,7 @@ export default function Agendar() {
 
             // Limpa todos os campos
             setServico('');
-            setServicoSelecionado(null); // ✅ LIMPA O SERVIÇO SELECIONADO
+            setServicoSelecionado(null);
             setDataAgendamento(new Date());
             setPetSelecionado(null);
             setUnidadeSelecionada(null);
@@ -354,12 +384,11 @@ export default function Agendar() {
                 }}
             >
                 {abaAtual === 'agendar' ? (
-                    // No return do componente Agendar, onde você renderiza o AgendarServico:
                     <AgendarServico
                         servico={servico}
                         setServico={setServico}
                         servicoSelecionado={servicoSelecionado}
-                        setServicoSelecionado={setServicoSelecionado} // ✅ ADICIONE ESTA LINHA
+                        setServicoSelecionado={setServicoSelecionado}
                         dataAgendamento={dataAgendamento}
                         setDataAgendamento={setDataAgendamento}
                         showServiceList={showServiceList}
