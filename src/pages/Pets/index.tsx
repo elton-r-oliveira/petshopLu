@@ -9,6 +9,8 @@ import { collection, query, where, getDocs, QuerySnapshot, DocumentData, doc, de
 
 // Import do utilitário
 import { getPetImage } from "../../utils/petUtils";
+// Import do PawLoader
+import { PawLoader } from "../../components/PawLoader"; // Ajuste o caminho conforme necessário
 
 // 🔹 Interface do Pet
 interface Pet {
@@ -169,11 +171,23 @@ export default function Pets({ navigation }: any) {
             </View>
 
             {loading ? (
-                <ActivityIndicator
-                    size="large"
-                    color={themes.colors.secundary}
-                    style={{ marginTop: 20 }}
-                />
+                // SUBSTITUÍDO: ActivityIndicator por PawLoader
+                <View style={{ 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    marginTop: 40,
+                    marginBottom: 20 
+                }}>
+                    <PawLoader size={45} color={themes.colors.secundary} />
+                    <Text style={{ 
+                        marginTop: 15, 
+                        color: themes.colors.secundary, 
+                        fontSize: 16,
+                        fontWeight: '500'
+                    }}>
+                        {/* Carregando seus pets... */}
+                    </Text>
+                </View>
             ) : pets.length === 0 ? (
                 <Text style={style.emptyStateText}>
                     Você não tem pets cadastrados. Clique em "+" para adicionar um!

@@ -10,6 +10,7 @@ import { auth, db } from '../../lib/firebaseConfig';
 import { collection, getDocs, query, where, onSnapshot, orderBy } from 'firebase/firestore'; // ✅ ADICIONE orderBy
 import { User } from 'firebase/auth';
 import ServiceSelectorModal, { Service } from "../ServiceSelectorModal";
+import { PawLoader } from '../PawLoader';
 
 export interface AgendarServicoProps {
     servico: string;
@@ -158,11 +159,11 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     const [diasBloqueados, setDiasBloqueados] = useState<string[]>([]);
     const [feriados, setFeriados] = useState<string[]>([]);
     const [loadingConfiguracoes, setLoadingConfiguracoes] = useState(true);
-    
+
     // ✅ NOVO ESTADO para horários dinâmicos
     const [horariosDinamicos, setHorariosDinamicos] = useState<string[]>([]);
     const [configuracoesHorario, setConfiguracoesHorario] = useState<any[]>([]);
-    
+
     // ✅ NOVO ESTADO para unidades (substitui o das props)
     const [unidades, setUnidades] = useState<any[]>([]);
     const [loadingUnidades, setLoadingUnidades] = useState(true);
@@ -171,8 +172,8 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
     useEffect(() => {
         const unsubscribe = onSnapshot(
             query(
-                collection(db, 'unidades'), 
-                where('ativo', '==', true), 
+                collection(db, 'unidades'),
+                where('ativo', '==', true),
                 orderBy('ordem', 'asc')
             ),
             (snapshot) => {
@@ -419,9 +420,24 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                             minHeight: 40,
                         }}>
                             {loadingServicos ? (
-                                <Text style={[style.selectInputText, { color: '#888' }]}>
-                                    Carregando serviços...
-                                </Text>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    flex: 1,
+                                    minHeight: 40,
+                                }}>
+                                    <View style={{ marginTop: 45 }}>
+                                        <PawLoader size={15} color={themes.colors.secundary} />
+                                    </View>
+                                    <Text style={{
+                                        marginLeft: 8,
+                                        color: '#888',
+                                        fontSize: 12,
+                                        fontWeight: '400',
+                                        marginTop: 8 // Ajuste o texto também se necessário
+                                    }}>
+                                    </Text>
+                                </View>
                             ) : selectedService ? (
                                 <Text
                                     style={[
@@ -634,11 +650,14 @@ export const AgendarServico: React.FC<AgendarServicoProps> = ({
                 {/* Unidades - AGORA DINÂMICO */}
                 <View style={style.inputGroup}>
                     <Text style={style.inputLabel}>Selecione a Unidade</Text>
-                    
+
                     {loadingUnidades ? (
-                        <Text style={{ color: '#888', textAlign: 'center', marginVertical: 20 }}>
-                            Carregando unidades...
-                        </Text>
+                        <View style={{ alignItems: 'center', marginVertical: 20 }}>
+                            <PawLoader size={40} color={themes.colors.secundary} />
+                            <Text style={{ color: '#888', marginTop: 10 }}>
+                                {/* Carregando unidades... */}
+                            </Text>
+                        </View>
                     ) : unidades.length === 0 ? (
                         <Text style={{ color: '#888', textAlign: 'center', marginVertical: 20 }}>
                             Nenhuma unidade disponível no momento
