@@ -1,5 +1,4 @@
-// components/CarrosselNovidades/index.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,12 +8,10 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { style } from './styles'
+import { LinearGradient } from 'expo-linear-gradient';
+import { style } from './styles';
 
 const { width: screenWidth } = Dimensions.get('window');
-const CARD_WIDTH = screenWidth - 60;
-const CARD_MARGIN = 10;
 
 export interface NovidadeCard {
   id: string;
@@ -22,7 +19,7 @@ export interface NovidadeCard {
   descricao: string;
   imagem: any;
   corFundo: string;
-  acao?: () => void;
+  acao: () => void;
 }
 
 interface CarrosselNovidadesProps {
@@ -30,134 +27,137 @@ interface CarrosselNovidadesProps {
   titulo?: string;
 }
 
+function hexToRgba(hex: string, alpha: number) {
+  let h = hex.replace('#', '');
+  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+  const int = parseInt(h, 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export const CarrosselNovidades: React.FC<CarrosselNovidadesProps> = ({
   cards,
-//   titulo = 'Novidades e Promoções'
+  titulo = 'Novidades e Promoções',
 }) => {
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const cardWidth = screenWidth * 0.9;
   const scrollViewRef = useRef<ScrollView>(null);
+  const currentIndex = useRef(0);
+  const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Função para navegar entre os cards
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-    {
-      useNativeDriver: false,
-      listener: (event: any) => {
-        const index = Math.round(event.nativeEvent.contentOffset.x / (CARD_WIDTH + CARD_MARGIN * 2));
-        setCurrentCardIndex(index);
-      }
+  // Configura o auto-scroll
+  const startAutoScroll = () => {
+    if (cards.length <= 1) return;
+
+    if (autoScrollTimer.current) {
+      clearInterval(autoScrollTimer.current);
     }
-  );
 
-  // Função para ir para o próximo card
-  const nextCard = () => {
-    const nextIndex = (currentCardIndex + 1) % cards.length;
-    scrollViewRef.current?.scrollTo({
-      x: nextIndex * (CARD_WIDTH + CARD_MARGIN * 2),
-      animated: true
-    });
+    autoScrollTimer.current = setInterval(() => {
+      currentIndex.current = (currentIndex.current + 1) % cards.length;
+      
+      scrollViewRef.current?.scrollTo({
+        x: currentIndex.current * (cardWidth + 16),
+        animated: true,
+      });
+    }, 3000);
   };
 
-  // Função para ir para um card específico
-  const goToCard = (index: number) => {
-    scrollViewRef.current?.scrollTo({
-      x: index * (CARD_WIDTH + CARD_MARGIN * 2),
-      animated: true
-    });
+  const stopAutoScroll = () => {
+    if (autoScrollTimer.current) {
+      clearInterval(autoScrollTimer.current);
+      autoScrollTimer.current = null;
+    }
   };
 
-  // Auto-scroll dos cards
+  // Detecta quando o scroll manual termina para atualizar o índice atual
+  const handleScrollEnd = (event: any) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(contentOffsetX / (cardWidth + 16));
+    currentIndex.current = newIndex;
+  };
+
   useEffect(() => {
-    if (cards.length <= 1) return; // Não faz auto-scroll se tiver apenas 1 card
+    startAutoScroll();
     
-    const interval = setInterval(() => {
-      nextCard();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [currentCardIndex, cards.length]);
-
-  // Se não houver cards, não renderiza nada
-  if (!cards || cards.length === 0) {
-    return null;
-  }
+    return () => {
+      stopAutoScroll();
+    };
+  }, [cards.length]);
 
   return (
     <View style={style.carrosselContainer}>
-      {/* {titulo && <Text style={style.carrosselTitle}>{titulo}</Text>} */}
-      
+      {titulo && <Text style={style.carrosselTitulo}>{titulo}</Text>}
+
       <ScrollView
         ref={scrollViewRef}
         horizontal
-        pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
         contentContainerStyle={style.carrosselContent}
-        snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
+        snapToInterval={cardWidth + 16}
         decelerationRate="fast"
+        onMomentumScrollEnd={handleScrollEnd}
+        onTouchStart={stopAutoScroll}
+        onTouchEnd={startAutoScroll}
       >
-        {cards.map((card, index) => (
-          <TouchableOpacity
-            key={card.id}
-            style={[
-              style.novidadeCard,
-              { 
-                width: CARD_WIDTH,
-                marginHorizontal: CARD_MARGIN,
-                backgroundColor: card.corFundo 
-              }
-            ]}
-            onPress={card.acao}
-            activeOpacity={0.9}
-          >
-            <View style={style.novidadeContent}>
-              <View style={style.novidadeTextContainer}>
-                <Text style={style.novidadeTitulo}>{card.titulo}</Text>
-                <Text style={style.novidadeDescricao}>{card.descricao}</Text>
-                <TouchableOpacity 
-                  style={style.novidadeBotao}
-                  onPress={card.acao}
-                >
-                  <Text style={style.novidadeBotaoTexto}>Saiba mais</Text>
-                  <MaterialIcons name="arrow-forward" size={16} color="#fff" />
-                </TouchableOpacity>
-              </View>
-              <View style={style.novidadeImagemContainer}>
+        {cards.map((card) => {
+          return (
+            <TouchableOpacity
+              key={card.id}
+              style={[style.novidadeCard, { width: cardWidth, height: 180 }]}
+              onPress={card.acao}
+              activeOpacity={0.9}
+            >
+              <View style={style.cardContainer}>
+                {/* Fundo colorido sólido */}
+                <View 
+                  style={[
+                    style.cardColorBackground, 
+                    { backgroundColor: card.corFundo }
+                  ]} 
+                />
+                
+                {/* Imagem */}
                 <Image 
                   source={card.imagem} 
-                  style={style.novidadeImagem}
-                  resizeMode="cover"
+                  style={style.cardImage} 
+                  resizeMode="cover" 
                 />
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+                
+                {/* Gradiente de transição entre cor e imagem */}
+                <LinearGradient
+                  colors={[
+                    card.corFundo,
+                    hexToRgba(card.corFundo, 0.8),
+                    hexToRgba(card.corFundo, 0.4),
+                    hexToRgba(card.corFundo, 0.2),
+                    'transparent'
+                  ]}
+                  locations={[0, 0.3, 0.5, 0.7, 1]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={style.transitionGradient}
+                />
 
-      {/* Indicadores de página - só mostra se tiver mais de 1 card */}
-      {cards.length > 1 && (
-        <View style={style.indicadoresContainer}>
-          {cards.map((_, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => goToCard(index)}
-            >
-              <View
-                style={[
-                  style.indicador,
-                  {
-                    backgroundColor: index === currentCardIndex 
-                      ? cards[currentCardIndex]?.corFundo || '#666'
-                      : '#DDD'
-                  }
-                ]}
-              />
+                {/* Conteúdo de texto */}
+                <View style={style.cardContent}>
+                  <Text style={style.cardTitulo} numberOfLines={2}>
+                    {card.titulo}
+                  </Text>
+                  <Text style={style.cardDescricao} numberOfLines={3}>
+                    {card.descricao}
+                  </Text>
+
+                  <View style={style.cardAction}>
+                    <Text style={style.cardActionText}>Saiba mais ›</Text>
+                  </View>
+                </View>
+              </View>
             </TouchableOpacity>
-          ))}
-        </View>
-      )}
+          );
+        })}
+      </ScrollView>
     </View>
   );
 };

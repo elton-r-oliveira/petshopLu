@@ -1,117 +1,114 @@
-// components/CarrosselNovidades/styles.ts
-import { StyleSheet, Dimensions } from "react-native";
-
-const { width: screenWidth } = Dimensions.get('window');
-const CARD_WIDTH = screenWidth - 60;
-const CARD_MARGIN = 10;
+import { StyleSheet } from 'react-native';
 
 export const style = StyleSheet.create({
   carrosselContainer: {
-    marginBottom: 30,
-    marginTop: 10,
+    marginBottom: 10,
+    marginTop: 30
   },
-
-  carrosselTitle: {
+  carrosselTitulo: {
     fontSize: 20,
     fontWeight: '700',
     color: '#333',
-    marginBottom: 15,
-    marginLeft: 20,
+    marginBottom: 16,
+    paddingHorizontal: 20,
   },
-
   carrosselContent: {
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-
-  novidadeCard: {
-    height: 180,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-
-  novidadeContent: {
-    flex: 1,
-    flexDirection: 'row',
-    padding: 20,
-    alignItems: 'center',
-  },
-
-  novidadeTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingRight: 15,
-  },
-
-  novidadeTitulo: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 4,
-    lineHeight: 24,
-  },
-
-  novidadeDescricao: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.95)',
-    marginBottom: 15,
-    lineHeight: 20,
-    fontWeight: '500',
-  },
-
-  novidadeBotao: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 8,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-
-  novidadeBotaoTexto: {
-    color: '#fff',
-    fontSize: 14,
+  novidadeCard: {
+    marginRight: 16,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  cardContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  
+  // Fundo colorido (ocupa toda a largura)
+  cardColorBackground: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '100%',
+    zIndex: 1,
+  },
+  
+  // Imagem (ocupa toda a largura também)
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    zIndex: 2,
+  },
+  
+  // Gradiente de transição
+  transitionGradient: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '100%',
+    zIndex: 3,
+  },
+  
+  // Conteúdo de texto
+  cardContent: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'space-between',
+    zIndex: 4,
+    width: '60%',
+  },
+  cardTitulo: {
+    fontSize: 16,
     fontWeight: '700',
-    marginRight: 6,
+    color: '#fff',
+    marginBottom: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  cardDescricao: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.95)',
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  cardAction: {
+    marginTop: 'auto',
+  },
+  cardActionText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.95)',
+    fontWeight: '600',
   },
 
-  novidadeImagemContainer: {
-    width: 100,
-    height: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 50,
-  },
-
-  novidadeImagem: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-
-  indicadoresContainer: {
+  // Indicadores
+  indicatorsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 15,
-    gap: 8,
+    marginTop: 12,
+    paddingHorizontal: 20,
   },
-
-  indicador: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ddd',
+    marginHorizontal: 4,
+  },
+  indicatorActive: {
+    backgroundColor: '#666',
+    width: 20,
   },
 });

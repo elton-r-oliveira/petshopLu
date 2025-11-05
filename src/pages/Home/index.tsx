@@ -1,6 +1,6 @@
 // Home.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ImageSourcePropType } from "react-native";
 import { style } from "./styles";
 import { MaterialIcons, Ionicons, FontAwesome } from "@expo/vector-icons";
 import { themes } from "../../global/themes";
@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { auth, db } from "../../lib/firebaseConfig";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, collection, query, where, getDocs, Timestamp, orderBy, limit } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, Timestamp, orderBy, limit, onSnapshot } from "firebase/firestore";
 
 // Interface para o agendamento
 interface Agendamento {
@@ -24,18 +24,66 @@ interface Agendamento {
   diasRestantes?: number;
 }
 
+// Interface para as promoções do Firebase
+interface PromocaoFirebase {
+  id: string;
+  titulo: string;
+  descricao: string;
+  categoria: 'banho' | 'tosa' | 'vacinacao' | 'consulta' | 'daycare' | 'produtos' | 'outros';
+  corFundo: string;
+  ordem: number;
+  ativo: boolean;
+}
+
 export default function Home() {
   const navigation = useNavigation<NavigationProp<BottomTabParamList>>();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [agendamentosRecentes, setAgendamentosRecentes] = useState<Agendamento[]>([]);
   const [loadingAgendamentos, setLoadingAgendamentos] = useState(true);
+  const [novidadesCards, setNovidadesCards] = useState<NovidadeCard[]>([]);
+  const [loadingPromocoes, setLoadingPromocoes] = useState(true);
   const insets = useSafeAreaInsets();
 
   const [topBarNome, setTopBarNome] = useState("");
   const [topBarEndereco, setTopBarEndereco] = useState("");
 
-  // Dados dos cards de novidades
-  const novidadesCards: NovidadeCard[] = [
+  // Função para mapear categoria para imagem local
+  const getImagemPorCategoria = (categoria: string): ImageSourcePropType => {
+    const imagensMap: { [key: string]: ImageSourcePropType } = {
+      'banho': require('../../assets/novidade1.png'),
+      'tosa': require('../../assets/novidade1.png'),
+      'vacinacao': require('../../assets/novidade3.png'),
+      'consulta': require('../../assets/novidade3.png'),
+      'daycare': require('../../assets/novidade2.png'),
+      'produtos': require('../../assets/novidade4.png'),
+      'outros': require('../../assets/novidade1.png'),
+    };
+    
+    return imagensMap[categoria] || require('../../assets/novidade1.png');
+  };
+
+  // Função para converter promoção do Firebase para NovidadeCard
+  const converterParaNovidadeCard = (promocao: PromocaoFirebase): NovidadeCard => {
+    const imagemSource = getImagemPorCategoria(promocao.categoria);
+    
+    // Define ação baseada na categoria
+    const acao = () => {
+      // Navega para a tela de agendamento por padrão
+      navigation.navigate("Agendar");
+    };
+
+    return {
+      id: promocao.id,
+      titulo: promocao.titulo,
+      descricao: promocao.descricao,
+      imagem: imagemSource,
+      corFundo: promocao.corFundo,
+      acao: acao
+    };
+  };
+
+  // Fallback para promoções mockadas (igual à HOME ANTIGA)
+  const getPromocoesFallback = (): NovidadeCard[] => [
     {
       id: '1',
       titulo: 'Banho Completo + Tosa Grátis',
@@ -74,13 +122,13 @@ export default function Home() {
   const calcularDiasRestantes = (dataAgendamento: Date): number => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    
+
     const dataAgend = new Date(dataAgendamento);
     dataAgend.setHours(0, 0, 0, 0);
-    
+
     const diffTime = dataAgend.getTime() - hoje.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return diffDays;
   };
 
@@ -88,7 +136,7 @@ export default function Home() {
   const carregarAgendamentosRecentes = async (userId: string) => {
     try {
       setLoadingAgendamentos(true);
-      
+
       const agora = Timestamp.now();
       const q = query(
         collection(db, "agendamentos"),
@@ -104,7 +152,7 @@ export default function Home() {
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        
+
         let dataHoraAgendamento: Date;
         if (data.dataHoraAgendamento && data.dataHoraAgendamento.toDate) {
           dataHoraAgendamento = data.dataHoraAgendamento.toDate();
@@ -134,6 +182,64 @@ export default function Home() {
     }
   };
 
+  // Função para carregar promoções do Firebase
+  const carregarPromocoes = () => {
+    setLoadingPromocoes(true);
+    
+    const unsubscribe = onSnapshot(
+      query(
+        collection(db, 'promocoes'),
+        where('ativo', '==', true)
+        // REMOVA orderBy temporariamente se estiver com erro de índice
+      ),
+      (snapshot) => {
+        try {
+          const promocoes: NovidadeCard[] = [];
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            // Valida os dados obrigatórios
+            if (data.titulo && data.descricao) {
+              const promocaoFirebase: PromocaoFirebase = {
+                id: doc.id,
+                titulo: data.titulo,
+                descricao: data.descricao,
+                categoria: data.categoria || 'outros',
+                corFundo: data.corFundo || '#FF6B35',
+                ordem: data.ordem || 1,
+                ativo: data.ativo !== undefined ? data.ativo : true
+              };
+              
+              const novidadeCard = converterParaNovidadeCard(promocaoFirebase);
+              promocoes.push(novidadeCard);
+            }
+          });
+          
+          // Ordenação no cliente (temporária)
+          promocoes.sort((a, b) => {
+            const promocaoA = snapshot.docs.find(doc => doc.id === a.id)?.data();
+            const promocaoB = snapshot.docs.find(doc => doc.id === b.id)?.data();
+            return (promocaoA?.ordem || 0) - (promocaoB?.ordem || 0);
+          });
+          
+          setNovidadesCards(promocoes.length > 0 ? promocoes : getPromocoesFallback());
+        } catch (error) {
+          console.error("Erro ao processar promoções:", error);
+          setNovidadesCards(getPromocoesFallback());
+        } finally {
+          setLoadingPromocoes(false);
+        }
+      },
+      (error) => {
+        console.error("Erro ao carregar promoções:", error);
+        setNovidadesCards(getPromocoesFallback());
+        setLoadingPromocoes(false);
+      }
+    );
+
+    return unsubscribe;
+  };
+
   // Função para formatar data
   const formatarData = (date: Date): string => {
     return date.toLocaleDateString('pt-BR');
@@ -161,7 +267,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
         setTopBarNome(user.displayName || "");
@@ -186,7 +292,13 @@ export default function Home() {
       }
     });
 
-    return () => unsubscribe();
+    // Carrega as promoções
+    const unsubscribePromocoes = carregarPromocoes();
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribePromocoes();
+    };
   }, []);
 
   // Recarregar agendamentos quando a tela ganhar foco
@@ -228,13 +340,18 @@ export default function Home() {
           paddingBottom: insets.bottom + 80,
         }}
       >
-        <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>
 
         {/* COMPONENTE CARROSSEL */}
-        <CarrosselNovidades 
+        {loadingPromocoes ? (
+          <View style={style.petCard}>
+            <Text style={style.petService}>Carregando promoções...</Text>
+          </View>
+        ) : (
+          <CarrosselNovidades
           cards={novidadesCards}
-          // titulo="Novidades e Promoções"
-        />
+          />
+        )}
+        <Text style={style.sectionTitle}>O que você gostaria de fazer?</Text>
 
         {/* Quick Actions */}
         <View style={style.quickActions}>
@@ -297,17 +414,17 @@ export default function Home() {
                 </Text>
               </View>
               <View style={style.favoriteTextContainer}>
-                <Text 
-                  style={{ 
-                    color: getCorDiasRestantes(agendamento.diasRestantes || 0), 
+                <Text
+                  style={{
+                    color: getCorDiasRestantes(agendamento.diasRestantes || 0),
                     fontWeight: 'bold',
                     fontSize: 14
                   }}
                 >
                   {getTextoDiasRestantes(agendamento.diasRestantes || 0)}
                 </Text>
-                <Text 
-                  style={{ 
+                <Text
+                  style={{
                     color: '#666',
                     fontSize: 12,
                     marginTop: 4
@@ -319,7 +436,7 @@ export default function Home() {
             </View>
           ))
         )}
-        
+
       </ScrollView>
     </View>
   );
